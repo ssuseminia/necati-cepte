@@ -112,7 +112,14 @@
         if(tokens.length){
           const idToken=await user.getIdToken();
           const r=await fetch(cfg.pushSenderUrl,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken},body:JSON.stringify({tokens,title,body,type:'emergency',url:location.origin+location.pathname+'?open=emergency'})});
-          if(!r.ok) console.warn('Push sender hatası',await r.text());
+          const pushText=await r.text();
+          let pushResult=null; try{pushResult=JSON.parse(pushText)}catch{}
+          if(!r.ok || (pushResult && pushResult.ok===false)){
+            console.warn('Push sender hatası',pushText);
+            safeToast('Push gönderilemedi: '+(pushResult?.error||pushResult?.errors?.[0]||('HTTP '+r.status)));
+          } else if(pushResult?.sent===0){
+            safeToast('Karşı cihazın push kaydı yok. Diğer telefonda Bildirimleri Aç'a bas.');
+          }
         }
       }catch(e){console.warn('FCM push gönderilemedi; Firestore canlı uyarı devam ediyor',e)}
     }
