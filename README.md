@@ -38,3 +38,9 @@ Düzeltmeler:
 - OneSignal serviceWorkerPath GitHub Pages için absolute path olarak düzeltildi.
 - SDK yükleme sırası deterministik hale getirildi.
 - OneSignal init hatası kullanıcıya gösteriliyor.
+
+
+## v6.3
+- Bildirim izni sonrası `OneSignal.User.PushSubscription.optIn()` çağrısı eklendi.
+- Push Subscription ID için 5 saniyelik bekleme ve kontrol eklendi.
+- Sistem testine OneSignal permission/subscription/optedIn değerleri eklendi.

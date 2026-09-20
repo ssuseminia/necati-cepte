@@ -4,7 +4,7 @@
   const $=id=>document.getElementById(id);
   const configured=()=>cfg&&cfg.config&&cfg.config.apiKey&&!cfg.config.apiKey.startsWith('BURAYA_')&&cfg.config.projectId&&!cfg.config.projectId.startsWith('BURAYA_');
   const setStatus=(text,on=false)=>{const el=$('cloudStatus');if(!el)return;el.textContent=`● ${text}`;el.classList.toggle('online',on)};
-  const safeToast=m=>window.necatiToast?.(m); window.NECATI_CLOUD_VERSION='6.2';
+  const safeToast=m=>window.necatiToast?.(m); window.NECATI_CLOUD_VERSION='6.3';
   const notifStoreKey=()=>`necati-seen-notifs-${user?.uid||'anon'}`;
 
   const osCfg=window.NECATI_ONESIGNAL||{};
@@ -196,29 +196,61 @@
   }
 
   async function enablePush(){
-    // iPhone/iPad'de bu buton, uygulama Ana Ekran'dan açıldıktan sonra basılmalıdır.
     if(osCfg.appId && !osCfg.appId.startsWith('BURAYA_')){
       try{
         if(!oneSignalReady) await initOneSignal();
         const OneSignal=window.NecatiOneSignal;
         if(!OneSignal) throw new Error('OneSignal yüklenemedi');
+
         if(user) await identifyOneSignal(user);
+
+        // 1) Native browser/iOS permission
         await OneSignal.Notifications.requestPermission();
-        if(OneSignal.Notifications.permission){
-          $('enablePushBtn').textContent='✅ Bildirimler açık';
-          safeToast('Gerçek push bildirimleri açıldı 🔔❤️');
-        }else{
+
+        if(!OneSignal.Notifications.permission){
           safeToast('Bildirim izni verilmedi');
+          return;
         }
+
+        // 2) Explicitly opt in to push subscription
+        try{
+          await OneSignal.User.PushSubscription.optIn();
+        }catch(e){
+          console.warn('OneSignal optIn hatası', e);
+        }
+
+        // 3) Wait briefly for the subscription id/token to materialize
+        let subId = OneSignal.User.PushSubscription.id || null;
+        let optedIn = !!OneSignal.User.PushSubscription.optedIn;
+
+        for(let i=0; i<10 && !subId; i++){
+          await new Promise(r=>setTimeout(r,500));
+          subId = OneSignal.User.PushSubscription.id || null;
+          optedIn = !!OneSignal.User.PushSubscription.optedIn;
+        }
+
+        if(subId){
+          $('enablePushBtn').textContent='✅ Bildirimler açık';
+          safeToast('Gerçek push aktif 🔔❤️');
+        }else{
+          $('enablePushBtn').textContent='⚠️ Push token bekleniyor';
+          safeToast('İzin verildi ama push token oluşmadı');
+        }
+
+        console.log('OneSignal PushSubscription', {
+          id: subId,
+          optedIn,
+          permission: OneSignal.Notifications.permission
+        });
+
         return;
       }catch(e){
-        console.warn('OneSignal izin hatası',e);
-        safeToast('Bildirim açılamadı: '+e.message);
+        console.warn('OneSignal izin/abonelik hatası',e);
+        safeToast('Bildirim açılamadı: '+(e?.message||e));
         return;
       }
     }
 
-    // OneSignal App ID henüz girilmediyse eski yerel bildirim testi.
     if(!('Notification' in window))return safeToast('Bu tarayıcı bildirim desteklemiyor');
     try{
       const perm=await Notification.requestPermission();
@@ -258,7 +290,7 @@
     showSystemNotification(n);
   }
 
-  window.NecatiCloud={version:'6.2',
+  window.NecatiCloud={version:'6.3',
     scheduleSave,uploadImage,sendEmergency,isReady:()=>ready,hasStorage:()=>!!storage,user:()=>user,enablePush,
     diagnostics:()=>({
       configured: configured(),
@@ -271,7 +303,10 @@
       pushSenderUrl: cfg?.pushSenderUrl||'',
       oneSignalConfigured: !!(osCfg.appId && !osCfg.appId.startsWith('BURAYA_')),
       oneSignalReady,
-      oneSignalRole: roleFromEmail(user?.email||'')
+      oneSignalRole: roleFromEmail(user?.email||''),
+      oneSignalPermission: window.NecatiOneSignal?.Notifications?.permission ?? null,
+      oneSignalSubscriptionId: window.NecatiOneSignal?.User?.PushSubscription?.id ?? null,
+      oneSignalOptedIn: window.NecatiOneSignal?.User?.PushSubscription?.optedIn ?? null
     })
   };
   window.addEventListener('DOMContentLoaded',init);
