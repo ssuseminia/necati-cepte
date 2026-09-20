@@ -20,3 +20,15 @@ Düzeltmeler:
 - Hesap butonuna doğrudan fallback eklendi.
 - Sistem testi butonu eklendi.
 - Service worker güncellemesi zorlanıyor.
+
+
+## v6
+- OneSignal Web Push entegrasyonu eklendi.
+- iOS/iPadOS ana ekran PWA kapalıyken push için ayrı OneSignal service worker eklendi.
+- Acil Necati Worker artık OneSignal API üzerinden karşı role push gönderiyor.
+- Firebase yalnızca Auth + Firestore senkronunda kalıyor.
+
+
+## v6.1
+- OneSignal App ID eklendi.
+- OneSignalSDKUpdaterWorker.js eklendi.
