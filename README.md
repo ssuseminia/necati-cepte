@@ -83,3 +83,17 @@ Stellarium canlı görünümü üçüncü taraf web hizmetidir; yüklenmezse alt
 - Mobil `[data-module]` kartları gerçek modül açma sistemine bağlandı.
 - Modüle yalnızca girildiğinde gönderilen push bildirimi kaldırıldı.
 - Ana kayıt butonlarına mobil PWA/cache durumları için event-delegation güvenlik katmanı eklendi.
+
+
+## v10.1
+- Uygulama ikonları kullanıcı tarafından verilen çizimlerle değiştirildi.
+- Mobil görünüm daha da uygulama benzeri hale getirildi; geniş ekranda sabit telefon görünümü korundu.
+- “Gökyüzümüz” modülü ana arayüzden kaldırıldı.
+- “Bugün ne var?” kartı zenginleştirildi: yaklaşan akış, akıllı chip özetleri, özel gün/doğum günü/regl bilgileri.
+- Gerçek zamanlı akıllı hatırlatma altyapısı eklendi:
+  - planlar için seçili hatırlatma zamanında
+  - görevler için seçili hatırlatma zamanında
+  - özel günler için 7 gün / 1 gün / bugün
+  - doğum günü için 7 gün / 1 gün / bugün
+  - regl için 1 gün önce / bugün
+- Yerel bildirim izni varsa service worker üzerinden bildirim gösterir, yoksa en azından uygulama içinde toast gösterir.

@@ -8,7 +8,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="icons/icon-192.png" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <link rel="stylesheet" href="style-v7.css" />
   <title>Necati Cepte</title>
@@ -22,7 +23,7 @@
         <div class="brand-mark">❤️</div>
         <div>
           <small id="mobileGreeting">Bugün de birlikte</small>
-          <strong>Necati Cepte <em>v10.0.1</em></strong>
+          <strong>Necati Cepte <em>v10.1</em></strong>
         </div>
       </div>
       <div class="mobile-actions">
@@ -47,12 +48,35 @@
           <div><strong id="hours">0</strong><small>saat</small></div>
           <div><strong id="minutes">0</strong><small>dk</small></div>
           <div><strong id="seconds">0</strong><small>sn</small></div>
+
+        </div>
+        <div class="today-rich-board">
+          <article class="agenda-card glass-card">
+            <div class="mini-head">
+              <div>
+                <small>Yaklaşanlar</small>
+                <h3>Bugünün akışı</h3>
+              </div>
+              <button type="button" class="ghost-mini" data-open="plannerDialog">Takvimi aç</button>
+            </div>
+            <div id="todayAgendaList" class="agenda-list"></div>
+          </article>
+          <article class="smart-card glass-card">
+            <div class="mini-head">
+              <div>
+                <small>Akıllı özet</small>
+                <h3>Hatırlatmalar & öneri</h3>
+              </div>
+            </div>
+            <div id="smartHintChips" class="smart-chips"></div>
+            <p id="todayInsight" class="smart-insight">Bugün sakin, tatlı ve planlı bir gün olabilir.</p>
+          </article>
         </div>
       </section>
 
       <section class="today-panel">
         <div class="section-mobile-head">
-          <div><small>Bugün</small><h2>Günün özeti</h2></div>
+          <div><small>Bugün</small><h2>Bugün ne var?</h2></div>
           <span class="today-date" id="todayDateLabel"></span>
         </div>
         <div class="today-grid">
@@ -92,6 +116,7 @@
           <button class="quick-card danger-quick" data-module="emergency"><span>🚨</span><strong>Acil Necati</strong></button>
           <button class="quick-card" data-module="night"><span>🌙</span><strong>İyi Geceler</strong></button>
           <button class="quick-card" data-module="jar"><span>🫙</span><strong>Aşk Kavanozu</strong></button>
+          <button class="quick-card" data-module="dates"><span>💍</span><strong>Özel Günler</strong></button>
           <button class="quick-card" data-open="plannerDialog"><span>📅</span><strong>Plan Ekle</strong></button>
           <button class="quick-card" data-open="todoDialog"><span>✅</span><strong>Görevler</strong></button>
         </div>
@@ -105,8 +130,7 @@
         <button class="mobile-module" data-module="surprise"><span class="module-bubble">🎁</span><div><strong>Sürpriz Takvimi</strong><small>Gizli sürprizler</small></div></button>
         <button class="mobile-module" data-module="jar"><span class="module-bubble">🫙</span><div><strong>Aşk Kavanozu</strong><small>Sevgi kartları</small></div></button>
         <button class="mobile-module" data-module="map"><span class="module-bubble">📍</span><div><strong>Anı Haritası</strong><small>Bizim yerlerimiz</small></div></button>
-        <button class="mobile-module" data-module="sky"><span class="module-bubble">✨</span><div><strong>Gökyüzümüz</strong><small>Gökyüzü haritası</small></div></button>
-        <button class="mobile-module" data-module="story"><span class="module-bubble">🎬</span><div><strong>Hikâyemiz</strong><small>Sezon sezon</small></div></button>
+                <button class="mobile-module" data-module="story"><span class="module-bubble">🎬</span><div><strong>Hikâyemiz</strong><small>Sezon sezon</small></div></button>
         <button class="mobile-module" data-module="dates"><span class="module-bubble">💍</span><div><strong>Özel Günler</strong><small>Geri sayımlar</small></div></button>
         <button class="mobile-module" data-module="night"><span class="module-bubble">🌙</span><div><strong>İyi Geceler</strong><small>Fotoğraflı mesaj</small></div></button>
         <button class="mobile-module danger-mobile" data-module="emergency"><span class="module-bubble">🚨</span><div><strong>Acil Necati</strong><small>Hemen haber ver</small></div></button>

@@ -1,7 +1,7 @@
 {
-  "name": "Necati Cepte v7",
+  "name": "Necati Cepte",
   "short_name": "Necati Cepte",
-  "description": "Nisa ve Necati için özel ilişki uygulaması.",
+  "description": "Necati ve Nisa için mobil tarzda ilişki uygulaması.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#120f1c",

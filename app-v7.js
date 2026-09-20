@@ -15,7 +15,7 @@ const moodAssets={
  nisa:{mutlu:'assets/moods/nisa-mutlu.png',iyi:'assets/moods/nisa-iyi.png',yorgun:'assets/moods/nisa-yorgun.png',uzgun:'assets/moods/nisa-uzgun.png',gergin:'assets/moods/nisa-gergin.png'},
  necati:{mutlu:'assets/moods/necati-mutlu.png',iyi:'assets/moods/necati-iyi.png',yorgun:'assets/moods/necati-yorgun.png',uzgun:'assets/moods/necati-uzgun.png',gergin:'assets/moods/necati-gergin.png'}
 };
-const moduleNames={mood:'🌸 Nisa Modu',surprise:'🎁 Sürpriz Takvimi',jar:'🫙 Aşk Kavanozu',map:'📍 Anı Haritası',sky:'✨ Bizim Gökyüzümüz',story:'🎬 Hikâyemiz',dates:'💍 Özel Günler',night:'🌙 İyi Geceler',emergency:'🚨 Acil Necati',birthday:'🎂 Doğduğun Gün'};
+const moduleNames={mood:'🌸 Nisa Modu',surprise:'🎁 Sürpriz Takvimi',jar:'🫙 Aşk Kavanozu',map:'📍 Anı Haritası',story:'🎬 Hikâyemiz',dates:'💍 Özel Günler',night:'🌙 İyi Geceler',emergency:'🚨 Acil Necati',birthday:'🎂 Doğduğun Gün'};
 function clone(x){return JSON.parse(JSON.stringify(x))}function merge(base,saved){if(!saved||typeof saved!=='object')return clone(base);const out=clone(base);for(const k of Object.keys(saved)){if(saved[k]&&typeof saved[k]==='object'&&!Array.isArray(saved[k])&&out[k]&&typeof out[k]==='object'&&!Array.isArray(out[k]))out[k]={...out[k],...saved[k]};else out[k]=saved[k]}return out}
 function loadState(){try{const s=merge(defaultState,JSON.parse(localStorage.getItem(STORAGE_KEY)||'null'));const legacy={'🥰':'mutlu','🙂':'iyi','😴':'yorgun','😔':'uzgun','😡':'gergin'};s.mood.today=legacy[s.mood.today]||s.mood.today||'mutlu';s.mood.history=(s.mood.history||[]).map(x=>({...x,mood:legacy[x.mood]||x.mood}));return s}catch{return clone(defaultState)}}
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));window.NecatiCloud?.scheduleSave(state)}
@@ -219,7 +219,7 @@ function renderBot(){
   c.scrollTop=c.scrollHeight;
 }
 
-function renderModule(n){({mood:renderMood,surprise:renderSurprise,jar:renderJar,map:renderMap,sky:renderSky,story:renderStory,dates:renderDates,night:renderNight,emergency:renderEmergency,birthday:renderBirthday}[n]||(()=>{}))()}
+function renderModule(n){({mood:renderMood,surprise:renderSurprise,jar:renderJar,map:renderMap,story:renderStory,dates:renderDates,night:renderNight,emergency:renderEmergency,birthday:renderBirthday}[n]||(()=>{}))()}
 function viewerMoodOwner(){const r=window.NecatiCloud?.role?.();return r==='nisa'?'necati':'nisa'}
 function phaseInfo(){const s=state.settings;if(!s.lastPeriod)return null;const start=new Date(s.lastPeriod+'T12:00:00'),now=new Date(),elapsed=Math.floor((now-start)/86400000),day=((elapsed%s.cycleLength)+s.cycleLength)%s.cycleLength+1;let phase='Foliküler dönem';if(day<=s.periodLength)phase='Regl dönemi';else if(day>=s.cycleLength-13&&day<=s.cycleLength-11)phase='Tahmini yumurtlama dönemi';else if(day>s.cycleLength-11)phase='Luteal dönem';const next=new Date(start);next.setDate(next.getDate()+Math.ceil(Math.max(0,elapsed+1)/s.cycleLength)*s.cycleLength);if(next<=now)next.setDate(next.getDate()+s.cycleLength);return{day,phase,next}}
 function renderMood(){const p=phaseInfo(),set=moodAssets[viewerMoodOwner()];$('moduleContent').innerHTML=`<div class="panel"><h3>Bugün ruh hali nasıl? 🌸</h3><p class="muted">${viewerMoodOwner()==='nisa'?'Necati hesabında Nisa':'Nisa hesabında Necati'} emojileri gösteriliyor.</p><div class="mood-grid mood-image-grid">${Object.entries(moodMap).map(([k,v])=>`<button class="mood-btn mood-image-btn ${state.mood.today===k?'active':''}" data-mood="${k}"><img src="${set[k]}" alt="${v.label}"><span>${v.label}</span></button>`).join('')}</div><div class="hero-tip">${moodTips[state.mood.today]||''}</div></div><div class="panel"><h3>Döngü tahmini</h3>${p?`<div class="stats-grid"><div class="stat-card"><strong>${p.day}. gün</strong><span>Döngü günü</span></div><div class="stat-card"><strong>${p.phase}</strong><span>Tahmini dönem</span></div><div class="stat-card"><strong>${p.next.toLocaleDateString('tr-TR')}</strong><span>Sonraki başlangıç</span></div></div>`:'<div class="empty">Ayarlar bölümünden son regl başlangıcını gir.</div>'}</div><div class="panel"><h3>Son ruh halleri</h3>${state.mood.history.length?state.mood.history.slice(-7).reverse().map(x=>`<div class="surprise-card">${moodMap[x.mood]?.emoji||''} ${moodMap[x.mood]?.label||x.mood} · ${fmtDate(x.date)}</div>`).join(''):'<div class="empty">Henüz kayıt yok.</div>'}</div>`;document.querySelectorAll('[data-mood]').forEach(b=>b.onclick=async()=>{const next=b.dataset.mood,prev=state.mood.today;if(prev===next)return toast('Ruh hali zaten buydu 🌸');state.mood.today=next;state.mood.history.push({date:today(),mood:next});save();renderMood();toast('Ruh hali kaydedildi 🌸');await notify('🌸 Ruh hali değişti',`${actor()} ruh halini ${moodMap[next].label} yaptı ${moodMap[next].emoji}`,'mood','mood')})}
@@ -675,3 +675,108 @@ document.addEventListener('click', async (e)=>{
     try{ v9BotSend(); }catch(err){ console.error(err); toast('Mesaj gönderilemedi'); }
   }
 }, false);
+
+
+
+// ===== v10.1 Smart reminders =====
+const SMART_REMINDER_KEY='necati-smart-reminders-v1';
+function loadSmartReminderCache(){ try{return JSON.parse(localStorage.getItem(SMART_REMINDER_KEY)||'{}')}catch{return {}} }
+function saveSmartReminderCache(v){ localStorage.setItem(SMART_REMINDER_KEY, JSON.stringify(v)); }
+function markSmartReminder(key){ const c=loadSmartReminderCache(); c[key]=Date.now(); saveSmartReminderCache(c); }
+function reminderAlreadySent(key){ const c=loadSmartReminderCache(); return !!c[key]; }
+async function showLocalSmartNotification(title, body, tag='necati-smart'){
+  try{
+    if('Notification' in window && Notification.permission==='granted'){
+      const reg = await navigator.serviceWorker?.getRegistration?.();
+      if(reg && reg.showNotification){
+        await reg.showNotification(title,{body,tag,icon:'icons/icon-192.png',badge:'icons/icon-192.png'});
+      }else{
+        new Notification(title,{body,tag,icon:'icons/icon-192.png'});
+      }
+    }
+  }catch(err){ console.warn('Local notification error', err); }
+  toast(title);
+}
+function nextOccurrence(dateStr){
+  if(!dateStr) return null;
+  const d = new Date(dateStr+'T12:00:00');
+  const now = new Date();
+  let target = new Date(now.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0, 0);
+  if(target < now) target = new Date(now.getFullYear()+1, d.getMonth(), d.getDate(), 12, 0, 0, 0);
+  return target;
+}
+function maybeTriggerTimeReminder(key, targetMs, title, body, validAfterMs=0, validUntilMs=30*60*1000){
+  const now = Date.now();
+  if(reminderAlreadySent(key)) return;
+  if(now >= targetMs-validAfterMs && now <= targetMs+validUntilMs){
+    markSmartReminder(key);
+    showLocalSmartNotification(title, body, key);
+  }
+}
+function runSmartReminderChecks(){
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0,10);
+
+  // Plans
+  (state.plans||[]).forEach(p=>{
+    if(!p.date || !p.reminder) return;
+    const eventMs = new Date(`${p.date}T${p.time||'09:00'}`).getTime();
+    const reminderMs = eventMs - Number(p.reminder||0)*60000;
+    const key = `plan:${p.id}:${p.reminder}`;
+    maybeTriggerTimeReminder(key, reminderMs, '📅 Yaklaşan plan', `${p.title} birazdan geliyor${p.time?' • '+p.time:''}`);
+  });
+
+  // Todos
+  (state.todos||[]).forEach(t=>{
+    if(t.done || !t.date || !t.reminder) return;
+    const dueMs = new Date(`${t.date}T09:00`).getTime();
+    const reminderMs = dueMs - Number(t.reminder||0)*60000;
+    const key = `todo:${t.id}:${t.reminder}`;
+    maybeTriggerTimeReminder(key, reminderMs, '✅ Yapılacak hatırlatma', `${t.text} için son tarih yaklaşıyor`);
+  });
+
+  // Special dates
+  (state.specialDates||[]).forEach(sd=>{
+    const days = daysUntil(sd.date, sd.repeat||'yearly');
+    if([7,1,0].includes(days)){
+      const phase = days===0?'today':days===1?'1day':'7day';
+      const key = `special:${sd.id}:${phase}:${todayStr}`;
+      if(!reminderAlreadySent(key)){
+        markSmartReminder(key);
+        const body = days===0 ? `${sd.title} bugün ❤️` : `${sd.title} için ${days} gün kaldı`;
+        showLocalSmartNotification('💍 Özel gün hatırlatması', body, key);
+      }
+    }
+  });
+
+  // Birthday of Nisa
+  const bdayTarget = nextOccurrence(state.settings.birthDate);
+  if(bdayTarget){
+    const diffDays = Math.ceil((bdayTarget - now)/86400000);
+    if([7,1,0].includes(diffDays)){
+      const key=`birthday:${diffDays}:${todayStr}`;
+      if(!reminderAlreadySent(key)){
+        markSmartReminder(key);
+        showLocalSmartNotification('🎂 Doğum günü yaklaşıyor', diffDays===0?`${state.settings.partnerName||'Nisa'} için bugün doğum günü 🎉`:`${state.settings.partnerName||'Nisa'} için ${diffDays} gün sonra doğum günü`, key);
+      }
+    }
+  }
+
+  // Period reminder
+  const pinfo=periodInfo();
+  if(pinfo){
+    const nextStart = new Date(pinfo.nextStart+'T09:00:00');
+    const diffDays = Math.ceil((nextStart - now)/86400000);
+    if([1,0].includes(diffDays)){
+      const key=`period:${diffDays}:${todayStr}`;
+      if(!reminderAlreadySent(key)){
+        markSmartReminder(key);
+        showLocalSmartNotification('🌸 Regl hatırlatması', diffDays===0?'Regl başlangıcı bugün görünüyor. Biraz daha anlayışlı mod açılabilir ❤️':'Regl başlangıcı yarın görünüyor. Küçük bir destek iyi gelebilir.', key);
+      }
+    }
+  }
+}
+
+setInterval(runSmartReminderChecks, 60000);
+window.addEventListener('focus', ()=>setTimeout(runSmartReminderChecks, 500));
+document.addEventListener('DOMContentLoaded', ()=>setTimeout(runSmartReminderChecks, 1200));
