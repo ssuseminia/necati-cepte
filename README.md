@@ -1,4 +1,4 @@
-# Necati Cepte ❤️ ) Tamamen Necati tarafından hazırlanmıştır.
+# Necati Cepte v7.0 ❤️
 
 Final toplu güncelleme.
 
@@ -13,6 +13,15 @@ Final toplu güncelleme.
 - İyi Geceler: fotoğraf zorunlu; fotoğraf yoksa gönderim engellenir.
 - Anı/Hikâye/İyi Geceler fotoğrafları iki hesap arasında senkron görüntülenebilir.
 
+## Yayınlama
+Bu klasördeki **tüm dosyaları** GitHub `necati-cepte` reposunun köküne yükle. Klasör yapısını koru (`assets/moods/...`).
+Sonra bir kez `https://ssuseminia.github.io/necati-cepte/reset.html` aç.
+
+## Cloudflare
+Mevcut çalışan Cloudflare Worker ve OneSignal secretları değişmez. `cloudflare-worker/worker.js` v6 ile uyumludur ve generic title/body gönderdiği için v7 aktivitelerini de push olarak yollar.
+
+## Not
+Stellarium canlı görünümü üçüncü taraf web hizmetidir; yüklenmezse alttaki yerel astronomik yıldız haritası çalışmaya devam eder.
 
 ## v7.0.1 hotfix
 - İyi Geceler fotoğraf yüklemesinde Firebase Storage tamamen devre dışı bırakıldı.
@@ -53,3 +62,24 @@ Final toplu güncelleme.
 - Ortak Harcama Takibi eklendi: aylık toplam, Necati/Nisa ödemeleri, kategori, takvim entegrasyonu.
 - Necati Bot 2.0 uygulama verilerinden bugünkü planı, açık görevleri ve aylık harcama toplamını okuyabilir.
 - Akıllı bildirimler için plan/görev reminder metadata alanları eklendi.
+
+## v10.0 Mobile Redesign
+- Ana arayüz mobil uygulama mantığına taşındı.
+- Sabit 5 sekmeli alt navigasyon: Ana Sayfa / Takvim / Biz / Planlar / Profil.
+- Ana sayfaya canlı gün özeti eklendi: ruh hali, sıradaki plan, açık görev, aylık harcama.
+- Hızlı erişim şeridi eklendi.
+- Modüller mobil uygulama kartlarına dönüştürüldü.
+- Takvim, görev, harcama, bot ve ayarlar mobilde tam ekran sayfa gibi açılır.
+- Ana modül ekranları da mobil full-screen geçiş görünümünde.
+- Scriptler dialoglardan sonra yüklenir; v9'daki zamanlama/null listener riskleri azaltıldı.
+- iPhone safe-area destekli üst ve alt barlar eklendi.
+
+## v10.0.1 Critical interaction fix
+- v10 mobil header sırasında kaldırılan `coupleBadge` nedeniyle oluşan başlangıç JavaScript hatası düzeltildi.
+- Takvim plan kaydetme tekrar aktif.
+- Yapılacaklar görev ekleme/düzenleme tekrar aktif.
+- Ortak Harcamalar kayıt ekleme tekrar aktif.
+- Necati Bot gönder butonu tekrar aktif.
+- Mobil `[data-module]` kartları gerçek modül açma sistemine bağlandı.
+- Modüle yalnızca girildiğinde gönderilen push bildirimi kaldırıldı.
+- Ana kayıt butonlarına mobil PWA/cache durumları için event-delegation güvenlik katmanı eklendi.

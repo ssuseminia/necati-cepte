@@ -22,15 +22,61 @@ function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));window.N
 function uid(){return Date.now()+Math.floor(Math.random()*999)}function today(){return new Date().toISOString().slice(0,10)}function fmtDate(v){if(!v)return'—';return new Date(v+'T12:00:00').toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'})}function escapeHtml(s=''){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}function toast(m){const e=$('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2500)}window.necatiToast=toast;
 function actor(){return window.NecatiCloud?.role?.()==='nisa'?'Nisa':window.NecatiCloud?.role?.()==='necati'?'Necati':'Biri'}
 async function notify(title,body,type='activity',open='home'){if(!window.NecatiCloud?.isReady?.())return;try{await window.NecatiCloud.sendActivity(title,body,type,open)}catch(e){console.warn('Push',e)}}
-function updateIdentity(){$('coupleBadge').textContent=`${state.settings.partnerName} ❤️ ${state.settings.ownerName}`;const d=new Date(state.settings.relationshipDate);$('counterSince').textContent=`${d.toLocaleDateString('tr-TR')} tarihinden beri`;document.title='Necati Cepte'}
-function updateCounter(){let diff=Math.max(0,Date.now()-new Date(state.settings.relationshipDate));const d=Math.floor(diff/86400000);diff%=86400000;const h=Math.floor(diff/3600000);diff%=3600000;const m=Math.floor(diff/60000),s=Math.floor(diff%60000/1000);$('days').textContent=d.toLocaleString('tr-TR');$('hours').textContent=h;$('minutes').textContent=m;$('seconds').textContent=s}
-window.applyCloudState=remote=>{state=merge(defaultState,remote);localStorage.setItem(STORAGE_KEY,JSON.stringify(state));updateIdentity();updateCounter();if(currentModule)renderModule(currentModule)};
+function updateIdentity(){
+  const badge=$('coupleBadge');
+  if(badge) badge.textContent=`${state.settings.partnerName} ❤️ ${state.settings.ownerName}`;
+  const d=new Date(state.settings.relationshipDate);
+  const since=$('counterSince');
+  if(since) since.textContent=`${d.toLocaleDateString('tr-TR')} tarihinden beri`;
+  document.title='Necati Cepte';
+}
+function updateCounter(){
+  let diff=Math.max(0,Date.now()-new Date(state.settings.relationshipDate));
+  const d=Math.floor(diff/86400000);diff%=86400000;
+  const h=Math.floor(diff/3600000);diff%=3600000;
+  const m=Math.floor(diff/60000),s=Math.floor(diff%60000/1000);
+  if($('days')) $('days').textContent=d.toLocaleString('tr-TR');
+  if($('hours')) $('hours').textContent=h;
+  if($('minutes')) $('minutes').textContent=m;
+  if($('seconds')) $('seconds').textContent=s;
+}
+window.applyCloudState=remote=>{
+  state=merge(defaultState,remote);
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+  updateIdentity();updateCounter();
+  if(currentModule)renderModule(currentModule);
+  try{v10RefreshDashboard?.()}catch{}
+  try{v9RenderCalendar?.();v9RenderTodos?.();v9RenderExpenses?.()}catch{}
+};
 updateIdentity();updateCounter();setInterval(updateCounter,1000);
-const messages=[['Nisa’ya küçük bir hatırlatma','Bugün de seni seçiyorum. Yarın da öyle.'],['Necati’den mesaj var 💌','Günün nasıl geçerse geçsin tarafın hep bende.'],['Bugünün görevi','Bir adet sarılma borcun var. Faizi öpücük.']];let messageIndex=0;$('newMessageBtn').onclick=()=>{messageIndex=(messageIndex+1)%messages.length;$('dailyTitle').textContent=messages[messageIndex][0];$('dailyMessage').textContent=messages[messageIndex][1]};
+const messages=[['Nisa’ya küçük bir hatırlatma','Bugün de seni seçiyorum. Yarın da öyle.'],['Necati’den mesaj var 💌','Günün nasıl geçerse geçsin tarafın hep bende.'],['Bugünün görevi','Bir adet sarılma borcun var. Faizi öpücük.']];let messageIndex=0;
+if($('newMessageBtn')) $('newMessageBtn').onclick=()=>{
+  messageIndex=(messageIndex+1)%messages.length;$('dailyTitle').textContent=messages[messageIndex][0];$('dailyMessage').textContent=messages[messageIndex][1]
+};
 
-document.querySelectorAll('.module-card').forEach(b=>b.onclick=()=>openModule(b.dataset.module));$('backBtn').onclick=showHome;$('homeBtn').onclick=showHome;
-function showHome(){currentModule=null;if(leafletMap){leafletMap.remove();leafletMap=null}if(pickerMap){pickerMap.remove();pickerMap=null} $('homeView').hidden=false;$('moduleView').hidden=true;$('homeBtn').classList.add('active');scrollTo({top:0,behavior:'smooth'})}
-function openModule(name){currentModule=name;$('homeView').hidden=true;$('moduleView').hidden=false;$('homeBtn').classList.remove('active');$('moduleTitle').textContent=moduleNames[name];renderModule(name);notify('📲 Modül açıldı',`${actor()} ${moduleNames[name]} bölümüne girdi`,'module-open',name);scrollTo({top:0,behavior:'smooth'})}
+document.querySelectorAll('[data-module]').forEach(b=>b.addEventListener('click',()=>{
+  if(b.dataset.module) openModule(b.dataset.module);
+}));
+if($('backBtn')) $('backBtn').onclick=showHome;
+if($('homeBtn')) $('homeBtn').onclick=showHome;
+function showHome(){
+  currentModule=null;
+  if(leafletMap){leafletMap.remove();leafletMap=null}
+  if(pickerMap){pickerMap.remove();pickerMap=null}
+  if($('homeView')) $('homeView').hidden=false;
+  if($('moduleView')) $('moduleView').hidden=true;
+  if($('homeBtn')) $('homeBtn').classList.add('active');
+  scrollTo({top:0,behavior:'smooth'});
+}
+function openModule(name){
+  currentModule=name;
+  if($('homeView')) $('homeView').hidden=true;
+  if($('moduleView')) $('moduleView').hidden=false;
+  if($('homeBtn')) $('homeBtn').classList.remove('active');
+  if($('moduleTitle')) $('moduleTitle').textContent=moduleNames[name]||'Necati Cepte';
+  renderModule(name);
+  scrollTo({top:0,behavior:'smooth'});
+}
 
 function hydratePersonalSettings(){
   const s=state.settings||{};
@@ -524,22 +570,108 @@ document.addEventListener('click',e=>{
 $('calPrev')?.addEventListener('click',()=>{v9CalendarCursor.setMonth(v9CalendarCursor.getMonth()-1);v9RenderCalendar()});
 $('calNext')?.addEventListener('click',()=>{v9CalendarCursor.setMonth(v9CalendarCursor.getMonth()+1);v9RenderCalendar()});
 $('todayCalendarBtn')?.addEventListener('click',()=>{v9SelectedDate=new Date().toISOString().slice(0,10);v9CalendarCursor=new Date();v9RenderCalendar()});
-$('savePlanBtn')?.addEventListener('click',v9SavePlan);
+
 $('cancelPlanEditBtn')?.addEventListener('click',v9ResetPlanForm);
 
 // Todo controls
-$('saveTodoBtn')?.addEventListener('click',v9SaveTodo);
+
 $('cancelTodoEditBtn')?.addEventListener('click',v9ResetTodoForm);
 $('todoFilter')?.addEventListener('change',v9RenderTodos);
 
 // Expenses
-$('addExpenseBtn')?.addEventListener('click',v9AddExpense);
+
 $('expenseMonth')?.addEventListener('change',v9RenderExpenses);
 
 // Bot
-$('botSendBtn')?.addEventListener('click',()=>v9BotSend());
+
 $('botInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();v9BotSend()}});
 document.querySelectorAll('[data-bot-q]').forEach(b=>b.addEventListener('click',()=>v9BotSend(b.dataset.botQ)));
 
 // Smart notification metadata is stored per item (reminder minutes).
 // Actual background delivery can be handled by Cloudflare Scheduled Worker in a later server-side pass.
+
+
+// ===== v10 Mobile UI =====
+function v10Currency(n){
+  try{return new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',maximumFractionDigits:0}).format(Number(n)||0)}
+  catch{return '₺'+Math.round(Number(n)||0)}
+}
+function v10RefreshDashboard(){
+  const now=new Date();
+  const today=now.toISOString().slice(0,10);
+  const label=$('todayDateLabel');
+  if(label) label.textContent=now.toLocaleDateString('tr-TR',{day:'numeric',month:'short'});
+
+  const mood=state?.mood?.today;
+  if($('dashMood')) $('dashMood').textContent=mood ? `${mood} Bugünkü mod` : 'Henüz seçilmedi';
+
+  const plans=[...(state?.plans||[])].filter(p=>p.date>=today).sort((a,b)=>(a.date+(a.time||'')).localeCompare(b.date+(b.time||'')));
+  const next=plans[0];
+  if($('dashNextPlan')) $('dashNextPlan').textContent=next ? `${next.date===today?'Bugün':'Yakında'} ${next.time||''} ${next.title}`.trim() : 'Plan yok';
+
+  const open=(state?.todos||[]).filter(t=>!t.done);
+  if($('dashTodoCount')) $('dashTodoCount').textContent=`${open.length} görev`;
+
+  const month=today.slice(0,7);
+  const total=(state?.expenses||[]).filter(x=>(x.date||'').startsWith(month)).reduce((s,x)=>s+Number(x.amount||0),0);
+  if($('dashExpense')) $('dashExpense').textContent=v10Currency(total);
+
+  const greeting=$('mobileGreeting');
+  if(greeting){
+    const h=now.getHours();
+    greeting.textContent=h<12?'Günaydın ❤️':h<18?'Güzel bir gün ❤️':'İyi akşamlar ❤️';
+  }
+}
+
+function v10ActivateTab(name){
+  document.querySelectorAll('.tab-item').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
+}
+document.querySelectorAll('.tab-item').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const tab=btn.dataset.tab;
+    v10ActivateTab(tab);
+    if(tab==='home'){
+      if(!$('moduleView').hidden) $('backBtn')?.click();
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+    if(tab==='calendar') document.querySelector('[data-open="plannerDialog"]')?.click();
+    if(tab==='love'){
+      if(!$('moduleView').hidden) $('backBtn')?.click();
+      document.querySelector('.modules-title')?.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+    if(tab==='tasks') document.querySelector('[data-open="todoDialog"]')?.click();
+    if(tab==='profile') $('settingsBtn')?.click();
+  });
+});
+
+document.addEventListener('click',e=>{
+  if(e.target.closest('[data-module],[data-open]')) setTimeout(v10RefreshDashboard,300);
+});
+document.addEventListener('DOMContentLoaded',()=>setTimeout(v10RefreshDashboard,100));
+window.addEventListener('focus',()=>setTimeout(v10RefreshDashboard,150));
+setInterval(v10RefreshDashboard,30000);
+
+
+// ===== v10.0.1 Action Safety Layer =====
+// Bu katman, mobil PWA'da eski cache/event bağlama sorunlarında da ana işlemleri çalıştırır.
+document.addEventListener('click', async (e)=>{
+  const btn=e.target.closest('button');
+  if(!btn) return;
+
+  if(btn.id==='savePlanBtn'){
+    e.preventDefault();
+    try{ await v9SavePlan(); v10RefreshDashboard?.(); }catch(err){ console.error(err); toast('Plan kaydedilemedi'); }
+  }
+  if(btn.id==='saveTodoBtn'){
+    e.preventDefault();
+    try{ await v9SaveTodo(); v10RefreshDashboard?.(); }catch(err){ console.error(err); toast('Görev kaydedilemedi'); }
+  }
+  if(btn.id==='addExpenseBtn'){
+    e.preventDefault();
+    try{ await v9AddExpense(); v10RefreshDashboard?.(); }catch(err){ console.error(err); toast('Harcama eklenemedi'); }
+  }
+  if(btn.id==='botSendBtn'){
+    e.preventDefault();
+    try{ v9BotSend(); }catch(err){ console.error(err); toast('Mesaj gönderilemedi'); }
+  }
+}, false);

@@ -16,70 +16,126 @@
 <body>
   <div class="bg-orb orb-a"></div><div class="bg-orb orb-b"></div>
   <div class="app-shell">
-    <header class="hero">
-      <div class="top-row">
-        <div class="badge" id="coupleBadge">Nisa ❤️ Necati</div>
-        <div class="top-actions">
-          <span class="cloud-status" id="cloudStatus">● Yerel</span>
-          <button class="icon-btn" id="userBtn" type="button" aria-label="Hesap">👤</button>
-          <button class="icon-btn" id="settingsBtn" type="button" aria-label="Ayarlar">⚙️</button>
+    
+    <header class="mobile-appbar">
+      <div class="mobile-brand">
+        <div class="brand-mark">❤️</div>
+        <div>
+          <small id="mobileGreeting">Bugün de birlikte</small>
+          <strong>Necati Cepte <em>v10.0.1</em></strong>
         </div>
       </div>
-      <h1>Necati Cepte <small style="font-size:.32em;opacity:.6;vertical-align:middle">v9.0</small></h1>
-      <p class="subtitle">Sevgi, anılar ve küçük sürprizler hep yanında.</p>
-
-      <section class="counter-card" aria-label="İlişki sayacı">
-        <div class="eyebrow" id="counterSince">12.04.2025'ten beri</div>
-        <div class="counter-grid">
-          <div><strong id="days">0</strong><span>gün</span></div>
-          <div><strong id="hours">0</strong><span>saat</span></div>
-          <div><strong id="minutes">0</strong><span>dakika</span></div>
-          <div><strong id="seconds">0</strong><span>saniye</span></div>
-        </div>
-      </section>
+      <div class="mobile-actions">
+        <span class="sync-dot" id="cloudStatus">●</span>
+        <button class="round-icon" id="userBtn" type="button" aria-label="Hesap">👤</button>
+        <button class="round-icon" id="settingsBtn" type="button" aria-label="Ayarlar">⚙️</button>
+      </div>
     </header>
 
-    <main id="homeView">
-      <section class="daily-card">
+
+    
+    <main id="homeView" class="mobile-home">
+      <section class="mobile-hero-card">
+        <div class="hero-copy">
+          <span class="soft-pill">Nisa ❤️ Necati</span>
+          <h1>Bizim küçük dünyamız</h1>
+          <p>Planlar, anılar ve birbirimize bıraktığımız küçük şeyler.</p>
+        </div>
+        <div class="relationship-mini" aria-label="İlişki sayacı">
+          <span id="counterSince">12.04.2025'ten beri</span>
+          <div><strong id="days">0</strong><small>gün</small></div>
+          <div><strong id="hours">0</strong><small>saat</small></div>
+          <div><strong id="minutes">0</strong><small>dk</small></div>
+          <div><strong id="seconds">0</strong><small>sn</small></div>
+        </div>
+      </section>
+
+      <section class="today-panel">
+        <div class="section-mobile-head">
+          <div><small>Bugün</small><h2>Günün özeti</h2></div>
+          <span class="today-date" id="todayDateLabel"></span>
+        </div>
+        <div class="today-grid">
+          <button type="button" class="today-card mood-summary" data-module="mood">
+            <span class="today-icon">🌸</span>
+            <div><small>Ruh hali</small><strong id="dashMood">Henüz seçilmedi</strong></div>
+          </button>
+          <button type="button" class="today-card" data-open="plannerDialog">
+            <span class="today-icon">📅</span>
+            <div><small>Sıradaki plan</small><strong id="dashNextPlan">Plan yok</strong></div>
+          </button>
+          <button type="button" class="today-card" data-open="todoDialog">
+            <span class="today-icon">✅</span>
+            <div><small>Açık görev</small><strong id="dashTodoCount">0 görev</strong></div>
+          </button>
+          <button type="button" class="today-card" data-open="expenseDialog">
+            <span class="today-icon">💸</span>
+            <div><small>Bu ay</small><strong id="dashExpense">₺0</strong></div>
+          </button>
+        </div>
+      </section>
+
+      <section class="daily-card mobile-note-card">
         <div>
-          <span class="pill">Bugünün notu 💌</span>
+          <span class="soft-pill">Bugünün notu 💌</span>
           <h2 id="dailyTitle">Nisa'ya küçük bir hatırlatma</h2>
           <p id="dailyMessage">Bugün de seni seçiyorum. Yarın da öyle.</p>
         </div>
-        <button id="newMessageBtn" class="ghost-btn">Başka not</button>
+        <button id="newMessageBtn" class="mini-action">↻</button>
       </section>
 
-      <section class="section-head"><div><span class="eyebrow">Bizim dünyamız</span><h2>Modüller</h2></div></section>
-      <section class="module-grid">
-        <button class="module-card" data-module="mood"><span>🌸</span><div><h3>Nisa Modu</h3><p>Hesaba özel emojiler, ruh hali ve anlık bildirimler.</p></div></button>
-        <button class="module-card" data-module="surprise"><span>🎁</span><div><h3>Sürpriz Takvimi</h3><p>Tarihi gelince açılan mesaj ve sürprizler.</p></div></button>
-        <button class="module-card" data-module="jar"><span>🫙</span><div><h3>Aşk Kavanozu</h3><p>Her gün bir “Seni seviyorum çünkü...” kartı.</p></div></button>
-        <button class="module-card" data-module="map"><span>📍</span><div><h3>Anı Haritası</h3><p>Sürükleyerek seçilen konumlar, fotoğraflar ve notlar.</p></div></button>
-        <button class="module-card" data-module="sky"><span>✨</span><div><h3>Bizim Gökyüzümüz</h3><p>Her gün güncellenen gerçek astronomik gökyüzü.</p></div></button>
-        <button class="module-card" data-module="story"><span>🎬</span><div><h3>Hikâyemiz</h3><p>Sezon sezon Nisa & Necati.</p></div></button>
-        <button class="module-card" data-module="dates"><span>💍</span><div><h3>Özel Günler</h3><p>Yıldönümü, nişan ve geri sayımlar.</p></div></button>
-        <button class="module-card" data-module="night"><span>🌙</span><div><h3>İyi Geceler</h3><p>Fotoğraflı iyi geceler mesajlarını sakla.</p></div></button>
-        <button class="module-card danger" data-module="emergency"><span>🚨</span><div><h3>Acil Necati</h3><p>Sarılma, tatlı, ilgi ve ara çağrısı.</p></div></button>
-        <button class="module-card" data-module="birthday"><span>🎂</span><div><h3>Doğduğun Gün</h3><p>Nisa'nın yaşam istatistikleri.</p></div></button>
-      
-        <button type="button" class="module-card" data-open="plannerDialog"><span>📅</span><div><h3>Ortak Takvim</h3><p>Planlarımızı birlikte görelim.</p></div></button>
-        <button type="button" class="module-card" data-open="todoDialog"><span>✅</span><div><h3>Yapılacaklar</h3><p>Ortak görev listemiz.</p></div></button>
-        <button type="button" class="module-card" data-open="necatiBotDialog"><span>📞</span><div><h3>Necati'yi Ara</h3><p>Necati Bot ile konuş.</p></div></button>
+      <section class="quick-section">
+        <div class="section-mobile-head">
+          <div><small>Hızlı erişim</small><h2>Bugün en çok kullanılanlar</h2></div>
+        </div>
+        <div class="quick-scroll">
+          <button class="quick-card danger-quick" data-module="emergency"><span>🚨</span><strong>Acil Necati</strong></button>
+          <button class="quick-card" data-module="night"><span>🌙</span><strong>İyi Geceler</strong></button>
+          <button class="quick-card" data-module="jar"><span>🫙</span><strong>Aşk Kavanozu</strong></button>
+          <button class="quick-card" data-open="plannerDialog"><span>📅</span><strong>Plan Ekle</strong></button>
+          <button class="quick-card" data-open="todoDialog"><span>✅</span><strong>Görevler</strong></button>
+        </div>
+      </section>
 
-        <button type="button" class="module-card" data-open="expenseDialog"><span>💸</span><div><h3>Ortak Harcamalar</h3><p>Gelir-gider ve ortak ödeme takibi.</p></div></button>
-</section>
+      <section class="section-mobile-head modules-title">
+        <div><small>Bizim dünyamız</small><h2>Tüm modüller</h2></div>
+      </section>
+      <section class="mobile-module-grid" id="allModulesGrid">
+        <button class="mobile-module" data-module="mood"><span class="module-bubble">🌸</span><div><strong>Nisa Modu</strong><small>Ruh hali</small></div></button>
+        <button class="mobile-module" data-module="surprise"><span class="module-bubble">🎁</span><div><strong>Sürpriz Takvimi</strong><small>Gizli sürprizler</small></div></button>
+        <button class="mobile-module" data-module="jar"><span class="module-bubble">🫙</span><div><strong>Aşk Kavanozu</strong><small>Sevgi kartları</small></div></button>
+        <button class="mobile-module" data-module="map"><span class="module-bubble">📍</span><div><strong>Anı Haritası</strong><small>Bizim yerlerimiz</small></div></button>
+        <button class="mobile-module" data-module="sky"><span class="module-bubble">✨</span><div><strong>Gökyüzümüz</strong><small>Gökyüzü haritası</small></div></button>
+        <button class="mobile-module" data-module="story"><span class="module-bubble">🎬</span><div><strong>Hikâyemiz</strong><small>Sezon sezon</small></div></button>
+        <button class="mobile-module" data-module="dates"><span class="module-bubble">💍</span><div><strong>Özel Günler</strong><small>Geri sayımlar</small></div></button>
+        <button class="mobile-module" data-module="night"><span class="module-bubble">🌙</span><div><strong>İyi Geceler</strong><small>Fotoğraflı mesaj</small></div></button>
+        <button class="mobile-module danger-mobile" data-module="emergency"><span class="module-bubble">🚨</span><div><strong>Acil Necati</strong><small>Hemen haber ver</small></div></button>
+        <button class="mobile-module" data-module="birthday"><span class="module-bubble">🎂</span><div><strong>Doğduğun Gün</strong><small>Yaşam istatistikleri</small></div></button>
+        <button class="mobile-module" data-open="plannerDialog"><span class="module-bubble">📅</span><div><strong>Ortak Takvim</strong><small>Planlar</small></div></button>
+        <button class="mobile-module" data-open="todoDialog"><span class="module-bubble">✅</span><div><strong>Yapılacaklar</strong><small>Görevler</small></div></button>
+        <button class="mobile-module" data-open="expenseDialog"><span class="module-bubble">💸</span><div><strong>Harcamalar</strong><small>Ortak bütçe</small></div></button>
+        <button class="mobile-module" data-open="necatiBotDialog"><span class="module-bubble">🤖</span><div><strong>Necati Bot</strong><small>Konuş & sor</small></div></button>
+      </section>
     </main>
 
+
     <section id="moduleView" class="module-view" hidden>
-      <div class="module-toolbar"><button id="backBtn" class="ghost-btn">← Ana Sayfa</button><h2 id="moduleTitle"></h2></div>
+      <div class="module-screenbar"><button id="backBtn" class="round-icon">←</button><h2 id="moduleTitle"></h2><span class="screen-spacer"></span></div>
       <div id="moduleContent"></div>
     </section>
 
-    <nav class="bottom-nav" aria-label="Alt menü">
-      <button id="homeBtn" class="active">🏠<span>Ana Sayfa</span></button>
-      <button id="randomLoveBtn">❤️<span>Sevgi</span></button>
-      <button id="installBtn" hidden>📲<span>Yükle</span></button>
+    
+    <nav class="mobile-tabbar" aria-label="Ana menü">
+      <button type="button" class="tab-item active" data-tab="home"><span>⌂</span><small>Ana Sayfa</small></button>
+      <button type="button" class="tab-item" data-tab="calendar"><span>▣</span><small>Takvim</small></button>
+      <button type="button" class="tab-item tab-heart" data-tab="love"><span>♥</span><small>Biz</small></button>
+      <button type="button" class="tab-item" data-tab="tasks"><span>✓</span><small>Planlar</small></button>
+      <button type="button" class="tab-item" data-tab="profile"><span>●</span><small>Profil</small></button>
+      <button id="installBtn" hidden></button>
+      <button id="homeBtn" hidden></button>
+      <button id="randomLoveBtn" hidden></button>
     </nav>
+
   </div>
 
   <dialog id="settingsDialog">
@@ -121,20 +177,7 @@
   <dialog id="loveDialog"><div class="dialog-card"><button class="close-btn" onclick="this.closest('dialog').close()">×</button><div class="dialog-icon">❤️</div><h2>Necati'den Nisa'ya</h2><p id="loveDialogText" class="big-quote"></p><button class="primary-btn" onclick="this.closest('dialog').close()">Kalbime yazdım ❤️</button></div></dialog>
 
   <div id="toast" class="toast" role="status"></div>
-
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-storage-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-messaging-compat.js"></script>
-  <script src="firebase-config-v7.js"></script>
-  <script src="onesignal-config.js"></script>
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
-  <script src="cloud-v7.js"></script>
-  <script src="app-v7.js"></script>
-
-  <dialog id="plannerDialog" class="app-dialog">
+<dialog id="plannerDialog" class="app-dialog">
     <div class="dialog-shell wide-shell">
       <button class="close-btn" type="button" data-close="plannerDialog" aria-label="Kapat">✕</button>
       <div class="dialog-title-row">
@@ -327,5 +370,17 @@
     </div>
   </dialog>
 
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-messaging-compat.js"></script>
+    <script src="firebase-config-v7.js"></script>
+    <script src="onesignal-config.js"></script>
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
+    <script src="cloud-v7.js"></script>
+    <script src="app-v7.js"></script>
 </body>
 </html>
