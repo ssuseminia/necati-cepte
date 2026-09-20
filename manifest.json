@@ -4,8 +4,8 @@
   "description": "Nisa ve Necati için ortak planlar, anılar, görevler ve küçük sürprizler.",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#10091f",
-  "theme_color": "#10091f",
+  "background_color": "#1b0616",
+  "theme_color": "#1b0616",
   "orientation": "portrait-primary",
   "icons": [
     {

@@ -304,7 +304,7 @@ $('settingsDialog').addEventListener('close',()=>{
 });
 $('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='necati-cepte-v7-yedek.json';a.click();URL.revokeObjectURL(a.href)};$('importInput').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{state=merge(defaultState,JSON.parse(r.result));save();updateIdentity();$('settingsDialog').close();toast('Yedek yüklendi ✅')}catch{toast('Geçersiz yedek')}};r.readAsText(f)};$('randomLoveBtn').onclick=()=>{$('loveDialogText').textContent=`Seni seviyorum çünkü ${dailyJar()}.`;$('loveDialog').showModal()};
 window.addEventListener('necati:authchange',()=>{if(currentModule==='mood')renderMood()});window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBtn').hidden=false});$('installBtn').onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBtn').hidden=true};
-window.NECATI_APP_VERSION='10.6';if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{const regs=await navigator.serviceWorker.getRegistrations();for(const r of regs){const u=String(r.active?.scriptURL||r.installing?.scriptURL||r.waiting?.scriptURL||'');if(u&&!u.includes('OneSignalSDK')&&!u.includes('sw-v7.js'))await r.unregister()}const reg=await navigator.serviceWorker.register('./sw-v7.js',{scope:'./',updateViaCache:'none'});await reg.update()}catch(e){console.warn('SW v7',e)}});
+window.NECATI_APP_VERSION='10.7';if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{const regs=await navigator.serviceWorker.getRegistrations();for(const r of regs){const u=String(r.active?.scriptURL||r.installing?.scriptURL||r.waiting?.scriptURL||'');if(u&&!u.includes('OneSignalSDK')&&!u.includes('sw-v7.js'))await r.unregister()}const reg=await navigator.serviceWorker.register('./sw-v7.js',{scope:'./',updateViaCache:'none'});await reg.update()}catch(e){console.warn('SW v7',e)}});
 
 document.addEventListener('DOMContentLoaded',()=>setTimeout(hydratePersonalSettings,50));
 
@@ -1350,7 +1350,7 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(v105RefreshPersonalU
 window.addEventListener('focus',()=>setTimeout(v105RefreshPersonalUI,120));
 
 
-// ===== v10.6 Quality & reliability layer =====
+// ===== v10.7 Quality & reliability layer =====
 const V106_BACKUP_KEY='necati-cepte-backup-v106';
 let v106LastGoodState=null;
 
@@ -1507,3 +1507,114 @@ document.addEventListener('click',e=>{
 },true);
 
 window.addEventListener('orientationchange',()=>setTimeout(()=>{v104RefreshSafeUI?.();v105RefreshPersonalUI?.();},250));
+
+
+// ===== v10.7 Premium icon theme + account avatar personalization =====
+(function(){
+  const iconMap={
+    mood:'icons/modules/mood.png',
+    surprise:'icons/modules/surprise-calendar.png',
+    map:'icons/modules/memory-map.png',
+    story:'icons/modules/story.png',
+    dates:'icons/modules/special-days.png',
+    night:'icons/modules/night.png',
+    emergency:'icons/modules/emergency.png',
+    plannerDialog:'icons/modules/planner.png',
+    todoDialog:'icons/modules/todo.png',
+    expenseDialog:'icons/modules/wallet.png',
+    necatiBotDialog:'icons/modules/bot.png',
+    dateWheelDialog:'icons/modules/date-wheel.png',
+    statusDialog:'icons/modules/status.png',
+    randomSurpriseDialog:'icons/modules/random-surprise.png'
+  };
+
+  function setIllustrationIcon(holder,path){
+    if(!holder || !path)return;
+    holder.classList.add('has-illustration-icon');
+    holder.innerHTML='<img class="module-icon-img" src="'+path+'" alt="" loading="lazy" decoding="async">';
+  }
+
+  function applyPremiumIcons(){
+    document.querySelectorAll('.mobile-module,.quick-card,.today-card').forEach(btn=>{
+      const key=btn.dataset.module || btn.dataset.open;
+      const path=iconMap[key];
+      if(!path)return;
+      const holder=btn.querySelector('.module-bubble,.quick-line-icon,.today-icon');
+      setIllustrationIcon(holder,path);
+    });
+
+    const profileCalendarIcon=document.querySelector('#profileCalendarBtn .menu-line-icon');
+    setIllustrationIcon(profileCalendarIcon,iconMap.plannerDialog);
+    const profileSettingsIcon=document.querySelector('#profileSettingsBtn .menu-line-icon');
+    if(profileSettingsIcon) profileSettingsIcon.classList.remove('has-illustration-icon');
+
+    const accountBtn=document.getElementById('profileAccountBtn');
+    if(accountBtn && !document.getElementById('profileAccountActive')){
+      const info=document.createElement('div');
+      info.id='profileAccountActive';
+      info.className='profile-account-active';
+      info.innerHTML='<div class="profile-current-avatar"><img id="profileCurrentAvatar" src="assets/moods/necati-iyi.png" alt="Aktif hesap"></div><div><strong id="profileCurrentName">Aktif hesap</strong><small id="profileCurrentRoleText">Giriş yap / hesabı yönet</small></div>';
+      accountBtn.parentElement?.insertBefore(info, accountBtn.nextSibling);
+    }
+  }
+
+  function currentAvatarInfo(){
+    const role=(typeof v105CurrentRole==='function' && v105CurrentRole()) || (typeof v9Role==='function' && v9Role()) || 'ortak';
+    const mood=(window.state && state.mood && state.mood.today) || 'iyi';
+    const nisaName=state.settings?.partnerName || 'Nisa';
+    const necatiName=state.settings?.ownerName || 'Necati';
+    const email=(window.NecatiCloud?.user?.()?.email)||'';
+    if(role==='nisa') return {role,name:nisaName,src:(window.moodAssets?.nisa?.[mood]||'assets/moods/nisa-iyi.png'),text:email||'Nisa hesabı'};
+    if(role==='necati') return {role,name:necatiName,src:(window.moodAssets?.necati?.iyi||'assets/moods/necati-iyi.png'),text:email||'Necati hesabı'};
+    return {role:'ortak',name:'Ortak görünüm',src:(window.moodAssets?.necati?.iyi||'assets/moods/necati-iyi.png'),text:email||'Giriş yap / hesabı yönet'};
+  }
+
+  function applyAccountPersonalization(){
+    const info=currentAvatarInfo();
+    const userBtn=document.getElementById('userBtn');
+    if(userBtn){
+      userBtn.classList.add('account-avatar-button');
+      userBtn.innerHTML='<img id="userAvatarButton" class="account-avatar-mini" src="'+info.src+'" alt="'+info.name+'">';
+      userBtn.title=info.name;
+      userBtn.setAttribute('aria-label',info.name+' hesabı');
+    }
+    const currentAvatar=document.getElementById('profileCurrentAvatar');
+    if(currentAvatar) currentAvatar.src=info.src;
+    const currentName=document.getElementById('profileCurrentName');
+    if(currentName) currentName.textContent=info.name;
+    const currentRoleText=document.getElementById('profileCurrentRoleText');
+    if(currentRoleText) currentRoleText.textContent=info.text;
+
+    document.querySelectorAll('.profile-person').forEach(el=>el.classList.remove('is-active'));
+    if(info.role==='nisa') document.getElementById('profileNisaAvatar')?.closest('.profile-person')?.classList.add('is-active');
+    if(info.role==='necati') document.getElementById('profileNecatiAvatar')?.closest('.profile-person')?.classList.add('is-active');
+  }
+
+  const _origRefresh=window.v105RefreshPersonalUI;
+  if(typeof _origRefresh==='function'){
+    window.v105RefreshPersonalUI=function(){
+      _origRefresh();
+      applyPremiumIcons();
+      applyAccountPersonalization();
+      const pv=document.querySelector('.profile-version');
+      if(pv) pv.textContent='Necati Cepte • v10.7';
+      const brand=document.querySelector('.mobile-brand strong');
+      if(brand) brand.innerHTML='Necati Cepte <em>v10.7</em>';
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    applyPremiumIcons();
+    setTimeout(()=>{
+      try{window.v105RefreshPersonalUI?.()}catch(e){console.warn(e)}
+    },300);
+  });
+  window.addEventListener('necati:authchange',()=>setTimeout(()=>{
+    applyPremiumIcons();
+    applyAccountPersonalization();
+  },180));
+  window.addEventListener('focus',()=>setTimeout(()=>{
+    applyPremiumIcons();
+    applyAccountPersonalization();
+  },150));
+})();

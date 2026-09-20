@@ -670,7 +670,7 @@ dialog[open] .dialog-shell{animation:v105SheetContent .28s cubic-bezier(.18,.8,.
 
 
 /* =========================================================
-   NECATI CEPTE v10.6 — QUALITY / PERFORMANCE PASS
+   NECATI CEPTE v10.7 — QUALITY / PERFORMANCE PASS
    ========================================================= */
 *{box-sizing:border-box}
 html{background:var(--app-bg)}
@@ -769,3 +769,164 @@ h1,h2,h3,strong{font-kerning:normal}
     scroll-behavior:auto!important;
   }
 }
+
+
+/* =========================================================
+   NECATI CEPTE v10.7 — NEON ROMANTIC THEME
+   ========================================================= */
+:root{
+  --app-bg:#130611;
+  --app-bg-2:#22102a;
+  --app-card:rgba(255,255,255,.068);
+  --app-card-strong:rgba(255,255,255,.105);
+  --app-border:rgba(255,140,198,.16);
+  --app-text:#fff8fc;
+  --app-muted:rgba(255,239,247,.68);
+  --app-accent:#ff58a8;
+  --app-accent-2:#996fff;
+  --app-success:#6fe5b7;
+  --app-danger:#ff7a91;
+  --app-shadow:0 28px 70px rgba(0,0,0,.32);
+}
+
+body{
+  background:
+    radial-gradient(circle at 12% -6%, rgba(255,96,170,.34), transparent 22rem),
+    radial-gradient(circle at 88% 10%, rgba(153,111,255,.28), transparent 24rem),
+    radial-gradient(circle at 50% 110%, rgba(255,117,188,.12), transparent 20rem),
+    linear-gradient(180deg,#12050f 0%, #180917 38%, #25102e 100%)!important;
+}
+.app-shell{
+  background:linear-gradient(180deg, rgba(16,6,20,.98), rgba(31,13,41,.98))!important;
+}
+.mobile-appbar,.module-screenbar{
+  background:linear-gradient(180deg,rgba(21,7,20,.96),rgba(20,9,31,.86))!important;
+  border-bottom-color:rgba(255,140,198,.14)!important;
+  box-shadow:0 10px 34px rgba(0,0,0,.22)!important;
+}
+.brand-mark{
+  width:42px;height:42px;border-radius:15px!important;
+  box-shadow:0 12px 28px rgba(255,88,168,.23);
+  background:linear-gradient(145deg, rgba(255,103,176,.18), rgba(149,112,255,.16))!important;
+}
+.brand-mark img{transform:scale(1.03)}
+.mobile-brand strong{letter-spacing:-.02em}
+.mobile-hero-card{
+  position:relative;overflow:hidden;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255,99,173,.15), transparent 36%),
+    radial-gradient(circle at 100% 0%, rgba(153,111,255,.13), transparent 34%),
+    linear-gradient(145deg, rgba(255,111,174,.14), rgba(145,108,255,.10)),
+    rgba(255,255,255,.055)!important;
+  border:1px solid rgba(255,140,198,.18)!important;
+  box-shadow:0 22px 60px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.05)!important;
+}
+.mobile-hero-card::after{
+  content:"";position:absolute;inset:auto -10% -42% 34%;height:160px;
+  background:radial-gradient(circle, rgba(255,88,168,.20), transparent 68%);
+  pointer-events:none;filter:blur(8px);
+}
+.soft-pill{
+  background:linear-gradient(135deg, rgba(255,94,169,.20), rgba(160,122,255,.20))!important;
+  color:#ffe6f2!important;border:1px solid rgba(255,255,255,.06);
+}
+.hero-copy h1{font-size:28px;text-shadow:0 2px 14px rgba(255,88,168,.18)}
+.hero-copy p{max-width:30ch}
+.couple-avatars img{
+  border-color:rgba(255,189,222,.54)!important;
+  box-shadow:0 14px 26px rgba(0,0,0,.26), 0 0 0 1px rgba(255,255,255,.04) inset!important;
+}
+.home-mini-facts span,.relationship-mini > div,.today-card,.quick-card,.mobile-module,.glass-card,.card-panel,.list-card,.account-card,.profile-menu-card,.profile-cover,.profile-couple-card,.profile-stats-grid>div{
+  background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05))!important;
+  border-color:rgba(255,140,198,.13)!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.14);
+}
+.today-card,.quick-card,.mobile-module,.profile-menu-card button{
+  position:relative;overflow:hidden;
+}
+.today-card::before,.quick-card::before,.mobile-module::before{
+  content:"";position:absolute;left:0;top:0;width:100%;height:1px;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.26), transparent);
+}
+.today-card:hover,.quick-card:hover,.mobile-module:hover{
+  transform:translateY(-1px);
+  box-shadow:0 16px 32px rgba(0,0,0,.18), 0 0 0 1px rgba(255,110,180,.06);
+}
+.today-icon{
+  width:40px;height:40px;border-radius:14px;display:grid;place-items:center;
+  background:linear-gradient(135deg, rgba(255,91,166,.22), rgba(153,111,255,.20));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
+}
+.module-bubble,.agenda-icon,.menu-line-icon{
+  background:linear-gradient(135deg, rgba(255,94,170,.22), rgba(154,116,255,.22))!important;
+  color:#ffeef6!important;
+  box-shadow:0 10px 24px rgba(255,88,168,.10);
+}
+.quick-line-icon{
+  width:29px;height:29px;padding:0;border-radius:10px;display:grid;place-items:center;
+  color:#ffd8eb;
+}
+.quick-card strong,.mobile-module strong,.today-card strong{letter-spacing:-.015em}
+.quick-card small,.mobile-module small,.today-card small,.agenda-item small,.mini-head small,.section-mobile-head small,.mobile-brand small,.today-date{color:var(--app-muted)!important}
+.danger-quick,.danger-mobile{
+  background:linear-gradient(145deg, rgba(255,87,118,.20), rgba(255,255,255,.05))!important;
+  border-color:rgba(255,111,145,.22)!important;
+}
+.mobile-tabbar{
+  background:rgba(20,8,25,.92)!important;
+  border-top:1px solid rgba(255,140,198,.12)!important;
+  box-shadow:0 -18px 42px rgba(0,0,0,.38)!important;
+}
+.tab-item{transition:transform .18s ease,color .18s ease!important}
+.tab-item.active{color:#fff!important;text-shadow:0 0 16px rgba(255,91,166,.18)}
+.tab-item.active::after{height:4px;border-radius:999px;box-shadow:0 0 14px rgba(255,88,168,.45)}
+.tab-heart .tab-icon{
+  background:linear-gradient(135deg,#ff5ca8,#9d72ff)!important;
+  box-shadow:0 12px 30px rgba(255,88,168,.35)!important;
+}
+.round-icon,.ghost-mini,.ghost-btn,.danger-btn,input,textarea,select{
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+}
+input,textarea,select{
+  background:rgba(255,255,255,.07)!important;
+  border-color:rgba(255,140,198,.15)!important;
+}
+.primary-btn{
+  background:linear-gradient(135deg,#ff5ca8,#a170ff)!important;
+  box-shadow:0 16px 34px rgba(255,88,168,.24)!important;
+}
+.primary-btn:hover{filter:saturate(1.08)}
+.profile-cover{
+  background:
+    radial-gradient(circle at top right, rgba(255,96,170,.18), transparent 35%),
+    radial-gradient(circle at bottom left, rgba(160,122,255,.16), transparent 35%),
+    linear-gradient(145deg, rgba(255,255,255,.09), rgba(255,255,255,.05))!important;
+}
+.profile-app-icon,.profile-person img{
+  box-shadow:0 14px 26px rgba(0,0,0,.18), 0 0 0 1px rgba(255,255,255,.06) inset;
+}
+.toast{
+  background:rgba(31,13,41,.92)!important;
+  border-color:rgba(255,140,198,.18)!important;
+}
+@media(min-width:700px){
+  body{background:radial-gradient(circle at 50% 0%, rgba(255,88,168,.16), transparent 30rem), linear-gradient(180deg,#0e040d,#17081c 40%, #0b0612 100%)!important}
+  .app-shell{border-color:rgba(255,140,198,.16)!important;box-shadow:0 45px 120px rgba(0,0,0,.56), 0 0 0 1px rgba(255,255,255,.03) inset!important}
+}
+
+
+/* ===== v10.7 Premium icon pack + account avatars ===== */
+.has-illustration-icon{padding:0!important;overflow:hidden}
+.module-icon-img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.quick-line-icon .module-icon-img,.menu-line-icon .module-icon-img{border-radius:14px}
+.today-icon.has-illustration-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:15px;background:var(--app-card-strong)!important}
+.quick-line-icon.has-illustration-icon,.menu-line-icon.has-illustration-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:15px;background:var(--app-card-strong)!important;overflow:hidden}
+.round-icon.account-avatar-button{padding:0;overflow:hidden;border-radius:16px}
+.account-avatar-mini{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
+.profile-current-avatar{width:44px;height:44px;border-radius:14px;overflow:hidden;display:grid;place-items:center;background:var(--app-card-strong);border:1px solid var(--app-border)}
+.profile-current-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.profile-account-active{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid var(--app-border)}
+.profile-account-active strong{font-size:13px}
+.profile-account-active small{display:block;color:var(--app-muted);font-size:10px;margin-top:2px}
+.profile-person.is-active img{box-shadow:0 0 0 3px rgba(255,118,195,.28),0 12px 25px rgba(255,118,195,.18)}
+.profile-person.is-active strong{color:var(--app-accent)}

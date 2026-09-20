@@ -179,7 +179,7 @@ Stellarium canlı görünümü üçüncü taraf web hizmetidir; yüklenmezse alt
 - Uygulama sürüm değişkeni v10.5'e güncellendi.
 - Dokunma, scroll ve dialog geçişleri daha akıcı hale getirildi.
 
-## v10.6 Quality Upgrade
+## v10.7 Quality Upgrade
 - Açılışta kısa ve temiz bir yükleme ekranı eklendi; ilk boyama sırasında oluşan görsel sıçramalar azaltıldı.
 - İnternet kesildiğinde üstte çevrimdışı durumu gösterilir; bağlantı geri geldiğinde kısa bilgi verir.
 - Global JavaScript hata yakalama eklendi; tek bir hata tüm uygulamayı sessizce kırmasın diye koruma katmanı oluşturuldu.
