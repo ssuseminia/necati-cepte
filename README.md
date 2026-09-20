@@ -1,23 +1,12 @@
-# Necati Cepte ❤️
+# Necati Cepte v3 ❤️
 
-Nisa & Necati için kurulabilir PWA.
+PWA + Firebase sürümü.
 
-## Çalışan modüller
-- İlişki sayacı
-- Nisa Modu: ruh hali + yaklaşık döngü takibi
-- Sürpriz Takvimi: tarihi gelene kadar kilitli kutular
-- Aşk Kavanozu: günlük kart + özel kart ekleme
-- Anı Haritası: OpenStreetMap üzerinde konum, not, fotoğraf
-- Bizim Gökyüzümüz: seçili parlak yıldızların tarih/konuma göre gerçek konum hesabı
-- Hikâyemiz: sezon/bölüm yapısı ve fotoğraf
-- Özel Günler: geri sayım
-- İyi Geceler arşivi
-- Acil Necati: telefon paylaşım menüsüne çağrı mesajı gönderme
-- Doğduğun Gün: yaşam istatistikleri
-- Ayarlar + JSON yedekleme/geri yükleme
+- Nisa / Necati ayrı e-posta-şifre girişi
+- Firestore ile gerçek zamanlı ortak veri
+- Firebase Storage ile fotoğraf yükleme
+- Acil Necati için anlık uygulama içi uyarı
+- FCM + Cloud Function ile arka plan push altyapısı
+- Firebase kurulmamışsa localStorage ile çevrimdışı/yerel çalışma
 
-## Yayınlama
-GitHub Pages'te repo kök dizininden yayınlayın. Değişikliklerden sonra tarayıcı eski sürümü gösterirse sayfayı bir kez yenileyin; service worker v2.1 eski cache'i temizler.
-
-## Veri saklama
-Kullanıcı verileri cihazdaki localStorage içinde tutulur; GitHub'a veya başka bir sunucuya otomatik gönderilmez. Harita döşemeleri ve Leaflet dosyaları internetten yüklenir.
+Kurulum için `FIREBASE-KURULUM.md` dosyasını oku.

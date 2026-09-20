@@ -19,7 +19,7 @@
     <header class="hero">
       <div class="top-row">
         <div class="badge" id="coupleBadge">Nisa ❤️ Necati</div>
-        <button class="icon-btn" id="settingsBtn" aria-label="Ayarlar">⚙️</button>
+        <div class="top-actions"><span class="cloud-status" id="cloudStatus">● Yerel</span><button class="icon-btn" id="userBtn" aria-label="Hesap">👤</button><button class="icon-btn" id="settingsBtn" aria-label="Ayarlar">⚙️</button></div>
       </div>
       <h1>Necati Cepte</h1>
       <p class="subtitle">Sevgi, anılar ve küçük sürprizler hep yanında.</p>
@@ -89,11 +89,37 @@
     </form>
   </dialog>
 
+
+  <dialog id="authDialog">
+    <div class="dialog-card">
+      <div class="dialog-head"><div><div class="dialog-icon">☁️</div><h2>Necati Cepte Bulut</h2></div><button class="close-btn" onclick="this.closest('dialog').close()">×</button></div>
+      <div id="authSetupWarning" class="setup-warning" hidden>Firebase henüz bağlanmamış. ZIP içindeki <b>FIREBASE-KURULUM.md</b> dosyasındaki adımları tamamla.</div>
+      <div id="loggedOutBox">
+        <p class="muted">Nisa ve Necati için Firebase Authentication'da oluşturduğun hesapla giriş yap.</p>
+        <label>E-posta<input id="authEmail" type="email" autocomplete="email" placeholder="ornek@mail.com"></label>
+        <label>Şifre<input id="authPassword" type="password" autocomplete="current-password" placeholder="••••••••"></label>
+        <div class="actions"><button id="loginBtn" class="primary-btn">Giriş yap ❤️</button></div>
+      </div>
+      <div id="loggedInBox" hidden>
+        <div class="account-card"><strong id="accountEmail">—</strong><span id="syncInfo">Bulut senkronizasyonu açık</span></div>
+        <div class="actions"><button id="enablePushBtn" class="primary-btn">🔔 Bildirimleri aç</button><button id="logoutBtn" class="ghost-btn">Çıkış yap</button></div>
+        <p class="tiny">Aynı Firebase projesindeki Nisa ve Necati hesapları aynı çift verisini görür.</p>
+      </div>
+    </div>
+  </dialog>
+
   <dialog id="loveDialog"><div class="dialog-card"><button class="close-btn" onclick="this.closest('dialog').close()">×</button><div class="dialog-icon">❤️</div><h2>Necati'den Nisa'ya</h2><p id="loveDialogText" class="big-quote"></p><button class="primary-btn" onclick="this.closest('dialog').close()">Kalbime yazdım ❤️</button></div></dialog>
 
   <div id="toast" class="toast" role="status"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-messaging-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="cloud.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
