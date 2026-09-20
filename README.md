@@ -135,3 +135,14 @@ Stellarium canlı görünümü üçüncü taraf web hizmetidir; yüklenmezse alt
 - Doğduğun Gün modülü arayüzden kaldırıldı.
 - Hızlı erişimdeki Aşk Kavanozu butonu kaldırıldı.
 - Eski kayıtlar silinmez; sadece artık uygulama arayüzünde gösterilmez.
+
+## v10.3.2 interaction hotfix
+- v10.3 dialogları JavaScript'ten sonra geldiği için buton eventlerinin bağlanmaması düzeltildi.
+- Tüm scriptler artık dialoglardan sonra, body'nin en sonunda yüklenir.
+- Hızlı Durum butonları event delegation ile garanti altına alındı ve push gönderir.
+- Rastgele Sürpriz Modu görev çekme / kabul etme düzeltildi.
+- Sürpriz görev havuzu 30 daha kaliteli göreve çıkarıldı.
+- Date Çarkı düzeltildi.
+- Çark sonucu otomatik Ortak Takvim'e eklenir.
+- Çark sonucu karşı tarafa otomatik push olarak gönderilir.
+- Manuel “Takvime ekle” butonu kaldırıldı; çift kayıt riski engellendi.

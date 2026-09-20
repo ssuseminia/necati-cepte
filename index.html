@@ -23,7 +23,7 @@
         <div class="brand-mark">❤️</div>
         <div>
           <small id="mobileGreeting">Bugün de birlikte</small>
-          <strong>Necati Cepte <em>v10.3.1</em></strong>
+          <strong>Necati Cepte <em>v10.3.2</em></strong>
         </div>
       </div>
       <div class="mobile-actions">
@@ -438,21 +438,7 @@
       </div>
     </div>
   </dialog>
-
-
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-storage-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-messaging-compat.js"></script>
-    <script src="firebase-config-v7.js"></script>
-    <script src="onesignal-config.js"></script>
-    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
-    <script src="cloud-v7.js"></script>
-    <script src="app-v7.js"></script>
-
-  <dialog id="dateWheelDialog" class="app-dialog">
+<dialog id="dateWheelDialog" class="app-dialog">
     <div class="dialog-shell">
       <button class="close-btn" type="button" data-close="dateWheelDialog">✕</button>
       <div class="feature-hero">
@@ -466,7 +452,7 @@
       </div>
       <div id="dateWheelResult" class="wheel-result">Hazırsanız çarkı döndürün 🎡</div>
       <button type="button" id="spinDateWheelBtn" class="primary-btn big-feature-btn">Çarkı Döndür 🎲</button>
-      <button type="button" id="saveDateWheelBtn" class="ghost-btn" hidden>📅 Takvime ekle</button>
+      <div id="dateWheelAutoInfo" class="wheel-auto-info">Çıkan sonuç otomatik olarak ortak takvime eklenecek ve karşı tarafa bildirilecek ❤️</div>
     </div>
   </dialog>
 
@@ -499,7 +485,7 @@
         <div class="surprise-machine-top">✨ BUGÜNÜN MİNİ GÖREVİ ✨</div>
         <div id="randomSurpriseEmoji" class="surprise-big-emoji">❤️</div>
         <h3 id="randomSurpriseTitle">Bir görev çek bakalım</h3>
-        <p id="randomSurpriseText">Bugüne küçük bir sürpriz ekleyelim.</p>
+        <p id="randomSurpriseText">Bugüne küçük ama gerçekten güzel bir sürpriz ekleyelim.</p>
       </div>
       <div class="actions">
         <button type="button" id="drawSurpriseBtn" class="primary-btn">Yeni Görev Çek 🎁</button>
@@ -509,5 +495,17 @@
     </div>
   </dialog>
 
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+      <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-storage-compat.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-messaging-compat.js"></script>
+      <script src="firebase-config-v7.js"></script>
+      <script src="onesignal-config.js"></script>
+      <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
+      <script src="cloud-v7.js"></script>
+      <script src="app-v7.js"></script>
 </body>
 </html>

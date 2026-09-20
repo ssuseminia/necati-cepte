@@ -921,7 +921,9 @@ const v103DateIdeas=[
   {emoji:'🎮',title:'Oyun Gecesi',text:'Birlikte oyun oynayın. Kaybeden içeceği hazırlasın 😄'},
   {emoji:'📸',title:'Fotoğraf Date',text:'Birlikte 5 yeni fotoğraf çekin. En kötüsünü de saklayın 😄'},
   {emoji:'🍳',title:'Birlikte Yemek',text:'Mutfağa birlikte girin ve bir şeyler hazırlayın.'},
-  {emoji:'🚶',title:'Akşam Yürüyüşü',text:'Kısa bir yürüyüş yapıp gününüzü birbirinize anlatın.'}
+  {emoji:'🚶',title:'Akşam Yürüyüşü',text:'Kısa bir yürüyüş yapıp gününüzü birbirinize anlatın.'},
+  {emoji:'🎧',title:'Şarkı Değişimi',text:'Birbirinize 3 şarkı seçip neden seçtiğinizi anlatın.'},
+  {emoji:'🌙',title:'Gece Atıştırması',text:'Gece küçük bir atıştırmalık alıp birlikte kaçamak yapın.'}
 ];
 let v103WheelRotation=0,v103WheelBusy=false,v103SelectedDate=null;
 
@@ -945,30 +947,64 @@ function v103DrawWheel(){
   x.strokeStyle='rgba(255,255,255,.18)';x.lineWidth=5;x.stroke();
   x.textAlign='center';x.textBaseline='middle';x.fillStyle='#fff';x.font='700 24px system-ui';x.fillText('❤️',cx,cy);
 }
-function v103SpinWheel(){
-  if(v103WheelBusy)return;
-  const c=$('dateWheelCanvas');if(!c)return;
-  v103WheelBusy=true;$('spinDateWheelBtn').disabled=true;
-  const index=Math.floor(Math.random()*v103DateIdeas.length);
-  const seg=360/v103DateIdeas.length;
-  const target=360*5 + (360-(index*seg+seg/2));
-  v103WheelRotation+=target;
-  c.style.transform=`rotate(${v103WheelRotation}deg)`;
-  setTimeout(()=>{
-    v103SelectedDate=v103DateIdeas[index];
-    $('dateWheelResult').innerHTML=`<strong>${v103SelectedDate.emoji} ${v103SelectedDate.title}</strong><small>${v103SelectedDate.text}</small>`;
-    $('saveDateWheelBtn').hidden=false;
-    v103WheelBusy=false;$('spinDateWheelBtn').disabled=false;
-  },2900);
-}
-function v103SaveWheelToCalendar(){
+async function v103AutoAddWheelResult(){
   if(!v103SelectedDate)return;
   const date=new Date().toISOString().slice(0,10);
   state.plans=state.plans||[];
-  state.plans.push({id:uid(),title:v103SelectedDate.emoji+' '+v103SelectedDate.title,date,time:'',owner:'ortak',category:'date',reminder:0,note:v103SelectedDate.text,createdAt:Date.now(),createdBy:actor()});
-  save();toast('Date fikri takvime eklendi ❤️');
-  v9RenderCalendar?.();v10RefreshDashboard?.();
-  v9Notify('❤️ Date planı eklendi',`${actor()} çarktan “${v103SelectedDate.title}” seçti`,'plan','planner').catch(()=>{});
+
+  // Same wheel result spun repeatedly within a few seconds should not duplicate.
+  const recent=state.plans.find(p=>p.source==='date-wheel' && p.wheelKey===v103SelectedDate.title && Date.now()-Number(p.createdAt||0)<15000);
+  if(recent)return;
+
+  const plan={
+    id:uid(),
+    title:v103SelectedDate.emoji+' '+v103SelectedDate.title,
+    date,
+    time:'',
+    owner:'ortak',
+    category:'date',
+    reminder:0,
+    note:v103SelectedDate.text,
+    source:'date-wheel',
+    wheelKey:v103SelectedDate.title,
+    createdAt:Date.now(),
+    createdBy:actor()
+  };
+  state.plans.push(plan);
+  save();
+  v9RenderCalendar?.();
+  v10RefreshDashboard?.();
+  toast(`${v103SelectedDate.title} takvime eklendi ❤️`);
+  await v9Notify(
+    '🎲 Date çarkı döndü!',
+    `${actor()} çarkı çevirdi: ${v103SelectedDate.emoji} ${v103SelectedDate.title} çıktı ve ortak takvime eklendi ❤️`,
+    'date-wheel',
+    'planner'
+  ).catch(()=>{});
+}
+
+function v103SpinWheel(){
+  if(v103WheelBusy)return;
+  const c=$('dateWheelCanvas');if(!c)return;
+  v103WheelBusy=true;
+  const spinBtn=$('spinDateWheelBtn');
+  if(spinBtn){spinBtn.disabled=true;spinBtn.textContent='Dönüyor... 🎡';}
+  const result=$('dateWheelResult');
+  if(result)result.innerHTML='<strong>Çark dönüyor 🎲</strong><small>Bugünkü plan birazdan belli olacak...</small>';
+
+  const index=Math.floor(Math.random()*v103DateIdeas.length);
+  const seg=360/v103DateIdeas.length;
+  const target=360*5+(360-(index*seg+seg/2));
+  v103WheelRotation+=target;
+  c.style.transform=`rotate(${v103WheelRotation}deg)`;
+
+  setTimeout(async()=>{
+    v103SelectedDate=v103DateIdeas[index];
+    if(result)result.innerHTML=`<strong>${v103SelectedDate.emoji} ${v103SelectedDate.title}</strong><small>${v103SelectedDate.text}</small>`;
+    await v103AutoAddWheelResult();
+    v103WheelBusy=false;
+    if(spinBtn){spinBtn.disabled=false;spinBtn.textContent='Bir Daha Döndür 🎲';}
+  },2900);
 }
 
 function v103RenderLastStatus(){
@@ -986,18 +1022,36 @@ async function v103SendStatus(text,icon){
 }
 
 const v103SurpriseTasks=[
-  {emoji:'☕',title:'Kahve Operasyonu',text:'Karşı tarafın sevdiği içeceği söylemeden hazırla ya da al.'},
-  {emoji:'💌',title:'Mini Aşk Notu',text:'Tek cümlelik ama içten bir mesaj bırak.'},
-  {emoji:'🤗',title:'Sarılma Görevi',text:'Hiçbir sebep yokken en az 10 saniye sarıl.'},
-  {emoji:'🍫',title:'Küçük Tatlı',text:'Sevdiği minik bir atıştırmalık sürprizi yap.'},
-  {emoji:'📸',title:'Anı Yakala',text:'Bugün birlikte bir fotoğraf çekip sakla.'},
-  {emoji:'🎵',title:'Şarkı Gönder',text:'Onu hatırlatan bir şarkı gönder.'},
-  {emoji:'📝',title:'3 Güzel Şey',text:'Onun hakkında sevdiğin 3 şeyi söyle.'},
-  {emoji:'🧹',title:'Bir İşini Hafiflet',text:'Bugün onun yapacağı küçük bir işi sen üstlen.'},
-  {emoji:'🍽️',title:'Yemek Sürprizi',text:'Ne yiyeceğini düşünmesine gerek kalmadan bir plan yap.'},
-  {emoji:'📞',title:'Sesini Duy',text:'Müsait olduğu anda kısa bir arama yap ve sadece halini sor.'},
-  {emoji:'🌙',title:'Gece Mesajı',text:'Uyumadan önce bugün onda sevdiğin bir şeyi yaz.'},
-  {emoji:'🌷',title:'Nedensiz Jest',text:'Bugün tamamen sebepsiz küçük bir jest yap.'}
+  {emoji:'☕',title:'Kahvesini Sen Hazırla',text:'Nasıl sevdiğini biliyorsan hiç sormadan sevdiği kahveyi hazırla veya al.'},
+  {emoji:'💌',title:'Kalpten 3 Cümle',text:'Onun hakkında sevdiğin 3 şeyi kısa ama gerçekten içten şekilde yaz.'},
+  {emoji:'🤗',title:'20 Saniyelik Sarılma',text:'Hiçbir şey konuşmadan en az 20 saniye sarılın.'},
+  {emoji:'🍫',title:'Sevdiği Şeyi Kap Gel',text:'En sevdiği küçük atıştırmalığı haber vermeden getir.'},
+  {emoji:'📸',title:'Bugünün Fotoğrafı',text:'Bugünü hatırlatacak doğal bir fotoğrafınızı çekin ve saklayın.'},
+  {emoji:'🎵',title:'Bizi Anlatan Şarkı',text:'Onu veya ilişkinizi hatırlatan bir şarkı gönder ve nedenini tek cümleyle yaz.'},
+  {emoji:'📝',title:'Mini Mektup',text:'Telefon notlarına bile olsa bugün ona küçük bir aşk mektubu yaz.'},
+  {emoji:'🧹',title:'Yükünü Hafiflet',text:'Bugün onun yapacağı bir işi söylemeden sen tamamla.'},
+  {emoji:'🍽️',title:'Yemeği Sen Planla',text:'Bugün “ne yiyelim?” sorusunu ona bırakma; planı sen yap.'},
+  {emoji:'📞',title:'Sadece Halini Sor',text:'Arayıp çözüm vermeden sadece gününün nasıl geçtiğini dinle.'},
+  {emoji:'🌙',title:'Uyumadan Önce',text:'Uyumadan önce bugün onda en sevdiğin şeyi söyle.'},
+  {emoji:'🌷',title:'Nedensiz Jest',text:'Özel gün beklemeden tamamen sebepsiz küçük bir jest yap.'},
+  {emoji:'🥐',title:'Sabah Sürprizi',text:'Sabahını güzelleştirecek küçük bir kahvaltı veya içecek sürprizi hazırla.'},
+  {emoji:'🎞️',title:'Eski Bir Anı',text:'Eski fotoğraflardan sevdiğin bir tanesini bulup “bunu hatırlıyor musun?” diye gönder.'},
+  {emoji:'🫶',title:'Teşekkür Et',text:'İlişkide yaptığı ve bazen alışkanlıktan fark etmediğin bir şey için teşekkür et.'},
+  {emoji:'🍨',title:'Tatlı Daveti',text:'Bugün küçük bir tatlı molası planla ve karşı tarafa sadece hazırlanmasını söyle.'},
+  {emoji:'🧸',title:'Konfor Görevi',text:'Yorgunsa battaniye, içecek veya sevdiği bir şeyi hazır edip rahat etmesini sağla.'},
+  {emoji:'🗺️',title:'Mini Kaçamak',text:'Yakınlarda daha önce gitmediğiniz bir yere 30-60 dakikalık küçük gezi planla.'},
+  {emoji:'🎲',title:'Onun Seçimi',text:'Bugün bir konuda seçimi tamamen ona bırak ve itiraz etmeden eşlik et 😄'},
+  {emoji:'💬',title:'İlk Gün Sorusu',text:'Birbirinize “ilk tanıştığımızda benim hakkımda ne düşünmüştün?” diye sorun.'},
+  {emoji:'📵',title:'30 Dakika Biz',text:'30 dakika telefonları kenara bırakıp sadece sohbet edin.'},
+  {emoji:'💆',title:'Dinlenme Hediyesi',text:'Omuz masajı, saçını okşama veya sadece dinlenebileceği sakin bir ortam hazırla.'},
+  {emoji:'💐',title:'Küçük Çiçek',text:'Büyük bir buket değil; tek bir çiçek bile olsa sebepsizce ver.'},
+  {emoji:'😂',title:'Güldürme Görevi',text:'Onu gerçekten güldürecek bir video, anı veya saçma bir şey bul.'},
+  {emoji:'❤️',title:'Seni Seçiyorum',text:'Bugün neden hâlâ onu seçtiğini tek cümlede söyle.'},
+  {emoji:'🕯️',title:'Evde Romantik Köşe',text:'Işıkları biraz kıs, müzik aç ve sıradan bir akşamı 20 dakikalığına özel hale getir.'},
+  {emoji:'🍿',title:'Onun Filmi',text:'Bu sefer filmi tamamen o seçsin; yorum yapmadan birlikte izleyin 😄'},
+  {emoji:'📱',title:'Beklenmedik Ses Kaydı',text:'Günün ortasında kısa ve içten bir ses kaydı gönder.'},
+  {emoji:'💋',title:'Öpücük Borcu',text:'Gördüğün ilk fırsatta açıklama yapmadan bir öpücük ver 😄❤️'},
+  {emoji:'🌃',title:'Gece Havası',text:'10 dakika bile olsa dışarı çıkıp birlikte gece havası alın.'}
 ];
 let v103CurrentSurprise=null;
 function v103DrawSurprise(){
@@ -1032,13 +1086,44 @@ async function v103AcceptSurprise(){
 // v10.3 dialog open initialization
 document.addEventListener('click',e=>{
   const opener=e.target.closest?.('[data-open]');
-  if(opener?.dataset.open==='dateWheelDialog')setTimeout(v103DrawWheel,80);
+  if(opener?.dataset.open==='dateWheelDialog')setTimeout(()=>{
+    v103DrawWheel();
+    const r=$('dateWheelResult');
+    if(r&&!v103WheelBusy)r.innerHTML='<strong>Hazırsanız çarkı döndürün 🎡</strong><small>Sonuç otomatik takvime eklenecek.</small>';
+  },80);
   if(opener?.dataset.open==='statusDialog')setTimeout(v103RenderLastStatus,60);
-  if(opener?.dataset.open==='randomSurpriseDialog')setTimeout(v103RenderSurpriseStreak,60);
+  if(opener?.dataset.open==='randomSurpriseDialog')setTimeout(()=>{
+    v103RenderSurpriseStreak();
+    if(!v103CurrentSurprise)v103DrawSurprise();
+  },60);
 });
-$('spinDateWheelBtn')?.addEventListener('click',v103SpinWheel);
-$('saveDateWheelBtn')?.addEventListener('click',v103SaveWheelToCalendar);
-document.querySelectorAll('.status-action').forEach(b=>b.addEventListener('click',()=>v103SendStatus(b.dataset.status,b.dataset.statusIcon)));
-$('drawSurpriseBtn')?.addEventListener('click',v103DrawSurprise);
-$('acceptSurpriseBtn')?.addEventListener('click',v103AcceptSurprise);
+
 document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>{v103DrawWheel();v103RenderSurpriseStreak()},200)});
+
+
+// v10.3.2 robust delegated actions: works even if dialogs are rendered late/cached.
+document.addEventListener('click',e=>{
+  const b=e.target.closest?.('button');
+  if(!b)return;
+
+  if(b.id==='spinDateWheelBtn'){
+    e.preventDefault();
+    v103SpinWheel();
+    return;
+  }
+  if(b.classList.contains('status-action')){
+    e.preventDefault();
+    v103SendStatus(b.dataset.status,b.dataset.statusIcon);
+    return;
+  }
+  if(b.id==='drawSurpriseBtn'){
+    e.preventDefault();
+    v103DrawSurprise();
+    return;
+  }
+  if(b.id==='acceptSurpriseBtn'){
+    e.preventDefault();
+    v103AcceptSurprise();
+    return;
+  }
+});
