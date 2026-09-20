@@ -27,3 +27,28 @@
 .bubble.me{align-self:flex-end;background:linear-gradient(135deg,#ff7ab6,#9d74ff);color:white}
 .bot-compose{display:flex;gap:.6rem;margin-top:.75rem}
 .bot-compose input{flex:1}
+
+/* ===== v9.0 Planner / Todo / Expenses ===== */
+.wide-shell{width:min(960px,94vw);max-width:960px}
+.dialog-title-row,.calendar-toolbar{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.calendar-toolbar{margin:1rem 0}
+.planner-layout{display:grid;grid-template-columns:1.05fr .95fr;gap:1rem}
+.card-panel{padding:1rem;border-radius:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08)}
+.two-col{grid-template-columns:repeat(2,minmax(0,1fr))}
+.v9-calendar .cal-day.selected{outline:2px solid rgba(255,122,182,.9)}
+.v9-calendar .cal-day.today{box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+.row-actions{display:flex;gap:.45rem;flex-wrap:wrap}
+.todo-main{min-width:0;display:grid;gap:.25rem}
+.mini-stats{display:flex;gap:.75rem;flex-wrap:wrap;margin:1rem 0}
+.mini-stats span{padding:.55rem .8rem;border-radius:999px;background:rgba(255,255,255,.08)}
+.expense-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin:1rem 0}
+.expense-stats>div{padding:.9rem;border-radius:16px;background:rgba(255,255,255,.08);display:grid;gap:.2rem}
+.expense-stats small{opacity:.7}.expense-stats strong{font-size:1.15rem}
+.compact-select{border-radius:12px;padding:.55rem .7rem}
+.bot-quick{display:flex;gap:.5rem;flex-wrap:wrap;margin:.6rem 0}
+.bot-quick button{border:0;border-radius:999px;padding:.5rem .75rem;background:rgba(255,255,255,.1);color:inherit}
+@media(max-width:760px){
+  .planner-layout,.two-col{grid-template-columns:1fr}
+  .expense-stats{grid-template-columns:1fr}
+  .wide-shell{width:96vw}
+}

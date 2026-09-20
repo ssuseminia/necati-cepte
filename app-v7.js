@@ -233,6 +233,7 @@ $('saveSettings')?.addEventListener('click',()=>{
   toast('Ayarlar kaydedildi ❤️');
 });
 
+// v8.0.2: Modül açılışında push YOK. Sadece gerçek veri değişikliğinde bildirim gönderilir.
 document.addEventListener('click',e=>{
   const opener=e.target.closest?.('[data-open]');
   if(!opener)return;
@@ -242,14 +243,12 @@ document.addEventListener('click',e=>{
   if(id==='plannerDialog'){
     renderPlanner();
     openAppDialog(id);
-    notify?.('📅 Ortak Takvim açıldı',`${actor()} ortak takvime girdi`,'module','planner').catch(()=>{});
     return;
   }
 
   if(id==='todoDialog'){
     renderTodos();
     openAppDialog(id);
-    notify?.('✅ Yapılacaklar açıldı',`${actor()} yapılacaklar listesine girdi`,'module','todo').catch(()=>{});
     return;
   }
 
@@ -265,7 +264,7 @@ document.addEventListener('click',e=>{
 $('calPrev')?.addEventListener('click',()=>{calendarCursor.setMonth(calendarCursor.getMonth()-1);renderPlanner()});
 $('calNext')?.addEventListener('click',()=>{calendarCursor.setMonth(calendarCursor.getMonth()+1);renderPlanner()});
 
-$('addPlanBtn')?.addEventListener('click',async()=>{
+$('legacyAddPlanBtn')?.addEventListener('click',async()=>{
   const title=$('planTitle')?.value.trim(), date=$('planDate')?.value, time=$('planTime')?.value, note=$('planNote')?.value.trim();
   if(!title||!date)return toast('Plan başlığı ve tarih gerekli 📅');
   state.plans=state.plans||[];
@@ -276,7 +275,7 @@ $('addPlanBtn')?.addEventListener('click',async()=>{
   notify?.('📅 Yeni ortak plan',`${actor()} “${title}” planını ekledi • ${fmtDateTimeTR(date,time)}`,'plan','planner').catch(()=>{});
 });
 
-$('addTodoBtn')?.addEventListener('click',async()=>{
+$('legacyAddTodoBtn')?.addEventListener('click',async()=>{
   const text=$('todoText')?.value.trim();
   if(!text)return toast('Görev yazmalısın ✅');
   state.todos=state.todos||[];
@@ -286,14 +285,14 @@ $('addTodoBtn')?.addEventListener('click',async()=>{
   notify?.('✅ Yeni görev',`${actor()} “${text}” görevini ekledi`,'todo','todo').catch(()=>{});
 });
 
-$('botSendBtn')?.addEventListener('click',()=>{
+$('legacyBotSendBtn')?.addEventListener('click',()=>{
   const inp=$('botInput');const text=inp?.value.trim();if(!text)return;
   state.botHistory=state.botHistory||[];
   state.botHistory.push({from:'user',text,at:Date.now()});
   state.botHistory.push({from:'bot',text:botReply(text),at:Date.now()+1});
   inp.value='';save();renderBot();
 });
-$('botInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('botSendBtn')?.click()}});
+$('botInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('legacyBotSendBtn')?.click()}});
 
 document.addEventListener('DOMContentLoaded',()=>{
   hydrateV8Settings();
@@ -305,3 +304,242 @@ $('userBtn')?.addEventListener('click',()=>{
   if(window.openNecatiAuth){ window.openNecatiAuth(); return; }
   openAppDialog('authDialog');
 });
+
+
+// ===== Necati Cepte v9.0 =====
+let v9CalendarCursor = new Date();
+let v9SelectedDate = new Date().toISOString().slice(0,10);
+
+function v9Open(id){
+  const d=$(id);
+  if(!d)return;
+  try{ if(!d.open && d.showModal) d.showModal(); else d.setAttribute('open',''); }
+  catch{ d.setAttribute('open',''); d.style.display='block'; }
+}
+function v9Close(id){ const d=$(id); if(!d)return; try{d.close()}catch{d.removeAttribute('open');d.style.display='none'} }
+function v9Date(v){ if(!v)return ''; try{return new Date(v+'T12:00:00').toLocaleDateString('tr-TR',{day:'2-digit',month:'short',year:'numeric'})}catch{return v} }
+function v9Money(n){ return new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY'}).format(Number(n)||0) }
+function v9Role(){ const e=(window.NecatiCloud?.user?.()?.email||'').toLowerCase(); if(e.includes('nisa'))return'nisa'; if(e.includes('necati'))return'necati'; return 'ortak' }
+function v9OwnerLabel(v){return v==='nisa'?'Nisa':v==='necati'?'Necati':'Ortak'}
+function v9Esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function v9Notify(title,body,type,open){ if(window.notify) return window.notify(title,body,type,open); try{return notify(title,body,type,open)}catch{return Promise.resolve()} }
+
+function v9CalendarEventsForDate(date){
+  const plans=(state.plans||[]).filter(p=>p.date===date).map(p=>({...p,_type:'plan'}));
+  const todos=(state.todos||[]).filter(t=>t.date===date && t.calendar!=='no').map(t=>({...t,_type:'todo',title:t.text}));
+  const expenses=(state.expenses||[]).filter(x=>x.date===date && x.calendar==='yes').map(x=>({...x,_type:'expense',title:`${x.title} • ${v9Money(x.amount)}`}));
+  const s=state.settings||{};
+  const birthdays=[];
+  const md = date.slice(5);
+  if(s.nisaBirthday && s.nisaBirthday.slice(5)===md) birthdays.push({_type:'birthday',title:'🎂 Nisa doğum günü'});
+  if(s.necatiBirthday && s.necatiBirthday.slice(5)===md) birthdays.push({_type:'birthday',title:'🎂 Necati doğum günü'});
+  return [...plans,...todos,...expenses,...birthdays];
+}
+
+function v9RenderCalendar(){
+  const grid=$('calendarGrid'), title=$('calendarTitle');
+  if(!grid)return;
+  const y=v9CalendarCursor.getFullYear(), m=v9CalendarCursor.getMonth();
+  if(title)title.textContent=new Date(y,m,1).toLocaleDateString('tr-TR',{month:'long',year:'numeric'});
+  grid.innerHTML='';
+  ['Pt','Sa','Ça','Pe','Cu','Ct','Pz'].forEach(d=>{const x=document.createElement('div');x.className='cal-h';x.textContent=d;grid.appendChild(x)});
+  const first=(new Date(y,m,1).getDay()+6)%7;
+  for(let i=0;i<first;i++){const x=document.createElement('div');x.className='cal-empty';grid.appendChild(x)}
+  const max=new Date(y,m+1,0).getDate();
+  for(let d=1;d<=max;d++){
+    const iso=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const events=v9CalendarEventsForDate(iso);
+    const b=document.createElement('button');b.type='button';b.className='cal-day';
+    if(iso===v9SelectedDate)b.classList.add('selected');
+    if(iso===new Date().toISOString().slice(0,10))b.classList.add('today');
+    b.innerHTML=`<span>${d}</span>${events.length?`<b>${events.length}</b>`:''}`;
+    b.onclick=()=>{v9SelectedDate=iso;$('planDate').value=iso;v9RenderCalendar();v9RenderSelectedDay()};
+    grid.appendChild(b);
+  }
+  v9RenderSelectedDay();
+}
+
+function v9RenderSelectedDay(){
+  const box=$('selectedDayEvents'), title=$('selectedDayTitle'); if(!box)return;
+  if(title)title.textContent=v9Date(v9SelectedDate);
+  const events=v9CalendarEventsForDate(v9SelectedDate);
+  box.innerHTML='';
+  if(!events.length){box.innerHTML='<p class="muted">Bu gün için kayıt yok.</p>';return}
+  events.forEach(e=>{
+    const row=document.createElement('div');row.className=`list-card event-${e._type}`;
+    const sub=e._type==='plan'?[e.time,v9OwnerLabel(e.owner),e.category].filter(Boolean).join(' • '):
+              e._type==='todo'?[v9OwnerLabel(e.owner),e.done?'Tamamlandı':'Açık'].join(' • '):
+              e._type==='expense'?[v9OwnerLabel(e.payer),e.category].join(' • '):'Özel gün';
+    row.innerHTML=`<div><strong>${v9Esc(e.title)}</strong><small>${v9Esc(sub)}</small>${e.note?`<p>${v9Esc(e.note)}</p>`:''}</div>
+      ${e._type==='plan'?`<div class="row-actions"><button type="button" class="ghost-btn edit-plan">Düzenle</button><button type="button" class="danger-btn del-plan">Sil</button></div>`:''}`;
+    if(e._type==='plan'){
+      row.querySelector('.edit-plan').onclick=()=>v9StartPlanEdit(e);
+      row.querySelector('.del-plan').onclick=()=>v9DeletePlan(e.id,e.title);
+    }
+    box.appendChild(row);
+  });
+}
+
+function v9ResetPlanForm(){
+  $('planEditId').value=''; $('planTitle').value=''; $('planOwner').value='ortak'; $('planDate').value=v9SelectedDate;
+  $('planTime').value=''; $('planCategory').value='genel'; $('planReminder').value='0'; $('planNote').value='';
+  $('planFormTitle').textContent='Yeni Plan'; $('cancelPlanEditBtn').hidden=true;
+}
+function v9StartPlanEdit(p){
+  $('planEditId').value=p.id;$('planTitle').value=p.title||'';$('planOwner').value=p.owner||'ortak';$('planDate').value=p.date||'';
+  $('planTime').value=p.time||'';$('planCategory').value=p.category||'genel';$('planReminder').value=String(p.reminder||0);$('planNote').value=p.note||'';
+  $('planFormTitle').textContent='Planı Düzenle';$('cancelPlanEditBtn').hidden=false;
+}
+async function v9SavePlan(){
+  const title=$('planTitle').value.trim(), date=$('planDate').value;
+  if(!title||!date)return toast('Başlık ve tarih gerekli 📅');
+  state.plans=state.plans||[];
+  const id=$('planEditId').value;
+  const obj={id:id||uid(),title,date,time:$('planTime').value||'',owner:$('planOwner').value||'ortak',category:$('planCategory').value||'genel',reminder:Number($('planReminder').value)||0,note:$('planNote').value.trim(),updatedAt:Date.now()};
+  if(id){const i=state.plans.findIndex(x=>x.id===id);if(i>=0)state.plans[i]={...state.plans[i],...obj}}
+  else state.plans.push({...obj,createdAt:Date.now(),createdBy:actor?.()||v9Role()});
+  save();v9SelectedDate=date;v9CalendarCursor=new Date(date+'T12:00:00');v9RenderCalendar();v9ResetPlanForm();
+  toast(id?'Plan güncellendi 📅':'Plan eklendi 📅');
+  v9Notify(id?'📅 Plan güncellendi':'📅 Yeni ortak plan',`${actor?.()||'Biri'} “${title}” planını ${id?'güncelledi':'ekledi'}`,'plan','planner').catch(()=>{});
+}
+async function v9DeletePlan(id,title){
+  state.plans=(state.plans||[]).filter(x=>x.id!==id);save();v9RenderCalendar();
+  v9Notify('🗑️ Plan silindi',`${actor?.()||'Biri'} “${title}” planını sildi`,'plan','planner').catch(()=>{});
+}
+
+function v9ResetTodoForm(){
+  $('todoEditId').value='';$('todoText').value='';$('todoOwner').value='ortak';$('todoDate').value='';$('todoPriority').value='normal';$('todoCalendar').value='yes';$('todoReminder').value='0';
+  $('cancelTodoEditBtn').hidden=true;$('saveTodoBtn').textContent='Görevi kaydet ✅';
+}
+function v9StartTodoEdit(t){
+  $('todoEditId').value=t.id;$('todoText').value=t.text||'';$('todoOwner').value=t.owner||'ortak';$('todoDate').value=t.date||'';$('todoPriority').value=t.priority||'normal';$('todoCalendar').value=t.calendar||'yes';$('todoReminder').value=String(t.reminder||0);
+  $('cancelTodoEditBtn').hidden=false;$('saveTodoBtn').textContent='Görevi güncelle ✅';
+}
+async function v9SaveTodo(){
+  const text=$('todoText').value.trim();if(!text)return toast('Görev yazmalısın ✅');
+  state.todos=state.todos||[];const id=$('todoEditId').value;
+  const obj={id:id||uid(),text,owner:$('todoOwner').value||'ortak',date:$('todoDate').value||'',priority:$('todoPriority').value||'normal',calendar:$('todoCalendar').value||'yes',reminder:Number($('todoReminder').value)||0,updatedAt:Date.now()};
+  if(id){const i=state.todos.findIndex(x=>x.id===id);if(i>=0)state.todos[i]={...state.todos[i],...obj}}
+  else state.todos.push({...obj,done:false,createdAt:Date.now(),createdBy:actor?.()||v9Role()});
+  save();v9RenderTodos();v9RenderCalendar();v9ResetTodoForm();
+  v9Notify(id?'✅ Görev güncellendi':'✅ Yeni görev',`${actor?.()||'Biri'} “${text}” görevini ${id?'güncelledi':'ekledi'}`,'todo','todo').catch(()=>{});
+}
+function v9RenderTodos(){
+  const list=$('todoList'), stats=$('todoStats');if(!list)return;
+  const all=state.todos||[];const filter=$('todoFilter')?.value||'all', role=v9Role();
+  let items=all;
+  if(filter==='open')items=all.filter(x=>!x.done);
+  if(filter==='done')items=all.filter(x=>x.done);
+  if(filter==='mine')items=all.filter(x=>x.owner===role||x.owner==='ortak');
+  if(stats)stats.innerHTML=`<span>Toplam <b>${all.length}</b></span><span>Açık <b>${all.filter(x=>!x.done).length}</b></span><span>Tamam <b>${all.filter(x=>x.done).length}</b></span>`;
+  list.innerHTML='';if(!items.length){list.innerHTML='<p class="muted">Bu filtrede görev yok.</p>';return}
+  const pr={normal:'',high:'⭐ ',urgent:'🚨 '};
+  items.sort((a,b)=>Number(a.done)-Number(b.done)||(a.date||'9999').localeCompare(b.date||'9999')).forEach(t=>{
+    const row=document.createElement('div');row.className='list-card todo-card'+(t.done?' done':'');
+    row.innerHTML=`<div class="todo-main"><label class="todo-line"><input type="checkbox" ${t.done?'checked':''}><span>${pr[t.priority]||''}${v9Esc(t.text)}</span></label>
+    <small>${v9OwnerLabel(t.owner)}${t.date?' • '+v9Date(t.date):''}</small></div>
+    <div class="row-actions"><button type="button" class="ghost-btn edit">Düzenle</button><button type="button" class="danger-btn del">Sil</button></div>`;
+    row.querySelector('input').onchange=()=>{t.done=!t.done;save();v9RenderTodos();v9RenderCalendar();v9Notify('✅ Görev durumu değişti',`${actor?.()||'Biri'} “${t.text}” görevini ${t.done?'tamamladı':'yeniden açtı'}`,'todo','todo').catch(()=>{})};
+    row.querySelector('.edit').onclick=()=>v9StartTodoEdit(t);
+    row.querySelector('.del').onclick=()=>{state.todos=all.filter(x=>x.id!==t.id);save();v9RenderTodos();v9RenderCalendar();v9Notify('🗑️ Görev silindi',`${actor?.()||'Biri'} “${t.text}” görevini sildi`,'todo','todo').catch(()=>{})};
+    list.appendChild(row);
+  });
+}
+
+function v9ExpenseMonth(){return $('expenseMonth')?.value||new Date().toISOString().slice(0,7)}
+function v9RenderExpenses(){
+  const list=$('expenseList'), stats=$('expenseStats');if(!list)return;
+  const month=v9ExpenseMonth();
+  const items=(state.expenses||[]).filter(x=>(x.date||'').startsWith(month)).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const total=items.reduce((s,x)=>s+Number(x.amount||0),0), n=items.filter(x=>x.payer==='necati').reduce((s,x)=>s+Number(x.amount||0),0), ni=items.filter(x=>x.payer==='nisa').reduce((s,x)=>s+Number(x.amount||0),0);
+  if(stats)stats.innerHTML=`<div><small>Bu ay</small><strong>${v9Money(total)}</strong></div><div><small>Necati</small><strong>${v9Money(n)}</strong></div><div><small>Nisa</small><strong>${v9Money(ni)}</strong></div>`;
+  list.innerHTML='';if(!items.length){list.innerHTML='<p class="muted">Bu ay kayıtlı harcama yok.</p>';return}
+  items.forEach(x=>{
+    const row=document.createElement('div');row.className='list-card';
+    row.innerHTML=`<div><strong>${v9Esc(x.title)} • ${v9Money(x.amount)}</strong><small>${v9Date(x.date)} • ${v9OwnerLabel(x.payer)} • ${v9Esc(x.category)}</small>${x.note?`<p>${v9Esc(x.note)}</p>`:''}</div><button type="button" class="danger-btn">Sil</button>`;
+    row.querySelector('button').onclick=()=>{state.expenses=(state.expenses||[]).filter(e=>e.id!==x.id);save();v9RenderExpenses();v9RenderCalendar();v9Notify('💸 Harcama silindi',`${actor?.()||'Biri'} ${x.title} harcamasını sildi`,'expense','expense').catch(()=>{})};
+    list.appendChild(row);
+  });
+}
+async function v9AddExpense(){
+  const title=$('expenseTitle').value.trim(), amount=Number($('expenseAmount').value), date=$('expenseDate').value;
+  if(!title||!amount||!date)return toast('Açıklama, tutar ve tarih gerekli 💸');
+  const x={id:uid(),title,amount,date,payer:$('expensePayer').value||'ortak',category:$('expenseCategory').value||'diger',calendar:$('expenseCalendar').value||'no',note:$('expenseNote').value.trim(),createdAt:Date.now(),createdBy:actor?.()||v9Role()};
+  state.expenses=state.expenses||[];state.expenses.push(x);save();v9RenderExpenses();v9RenderCalendar();
+  $('expenseTitle').value='';$('expenseAmount').value='';$('expenseNote').value='';
+  v9Notify('💸 Yeni ortak harcama',`${actor?.()||'Biri'} ${title} için ${v9Money(amount)} ekledi`,'expense','expense').catch(()=>{});
+}
+
+function v9BotContextAnswer(text){
+  const t=text.toLocaleLowerCase('tr-TR'), today=new Date().toISOString().slice(0,10), month=today.slice(0,7);
+  if(/bugün.*plan|plan.*bugün/.test(t)){
+    const p=(state.plans||[]).filter(x=>x.date===today);
+    return p.length?`Bugün ${p.length} plan var: `+p.map(x=>`${x.time?x.time+' ':''}${x.title}`).join(', '):'Bugün ortak takvimde plan görünmüyor 😄';
+  }
+  if(/yapılacak|görev|işler/.test(t)){
+    const open=(state.todos||[]).filter(x=>!x.done);
+    return open.length?`Açık ${open.length} görev var: `+open.slice(0,6).map(x=>x.text).join(', '):'Şu an açık görev yok, tertemiz 😄';
+  }
+  if(/harca|para|gider|bu ay/.test(t)){
+    const items=(state.expenses||[]).filter(x=>(x.date||'').startsWith(month));
+    const total=items.reduce((s,x)=>s+Number(x.amount||0),0);
+    return `Bu ay ortak harcama toplamı ${v9Money(total)} görünüyor.`;
+  }
+  if(/üzgün|moral|kötü|canım sıkkın/.test(t)) return 'gel buraya anlat bakalım ne oldu ben burdayım ❤️';
+  if(/özledim|özlüyorum/.test(t)) return 'ben de seni özledim gelince sarılma borcum var 😄❤️';
+  if(/seviyor musun|seviyorum/.test(t)) return 'bunu hâlâ soruyor musun 😄 seni çok seviyorum ❤️';
+  return ['anlat bakalım seni dinliyorum ❤️','tamam devam et merak ettim 😄','ben olsam önce seni bi sarardım sonra konuşurduk ❤️'][Math.floor(Math.random()*3)];
+}
+function v9RenderBot(){
+  const c=$('botChat');if(!c)return;c.innerHTML='';
+  state.botHistory=state.botHistory||[];
+  if(!state.botHistory.length)state.botHistory.push({from:'bot',text:'Alooo 😄 Necati Bot 2.0 hatta. Ne oldu güzelim ❤️'});
+  state.botHistory.slice(-50).forEach(m=>{const b=document.createElement('div');b.className='bubble '+(m.from==='user'?'me':'bot');b.textContent=m.text;c.appendChild(b)});
+  c.scrollTop=c.scrollHeight;
+}
+function v9BotSend(text){
+  text=(text||$('botInput')?.value||'').trim();if(!text)return;
+  state.botHistory=state.botHistory||[];state.botHistory.push({from:'user',text,at:Date.now()},{from:'bot',text:v9BotContextAnswer(text),at:Date.now()+1});save();
+  if($('botInput'))$('botInput').value='';v9RenderBot();
+}
+
+// Dialog routing
+document.addEventListener('click',e=>{
+  const open=e.target.closest?.('[data-open]');
+  if(open){
+    const id=open.dataset.open;
+    if(['plannerDialog','todoDialog','expenseDialog','necatiBotDialog'].includes(id)){
+      e.preventDefault();e.stopImmediatePropagation();
+      if(id==='plannerDialog'){v9SelectedDate=new Date().toISOString().slice(0,10);v9CalendarCursor=new Date();v9ResetPlanForm();v9RenderCalendar()}
+      if(id==='todoDialog'){v9ResetTodoForm();v9RenderTodos()}
+      if(id==='expenseDialog'){if($('expenseMonth'))$('expenseMonth').value=new Date().toISOString().slice(0,7);if($('expenseDate'))$('expenseDate').value=new Date().toISOString().slice(0,10);v9RenderExpenses()}
+      if(id==='necatiBotDialog')v9RenderBot();
+      v9Open(id);return;
+    }
+  }
+  const close=e.target.closest?.('[data-close]');if(close){e.preventDefault();v9Close(close.dataset.close)}
+},true);
+
+// Planner controls
+$('calPrev')?.addEventListener('click',()=>{v9CalendarCursor.setMonth(v9CalendarCursor.getMonth()-1);v9RenderCalendar()});
+$('calNext')?.addEventListener('click',()=>{v9CalendarCursor.setMonth(v9CalendarCursor.getMonth()+1);v9RenderCalendar()});
+$('todayCalendarBtn')?.addEventListener('click',()=>{v9SelectedDate=new Date().toISOString().slice(0,10);v9CalendarCursor=new Date();v9RenderCalendar()});
+$('savePlanBtn')?.addEventListener('click',v9SavePlan);
+$('cancelPlanEditBtn')?.addEventListener('click',v9ResetPlanForm);
+
+// Todo controls
+$('saveTodoBtn')?.addEventListener('click',v9SaveTodo);
+$('cancelTodoEditBtn')?.addEventListener('click',v9ResetTodoForm);
+$('todoFilter')?.addEventListener('change',v9RenderTodos);
+
+// Expenses
+$('addExpenseBtn')?.addEventListener('click',v9AddExpense);
+$('expenseMonth')?.addEventListener('change',v9RenderExpenses);
+
+// Bot
+$('botSendBtn')?.addEventListener('click',()=>v9BotSend());
+$('botInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();v9BotSend()}});
+document.querySelectorAll('[data-bot-q]').forEach(b=>b.addEventListener('click',()=>v9BotSend(b.dataset.botQ)));
+
+// Smart notification metadata is stored per item (reminder minutes).
+// Actual background delivery can be handled by Cloudflare Scheduled Worker in a later server-side pass.

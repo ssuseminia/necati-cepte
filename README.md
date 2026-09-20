@@ -50,3 +50,15 @@ Stellarium canlı görünümü üçüncü taraf web hizmetidir; yüklenmezse alt
 - data-open kartları artık gerçek dialog açıyor.
 - Boş sayfa/yanlış header yerleşimi düzeltildi.
 - Hesap butonundaki bozuk inline onclick kaldırıldı.
+
+## v8.0.2 hotfix
+- Modüle yalnızca girildiğinde gönderilen push bildirimleri kaldırıldı.
+- Bildirimler artık gerçek kullanıcı işlemlerinde kalır: ruh hali değişimi, sürpriz/kavanoz/anı/bölüm/özel gün/iyi geceler/plan/görev ekleme, Acil Necati çağrısı vb.
+- Ortak Takvim ve Yapılacaklar ekranına sadece giriş yapmak artık bildirim üretmez.
+
+## v9.0
+- Ortak Takvim baştan düzenlendi: aylık görünüm, seçili gün, düzenleme, silme, sahip, kategori, saat, not, hatırlatma.
+- Yapılacaklar baştan düzenlendi: filtre, düzenleme, silme, tamamlama, öncelik, sahip, son tarih, takvimde gösterme.
+- Ortak Harcama Takibi eklendi: aylık toplam, Necati/Nisa ödemeleri, kategori, takvim entegrasyonu.
+- Necati Bot 2.0 uygulama verilerinden bugünkü planı, açık görevleri ve aylık harcama toplamını okuyabilir.
+- Akıllı bildirimler için plan/görev reminder metadata alanları eklendi.

@@ -25,7 +25,7 @@
           <button class="icon-btn" id="settingsBtn" type="button" aria-label="Ayarlar">⚙️</button>
         </div>
       </div>
-      <h1>Necati Cepte <small style="font-size:.32em;opacity:.6;vertical-align:middle">v8.0.1</small></h1>
+      <h1>Necati Cepte <small style="font-size:.32em;opacity:.6;vertical-align:middle">v9.0</small></h1>
       <p class="subtitle">Sevgi, anılar ve küçük sürprizler hep yanında.</p>
 
       <section class="counter-card" aria-label="İlişki sayacı">
@@ -65,6 +65,8 @@
         <button type="button" class="module-card" data-open="plannerDialog"><span>📅</span><div><h3>Ortak Takvim</h3><p>Planlarımızı birlikte görelim.</p></div></button>
         <button type="button" class="module-card" data-open="todoDialog"><span>✅</span><div><h3>Yapılacaklar</h3><p>Ortak görev listemiz.</p></div></button>
         <button type="button" class="module-card" data-open="necatiBotDialog"><span>📞</span><div><h3>Necati'yi Ara</h3><p>Necati Bot ile konuş.</p></div></button>
+
+        <button type="button" class="module-card" data-open="expenseDialog"><span>💸</span><div><h3>Ortak Harcamalar</h3><p>Gelir-gider ve ortak ödeme takibi.</p></div></button>
 </section>
     </main>
 
@@ -133,65 +135,196 @@
   <script src="app-v7.js"></script>
 
   <dialog id="plannerDialog" class="app-dialog">
-    <form method="dialog" class="dialog-shell">
-      <button class="close-btn" value="cancel" aria-label="Kapat">✕</button>
-      <h2>📅 Ortak Takvim</h2>
-      <p class="muted">Eklediğiniz planlar iki hesapta da görünür.</p>
-      <div class="calendar-head">
+    <div class="dialog-shell wide-shell">
+      <button class="close-btn" type="button" data-close="plannerDialog" aria-label="Kapat">✕</button>
+      <div class="dialog-title-row">
+        <div>
+          <h2>📅 Ortak Takvim</h2>
+          <p class="muted">İkinizin planları, görevleri, doğum günleri ve özel tarihleri tek yerde.</p>
+        </div>
+        <button type="button" id="todayCalendarBtn" class="ghost-btn">Bugün</button>
+      </div>
+
+      <div class="calendar-toolbar">
         <button type="button" id="calPrev" class="ghost-btn">‹</button>
         <strong id="calendarTitle"></strong>
         <button type="button" id="calNext" class="ghost-btn">›</button>
       </div>
-      <div id="calendarGrid" class="calendar-grid"></div>
-      <div class="form-grid">
-        <label class="field"><span>Plan başlığı</span><input id="planTitle" placeholder="Akşam yemeği, market, ziyaret..."></label>
-        <label class="field"><span>Tarih</span><input id="planDate" type="date"></label>
-        <label class="field"><span>Saat</span><input id="planTime" type="time"></label>
-        <label class="field"><span>Not</span><textarea id="planNote" rows="2" placeholder="İstersen detay ekle"></textarea></label>
+      <div id="calendarGrid" class="calendar-grid v9-calendar"></div>
+
+      <div class="planner-layout">
+        <section class="planner-form card-panel">
+          <h3 id="planFormTitle">Yeni Plan</h3>
+          <input type="hidden" id="planEditId">
+          <div class="form-grid two-col">
+            <label class="field"><span>Başlık</span><input id="planTitle" placeholder="Akşam yemeği, alışveriş, randevu..."></label>
+            <label class="field"><span>Kimin planı?</span>
+              <select id="planOwner">
+                <option value="ortak">Ortak</option>
+                <option value="necati">Necati</option>
+                <option value="nisa">Nisa</option>
+              </select>
+            </label>
+            <label class="field"><span>Tarih</span><input id="planDate" type="date"></label>
+            <label class="field"><span>Saat</span><input id="planTime" type="time"></label>
+            <label class="field"><span>Kategori</span>
+              <select id="planCategory">
+                <option value="genel">Genel</option>
+                <option value="date">Date ❤️</option>
+                <option value="aile">Aile</option>
+                <option value="is">İş</option>
+                <option value="saglik">Sağlık</option>
+                <option value="odeme">Ödeme</option>
+              </select>
+            </label>
+            <label class="field"><span>Hatırlatma</span>
+              <select id="planReminder">
+                <option value="0">Yok</option>
+                <option value="60">1 saat önce</option>
+                <option value="180">3 saat önce</option>
+                <option value="1440">1 gün önce</option>
+              </select>
+            </label>
+          </div>
+          <label class="field"><span>Not</span><textarea id="planNote" rows="3" placeholder="Planla ilgili detaylar..."></textarea></label>
+          <div class="actions">
+            <button type="button" id="savePlanBtn" class="primary-btn">Planı kaydet 📅</button>
+            <button type="button" id="cancelPlanEditBtn" class="ghost-btn" hidden>Düzenlemeyi iptal et</button>
+          </div>
+        </section>
+
+        <section class="planner-day card-panel">
+          <h3 id="selectedDayTitle">Seçili gün</h3>
+          <div id="selectedDayEvents" class="stack-list"></div>
+        </section>
       </div>
-      <button type="button" id="addPlanBtn" class="primary-btn">Plan ekle 📅</button>
-      <div id="planList" class="stack-list"></div>
-    </form>
+    </div>
   </dialog>
 
   <dialog id="todoDialog" class="app-dialog">
-    <form method="dialog" class="dialog-shell">
-      <button class="close-btn" value="cancel" aria-label="Kapat">✕</button>
-      <h2>✅ Yapılacaklar</h2>
-      <div class="form-grid">
-        <label class="field"><span>Görev</span><input id="todoText" placeholder="Arabayı yıkat, markete git..."></label>
-        <label class="field"><span>Kimin görevi?</span>
-          <select id="todoOwner">
-            <option value="ortak">Ortak</option>
-            <option value="necati">Necati</option>
-            <option value="nisa">Nisa</option>
-          </select>
-        </label>
-        <label class="field"><span>Son tarih</span><input id="todoDate" type="date"></label>
-        <label class="field"><span>Öncelik</span>
-          <select id="todoPriority">
-            <option value="normal">Normal</option>
-            <option value="high">Önemli</option>
-            <option value="urgent">Acil</option>
-          </select>
-        </label>
+    <div class="dialog-shell wide-shell">
+      <button class="close-btn" type="button" data-close="todoDialog" aria-label="Kapat">✕</button>
+      <div class="dialog-title-row">
+        <div>
+          <h2>✅ Yapılacaklar</h2>
+          <p class="muted">Ortak görevler, kime ait olduğu, son tarih ve durum tek ekranda.</p>
+        </div>
+        <select id="todoFilter" class="compact-select">
+          <option value="all">Tümü</option>
+          <option value="open">Açık</option>
+          <option value="done">Tamamlanan</option>
+          <option value="mine">Bana ait</option>
+        </select>
       </div>
-      <button type="button" id="addTodoBtn" class="primary-btn">Görev ekle ✅</button>
+
+      <section class="card-panel">
+        <input type="hidden" id="todoEditId">
+        <div class="form-grid two-col">
+          <label class="field"><span>Görev</span><input id="todoText" placeholder="Market alışverişi, fatura, arama..."></label>
+          <label class="field"><span>Kimin görevi?</span>
+            <select id="todoOwner">
+              <option value="ortak">Ortak</option>
+              <option value="necati">Necati</option>
+              <option value="nisa">Nisa</option>
+            </select>
+          </label>
+          <label class="field"><span>Son tarih</span><input id="todoDate" type="date"></label>
+          <label class="field"><span>Öncelik</span>
+            <select id="todoPriority">
+              <option value="normal">Normal</option>
+              <option value="high">Önemli</option>
+              <option value="urgent">Acil</option>
+            </select>
+          </label>
+          <label class="field"><span>Takvimde göster</span>
+            <select id="todoCalendar">
+              <option value="yes">Evet</option>
+              <option value="no">Hayır</option>
+            </select>
+          </label>
+          <label class="field"><span>Hatırlatma</span>
+            <select id="todoReminder">
+              <option value="0">Yok</option>
+              <option value="1440">1 gün önce</option>
+              <option value="2880">2 gün önce</option>
+            </select>
+          </label>
+        </div>
+        <div class="actions">
+          <button type="button" id="saveTodoBtn" class="primary-btn">Görevi kaydet ✅</button>
+          <button type="button" id="cancelTodoEditBtn" class="ghost-btn" hidden>Düzenlemeyi iptal et</button>
+        </div>
+      </section>
+
+      <div id="todoStats" class="mini-stats"></div>
       <div id="todoList" class="stack-list"></div>
-    </form>
+    </div>
+  </dialog>
+
+  <dialog id="expenseDialog" class="app-dialog">
+    <div class="dialog-shell wide-shell">
+      <button class="close-btn" type="button" data-close="expenseDialog" aria-label="Kapat">✕</button>
+      <div class="dialog-title-row">
+        <div>
+          <h2>💸 Ortak Harcamalar</h2>
+          <p class="muted">Kim ödedi, ne için ödendi ve ay toplamı.</p>
+        </div>
+        <input id="expenseMonth" type="month" class="compact-select">
+      </div>
+
+      <div id="expenseStats" class="expense-stats"></div>
+
+      <section class="card-panel">
+        <div class="form-grid two-col">
+          <label class="field"><span>Açıklama</span><input id="expenseTitle" placeholder="Market, yemek, fatura..."></label>
+          <label class="field"><span>Tutar ₺</span><input id="expenseAmount" type="number" step="0.01" min="0" placeholder="0,00"></label>
+          <label class="field"><span>Kim ödedi?</span>
+            <select id="expensePayer">
+              <option value="necati">Necati</option>
+              <option value="nisa">Nisa</option>
+              <option value="ortak">Ortak</option>
+            </select>
+          </label>
+          <label class="field"><span>Kategori</span>
+            <select id="expenseCategory">
+              <option value="market">Market</option>
+              <option value="yemek">Yemek</option>
+              <option value="ev">Ev</option>
+              <option value="ulasim">Ulaşım</option>
+              <option value="eglence">Eğlence</option>
+              <option value="fatura">Fatura</option>
+              <option value="diger">Diğer</option>
+            </select>
+          </label>
+          <label class="field"><span>Tarih</span><input id="expenseDate" type="date"></label>
+          <label class="field"><span>Takvime ödeme olarak ekle</span>
+            <select id="expenseCalendar"><option value="no">Hayır</option><option value="yes">Evet</option></select>
+          </label>
+        </div>
+        <label class="field"><span>Not</span><textarea id="expenseNote" rows="2"></textarea></label>
+        <button type="button" id="addExpenseBtn" class="primary-btn">Harcama ekle 💸</button>
+      </section>
+
+      <div id="expenseList" class="stack-list"></div>
+    </div>
   </dialog>
 
   <dialog id="necatiBotDialog" class="app-dialog">
-    <form method="dialog" class="dialog-shell bot-shell">
-      <button class="close-btn" value="cancel" aria-label="Kapat">✕</button>
-      <h2>📞 Necati'yi Ara</h2>
-      <p class="muted">Bu bölüm gerçek Necati değil 😄 ama onun tarzında cevap veren eğlenceli bir bot.</p>
+    <div class="dialog-shell bot-shell">
+      <button class="close-btn" type="button" data-close="necatiBotDialog" aria-label="Kapat">✕</button>
+      <h2>🤖 Necati Bot 2.0</h2>
+      <p class="muted">Necati’nin yerini tutmaz 😄 ama takvim, görevler ve harcamalar hakkında yardımcı olur.</p>
+      <div class="bot-quick">
+        <button type="button" data-bot-q="Bugün planımız var mı?">Bugünkü plan</button>
+        <button type="button" data-bot-q="Yapılacak işler neler?">Görevler</button>
+        <button type="button" data-bot-q="Bu ay ne kadar harcadık?">Bu ay harcama</button>
+      </div>
       <div id="botChat" class="bot-chat"></div>
       <div class="bot-compose">
-        <input id="botInput" placeholder="Necati'ye bir şey söyle...">
+        <input id="botInput" placeholder="Necati Bot’a yaz...">
         <button type="button" id="botSendBtn" class="primary-btn">Gönder</button>
       </div>
-    </form>
+    </div>
   </dialog>
 
 </body>

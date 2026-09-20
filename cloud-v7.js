@@ -8,7 +8,7 @@
   const configured=()=>cfg&&cfg.config&&cfg.config.apiKey&&!cfg.config.apiKey.startsWith('BURAYA_')&&cfg.config.projectId;
   const safeToast=m=>window.necatiToast?.(m);
   const setStatus=(text,on=false)=>{const el=$('cloudStatus');if(el){el.textContent=`● ${text}`;el.classList.toggle('online',on)}};
-  window.NECATI_CLOUD_VERSION='8.0';
+  window.NECATI_CLOUD_VERSION='9.0';
 
   function roleFromEmail(email=''){
     const e=String(email).toLowerCase();
@@ -172,6 +172,6 @@
   async function showSystemNotification(n,force=false){if(!('Notification'in window)||Notification.permission!=='granted'){if(force)safeToast('Önce bildirim izni ver 🔔');return}try{const reg=await navigator.serviceWorker.ready;await reg.showNotification(n.title||'Necati Cepte ❤️',{body:n.body||'',icon:'./icons/icon-192.png',badge:'./icons/icon-192.png',tag:n.type||'necati',renotify:true,requireInteraction:n.type==='emergency',vibrate:[250,120,250]})}catch{}}
   function showIncoming(n){safeToast(`${n.title||'Necati Cepte'} — ${n.body||''}`);window.dispatchEvent(new CustomEvent('necati:incoming',{detail:n}));showSystemNotification(n)}
 
-  window.NecatiCloud={version:'8.0',scheduleSave,uploadImage,resolveImage,sendActivity,sendEmergency,sendMoodChange,enablePush,isReady:()=>ready,user:()=>user,role:()=>roleFromEmail(user?.email||''),displayName,diagnostics:()=>({ready,role:roleFromEmail(user?.email||''),oneSignalReady,subscriptionId:window.NecatiOneSignal?.User?.PushSubscription?.id||null})};
+  window.NecatiCloud={version:'9.0',scheduleSave,uploadImage,resolveImage,sendActivity,sendEmergency,sendMoodChange,enablePush,isReady:()=>ready,user:()=>user,role:()=>roleFromEmail(user?.email||''),displayName,diagnostics:()=>({ready,role:roleFromEmail(user?.email||''),oneSignalReady,subscriptionId:window.NecatiOneSignal?.User?.PushSubscription?.id||null})};
   window.addEventListener('DOMContentLoaded',init);
 })();
