@@ -10,7 +10,7 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <link rel="stylesheet" href="style.css?v=5.3" />
+  <link rel="stylesheet" href="style-v54.css" />
   <title>Necati Cepte</title>
 </head>
 <body>
@@ -19,9 +19,9 @@
     <header class="hero">
       <div class="top-row">
         <div class="badge" id="coupleBadge">Nisa ❤️ Necati</div>
-        <div class="top-actions"><span class="cloud-status" id="cloudStatus">● Yerel</span><button class="icon-btn" id="userBtn" aria-label="Hesap" onclick="window.openNecatiAuth?.()">👤</button><button class="icon-btn" id="settingsBtn" aria-label="Ayarlar">⚙️</button></div>
+        <div class="top-actions"><span class="cloud-status" id="cloudStatus">● Yerel</span><button class="icon-btn" id="userBtn" aria-label="Hesap" onclick="(function(){const d=document.getElementById('authDialog');if(window.openNecatiAuth){window.openNecatiAuth();return;}if(d){try{d.showModal()}catch(e){d.setAttribute('open','');d.style.display='block'}}else{alert('Hesap ekranı bulunamadı')}})()>👤</button><button class="icon-btn" id="settingsBtn" aria-label="Ayarlar">⚙️</button></div>
       </div>
-      <h1>Necati Cepte</h1>
+      <h1>Necati Cepte <small style="font-size:.32em;opacity:.6;vertical-align:middle">v5.4</small></h1>
       <p class="subtitle">Sevgi, anılar ve küçük sürprizler hep yanında.</p>
 
       <section class="counter-card" aria-label="İlişki sayacı">
@@ -102,7 +102,7 @@
       </div>
       <div id="loggedInBox" hidden>
         <div class="account-card"><strong id="accountEmail">—</strong><span id="syncInfo">Bulut senkronizasyonu açık</span></div>
-        <div class="actions"><button id="enablePushBtn" class="primary-btn">🔔 Bildirimleri aç</button><button id="testPushBtn" class="ghost-btn">🧪 Test bildirimi</button><button id="logoutBtn" class="ghost-btn">Çıkış yap</button></div><div class="actions"><button type="button" id="diagBtn" class="ghost-btn" onclick="const d=window.NecatiCloud?.diagnostics?.(); alert(d?JSON.stringify(d,null,2):'Bulut kodu yüklenmedi')">🩺 Sistem testi</button></div>
+        <div class="actions"><button id="enablePushBtn" class="primary-btn">🔔 Bildirimleri aç</button><button id="testPushBtn" class="ghost-btn">🧪 Test bildirimi</button><button id="logoutBtn" class="ghost-btn">Çıkış yap</button></div><div class="actions"><button type="button" onclick="location.href='reset.html'" class="ghost-btn">♻️ Önbelleği sıfırla</button><button type="button" id="diagBtn" class="ghost-btn" onclick="const d=window.NecatiCloud?.diagnostics?.(); alert(d?JSON.stringify(d,null,2):'Bulut kodu yüklenmedi')">🩺 Sistem testi</button></div>
         <p class="tiny">Aynı Firebase projesindeki Nisa ve Necati hesapları aynı çift verisini görür. Bu ücretsiz sürümde Acil Necati bildirimi uygulama/PWA açık veya arka planda çalışırken anlık gelir.</p>
       </div>
     </div>
@@ -118,8 +118,8 @@
   <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-storage-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-messaging-compat.js"></script>
-  <script src="firebase-config.js?v=5.3"></script>
-  <script src="cloud.js?v=5.3"></script>
-  <script src="app.js?v=5.3"></script>
+  <script src="firebase-config-v54.js"></script>
+  <script src="cloud-v54.js"></script>
+  <script src="app-v54.js"></script>
 </body>
 </html>
