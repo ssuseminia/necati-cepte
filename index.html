@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#9b5de5" />
+  <meta name="description" content="Nisa ve Necati için özel ilişki uygulaması." />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
+  <title>Necati Cepte</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div class="badge">Nisa ❤️ Necati</div>
+      <h1>Necati Cepte</h1>
+      <p class="subtitle">Sevgi, anılar ve küçük sürprizler hep yanında.</p>
+
+      <section class="counter-card" aria-label="İlişki sayacı">
+        <div class="eyebrow">12.04.2025'ten beri</div>
+        <div class="counter-grid">
+          <div><strong id="days">0</strong><span>gün</span></div>
+          <div><strong id="hours">0</strong><span>saat</span></div>
+          <div><strong id="minutes">0</strong><span>dakika</span></div>
+          <div><strong id="seconds">0</strong><span>saniye</span></div>
+        </div>
+      </section>
+    </header>
+
+    <main>
+      <section class="daily-card">
+        <div>
+          <span class="pill">Bugünün notu 💌</span>
+          <h2 id="dailyTitle">Nisa'ya küçük bir hatırlatma</h2>
+          <p id="dailyMessage">Bugün de seni seçiyorum. Yarın da öyle.</p>
+        </div>
+        <button id="newMessageBtn" class="ghost-btn">Başka not</button>
+      </section>
+
+      <section class="section-head">
+        <div>
+          <span class="eyebrow">Bizim dünyamız</span>
+          <h2>Modüller</h2>
+        </div>
+      </section>
+
+      <section class="module-grid">
+        <button class="module-card" data-module="Nisa Modu"><span>🌸</span><div><h3>Nisa Modu</h3><p>Ruh hali ve küçük Necati tavsiyeleri.</p></div></button>
+        <button class="module-card" data-module="Sürpriz Takvimi"><span>🎁</span><div><h3>Sürpriz Takvimi</h3><p>Gün gün açılan mesajlar ve mini sürprizler.</p></div></button>
+        <button class="module-card" data-module="Aşk Kavanozu"><span>🫙</span><div><h3>Aşk Kavanozu</h3><p>Her gün yeni bir “Seni seviyorum çünkü...” kartı.</p></div></button>
+        <button class="module-card" data-module="Anı Haritası"><span>📍</span><div><h3>Anı Haritası</h3><p>Özel yerler, fotoğraflar ve notlar.</p></div></button>
+        <button class="module-card" data-module="Bizim Gökyüzümüz"><span>✨</span><div><h3>Bizim Gökyüzümüz</h3><p>Özel gecelerimizin yıldız haritası.</p></div></button>
+        <button class="module-card" data-module="Hikâyemiz"><span>🎬</span><div><h3>Hikâyemiz</h3><p>Sezon sezon Nisa & Necati.</p></div></button>
+        <button class="module-card" data-module="Özel Günler"><span>💍</span><div><h3>Özel Günler</h3><p>Yıldönümü, nişan ve özel tarihler.</p></div></button>
+        <button class="module-card" data-module="İyi Geceler"><span>🌙</span><div><h3>İyi Geceler</h3><p>Geçmiş iyi geceler mesajlarımız.</p></div></button>
+        <button class="module-card danger" data-module="Acil Necati"><span>🚨</span><div><h3>Acil Necati</h3><p>Sarılma, tatlı ve ilgi çağrısı.</p></div></button>
+        <button class="module-card" data-module="Doğduğun Gün"><span>🎂</span><div><h3>Doğduğun Gün</h3><p>Nisa'nın doğduğu güne özel eğlenceli bilgiler.</p></div></button>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Alt menü">
+      <button class="active">🏠<span>Ana Sayfa</span></button>
+      <button>❤️<span>Biz</span></button>
+      <button id="installBtn" hidden>📲<span>Yükle</span></button>
+    </nav>
+  </div>
+
+  <dialog id="moduleDialog">
+    <div class="dialog-card">
+      <button id="closeDialog" class="close-btn" aria-label="Kapat">×</button>
+      <div id="dialogIcon" class="dialog-icon">❤️</div>
+      <h2 id="dialogTitle">Modül</h2>
+      <p id="dialogText">Bu modülü sonraki adımda birlikte dolduracağız.</p>
+      <button id="dialogOk" class="primary-btn">Tamam ❤️</button>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
