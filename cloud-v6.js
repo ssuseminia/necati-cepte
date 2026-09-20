@@ -4,7 +4,7 @@
   const $=id=>document.getElementById(id);
   const configured=()=>cfg&&cfg.config&&cfg.config.apiKey&&!cfg.config.apiKey.startsWith('BURAYA_')&&cfg.config.projectId&&!cfg.config.projectId.startsWith('BURAYA_');
   const setStatus=(text,on=false)=>{const el=$('cloudStatus');if(!el)return;el.textContent=`● ${text}`;el.classList.toggle('online',on)};
-  const safeToast=m=>window.necatiToast?.(m); window.NECATI_CLOUD_VERSION='6.4';
+  const safeToast=m=>window.necatiToast?.(m); window.NECATI_CLOUD_VERSION='6.5';
   const notifStoreKey=()=>`necati-seen-notifs-${user?.uid||'anon'}`;
 
   const osCfg=window.NECATI_ONESIGNAL||{};
@@ -195,6 +195,58 @@
     }
   }
 
+
+  async function sendMoodChange(mood,label){
+    if(!ready)throw new Error('not-authenticated');
+
+    const senderRole=roleFromEmail(user?.email||'');
+    // Nisa Modu bildirimi sadece Nisa hesabından Necati'ye gider.
+    if(senderRole!=='nisa') return {skipped:true,reason:'not-nisa'};
+
+    const title='🌸 Nisa’nın ruh hali değişti';
+    const body=`${mood} ${label} hissediyor ❤️`;
+
+    await db.collection('couples').doc(cfg.coupleId).collection('notifications').add({
+      title,
+      body,
+      type:'mood',
+      mood,
+      moodLabel:label,
+      senderUid:user.uid,
+      senderEmail:user.email||'',
+      clientCreatedAt:Date.now(),
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    if(cfg.pushSenderUrl && !cfg.pushSenderUrl.startsWith('BURAYA_')){
+      const idToken=await user.getIdToken();
+      const r=await fetch(cfg.pushSenderUrl,{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization':'Bearer '+idToken
+        },
+        body:JSON.stringify({
+          title,
+          body,
+          type:'mood',
+          url:location.origin+location.pathname+'?open=mood'
+        })
+      });
+
+      const txt=await r.text();
+      let result=null;
+      try{ result=JSON.parse(txt) }catch{}
+
+      if(!r.ok || result?.ok===false){
+        throw new Error(result?.error ? String(result.error) : ('HTTP '+r.status));
+      }
+      return result;
+    }
+
+    return {ok:true,localOnly:true};
+  }
+
   async function enablePush(){
     if(osCfg.appId && !osCfg.appId.startsWith('BURAYA_')){
       try{
@@ -290,8 +342,8 @@
     showSystemNotification(n);
   }
 
-  window.NecatiCloud={version:'6.4',
-    scheduleSave,uploadImage,sendEmergency,isReady:()=>ready,hasStorage:()=>!!storage,user:()=>user,enablePush,
+  window.NecatiCloud={version:'6.5',
+    scheduleSave,uploadImage,sendEmergency,sendMoodChange,isReady:()=>ready,hasStorage:()=>!!storage,user:()=>user,enablePush,
     diagnostics:()=>({
       configured: configured(),
       ready,

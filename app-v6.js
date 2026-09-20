@@ -42,7 +42,33 @@ function renderModule(name){const f={mood:renderMood,surprise:renderSurprise,jar
 
 function phaseInfo(){const s=state.settings;if(!s.lastPeriod)return null;const start=new Date(s.lastPeriod+'T12:00:00');const now=new Date();const elapsed=Math.floor((now-start)/86400000);const day=((elapsed%s.cycleLength)+s.cycleLength)%s.cycleLength+1;let phase='Foliküler dönem';if(day<=s.periodLength)phase='Regl dönemi';else if(day>=s.cycleLength-13&&day<=s.cycleLength-11)phase='Tahmini yumurtlama dönemi';else if(day>s.cycleLength-11)phase='Luteal dönem';const next=new Date(start);next.setDate(next.getDate()+Math.ceil(Math.max(0,elapsed+1)/s.cycleLength)*s.cycleLength);if(next<=now)next.setDate(next.getDate()+s.cycleLength);return{day,phase,next}}
 const moodTips={'🥰':'Bugün enerji güzel görünüyor. Küçük bir iltifat + sarılma kombosu iyi gider ❤️','🙂':'Sakin ve tatlı bir gün. “Bir şeye ihtiyacın var mı?” sorusu puan kazandırır.','😴':'Nisa yorgun olabilir. Planı hafiflet, dinlenmesine alan aç ve çay/kahve teklif et ☕','😔':'Çözüm sunmadan önce dinle. “Yanındayım” demek bugün daha değerli olabilir.','😡':'Savunmaya geçmeden dinle 😅 Tartışmayı kazanmak yerine birbirinizi anlamaya çalışın; sevdiği küçük bir şeyi düşün.'};
-function renderMood(){const p=phaseInfo();$('moduleContent').innerHTML=`<div class="panel"><h3>Bugün Nisa nasıl hissediyor?</h3><div class="mood-grid">${Object.entries({'🥰':'Mutlu','🙂':'İyi','😴':'Yorgun','😔':'Üzgün','😡':'Gergin'}).map(([e,l])=>`<button class="mood-btn ${state.mood.today===e?'active':''}" data-mood="${e}"><strong>${e}</strong>${l}</button>`).join('')}</div><div class="hero-tip" id="moodTip">${moodTips[state.mood.today]}</div></div><div class="panel"><h3>Döngü tahmini</h3>${p?`<div class="stats-grid"><div class="stat-card"><strong>${p.day}. gün</strong><span>Döngü günü</span></div><div class="stat-card"><strong>${p.phase}</strong><span>Tahmini dönem</span></div><div class="stat-card"><strong>${p.next.toLocaleDateString('tr-TR')}</strong><span>Tahmini sonraki başlangıç</span></div></div>`:`<div class="empty">Ayarlar'dan son regl başlangıç tarihini girince tahmin burada görünecek.</div>`}<p class="tiny">Bu bölüm yalnızca kişisel takip ve eğlence amaçlı yaklaşık hesap yapar; tıbbi değerlendirme değildir.</p></div><div class="panel"><h3>Son ruh halleri</h3>${state.mood.history.length?`<div class="cards-list">${state.mood.history.slice(-7).reverse().map(x=>`<div class="surprise-card"><b>${x.mood}</b> ${fmtDate(x.date)}</div>`).join('')}</div>`:`<div class="empty">Henüz kayıt yok.</div>`}</div>`;document.querySelectorAll('[data-mood]').forEach(b=>b.onclick=()=>{state.mood.today=b.dataset.mood;state.mood.history.push({date:today(),mood:b.dataset.mood});save();renderMood();toast('Ruh hali kaydedildi 🌸')})}
+function renderMood(){const p=phaseInfo();$('moduleContent').innerHTML=`<div class="panel"><h3>Bugün Nisa nasıl hissediyor?</h3><div class="mood-grid">${Object.entries({'🥰':'Mutlu','🙂':'İyi','😴':'Yorgun','😔':'Üzgün','😡':'Gergin'}).map(([e,l])=>`<button class="mood-btn ${state.mood.today===e?'active':''}" data-mood="${e}"><strong>${e}</strong>${l}</button>`).join('')}</div><div class="hero-tip" id="moodTip">${moodTips[state.mood.today]}</div></div><div class="panel"><h3>Döngü tahmini</h3>${p?`<div class="stats-grid"><div class="stat-card"><strong>${p.day}. gün</strong><span>Döngü günü</span></div><div class="stat-card"><strong>${p.phase}</strong><span>Tahmini dönem</span></div><div class="stat-card"><strong>${p.next.toLocaleDateString('tr-TR')}</strong><span>Tahmini sonraki başlangıç</span></div></div>`:`<div class="empty">Ayarlar'dan son regl başlangıç tarihini girince tahmin burada görünecek.</div>`}<p class="tiny">Bu bölüm yalnızca kişisel takip ve eğlence amaçlı yaklaşık hesap yapar; tıbbi değerlendirme değildir.</p></div><div class="panel"><h3>Son ruh halleri</h3>${state.mood.history.length?`<div class="cards-list">${state.mood.history.slice(-7).reverse().map(x=>`<div class="surprise-card"><b>${x.mood}</b> ${fmtDate(x.date)}</div>`).join('')}</div>`:`<div class="empty">Henüz kayıt yok.</div>`}</div>`;document.querySelectorAll('[data-mood]').forEach(b=>b.onclick=async()=>{
+  const nextMood=b.dataset.mood;
+  const prevMood=state.mood.today;
+  const moodLabels={'🥰':'Mutlu','🙂':'İyi','😴':'Yorgun','😔':'Üzgün','😡':'Gergin'};
+
+  state.mood.today=nextMood;
+  state.mood.history.push({date:today(),mood:nextMood});
+  save();
+  renderMood();
+
+  if(prevMood===nextMood){
+    toast('Ruh hali zaten buydu 🌸');
+    return;
+  }
+
+  toast('Ruh hali kaydedildi 🌸');
+
+  if(window.NecatiCloud?.isReady?.() && window.NecatiCloud?.sendMoodChange){
+    try{
+      const result=await window.NecatiCloud.sendMoodChange(nextMood,moodLabels[nextMood]||'Ruh hali değişti');
+      if(!result?.skipped) toast('Necati’ye bildirim gönderildi 🔔❤️');
+    }catch(e){
+      console.warn('Ruh hali bildirimi gönderilemedi',e);
+      toast('Ruh hali kaydedildi ama bildirim gönderilemedi');
+    }
+  }
+})}
 
 function renderSurprise(){$('moduleContent').innerHTML=`<div class="panel"><h3>Yeni sürpriz ekle</h3><div class="form-grid"><label>Tarih<input id="spDate" type="date" value="${today()}"></label><label>Tür<select id="spType"><option>Mesaj</option><option>Görev</option><option>Sürpriz</option><option>Buluşma</option></select></label></div><label>Başlık<input id="spTitle" placeholder="Bugünün kutusu"></label><label>İçerik<textarea id="spMessage" placeholder="Nisa kutuyu açınca ne görsün?"></textarea></label><div class="actions"><button class="primary-btn" id="addSurprise">Takvime ekle 🎁</button></div></div><div class="panel"><h3>Kutular</h3><div class="cards-list">${state.surprises.sort((a,b)=>a.date.localeCompare(b.date)).map(x=>{const locked=x.date>today();return `<div class="surprise-card ${locked?'locked':''}"><div class="row-between"><div><span class="chip">${fmtDate(x.date)} · ${escapeHtml(x.type)}</span><h3>${locked?'🔒 ': '🎁 '}${escapeHtml(x.title)}</h3></div><button class="delete-btn" data-delsp="${x.id}">Sil</button></div><p>${locked?'Bu kutu zamanı gelince açılacak ❤️':escapeHtml(x.message)}</p></div>`}).join('')||'<div class="empty">Henüz sürpriz yok.</div>'}</div></div>`;$('addSurprise').onclick=()=>{const date=$('spDate').value,title=$('spTitle').value.trim(),message=$('spMessage').value.trim();if(!date||!title||!message)return toast('Tarih, başlık ve içerik gerekli');state.surprises.push({id:uid(),date,title,message,type:$('spType').value});save();renderSurprise();toast('Sürpriz eklendi 🎁')};document.querySelectorAll('[data-delsp]').forEach(b=>b.onclick=()=>{state.surprises=state.surprises.filter(x=>x.id!=b.dataset.delsp);save();renderSurprise()})}
 

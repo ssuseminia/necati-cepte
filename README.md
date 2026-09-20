@@ -50,3 +50,9 @@ Düzeltmeler:
 - OneSignal worker dosyaları repo köküne taşındı.
 - Service worker path `/necati-cepte/` scope'una alındı.
 - GitHub Pages 404 sorunu hedeflendi.
+
+## v6.5
+- Nisa Modu ruh hali değişince Necati hesabına gerçek OneSignal push gönderilir.
+- Aynı ruh haline tekrar basılırsa bildirim gönderilmez.
+- Bildirim örneği: “🌸 Nisa’nın ruh hali değişti — 😴 Yorgun hissediyor ❤️”
+- Bu bildirim yalnızca Nisa hesabından tetiklenir.
