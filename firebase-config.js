@@ -4,7 +4,7 @@
     coupleId: 'nisa-necati',
     // Tam kapalı uygulamaya FCM push istersen daha sonra Cloud Messaging VAPID public key ekle.
     vapidKey: 'BMNEf2hiA_GJtj2ImKNwy1EwCF8BQIPCn6RwFoyi35ZFkU5U3m5zy3Y2ffGeY3a-JJ-uK4dSE9VzVzqltjdTL38',
-    pushSenderUrl: 'BURAYA_CLOUDFLARE_WORKER_URL',
+    pushSenderUrl: 'https://necati-cepte-push.suseminiayt.workers.dev/',
     config: {
       apiKey: 'AIzaSyAtCHvfVp9gpU96hUJsOI9W-Z41B8cf9tc',
       authDomain: 'necati-cepte.firebaseapp.com',
