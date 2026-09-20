@@ -19,7 +19,13 @@
       auth=firebase.auth();
       db=firebase.firestore();
       try{storage=firebase.storage()}catch(e){console.warn('Storage pasif',e)}
-      try{messaging=firebase.messaging()}catch(e){console.warn('Messaging unavailable',e)}
+      try{
+        messaging=firebase.messaging();
+        messaging.onMessage(payload=>{
+          const n={title:payload.notification?.title||payload.data?.title||'Necati Cepte ❤️',body:payload.notification?.body||payload.data?.body||'Yeni bildirim',type:payload.data?.type||'notification'};
+          showIncoming(n);
+        });
+      }catch(e){console.warn('Messaging unavailable',e)}
       auth.onAuthStateChanged(handleAuth);
     }catch(e){console.error(e);setStatus('Firebase hatası');}
   }
@@ -98,6 +104,18 @@
     await db.collection('couples').doc(cfg.coupleId).collection('notifications').add({
       title,body,type:'emergency',senderUid:user.uid,senderEmail:user.email||'',clientCreatedAt:Date.now(),createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
+    // Gerçek FCM push: Cloudflare Worker URL'i ayarlıysa, diğer kayıtlı cihaz tokenlarına güvenli sunucu üzerinden gönder.
+    if(cfg.pushSenderUrl && !cfg.pushSenderUrl.startsWith('BURAYA_')){
+      try{
+        const devices=await db.collection('couples').doc(cfg.coupleId).collection('devices').get();
+        const tokens=devices.docs.map(d=>d.data()).filter(d=>d.token&&d.uid!==user.uid).map(d=>d.token);
+        if(tokens.length){
+          const idToken=await user.getIdToken();
+          const r=await fetch(cfg.pushSenderUrl,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+idToken},body:JSON.stringify({tokens,title,body,type:'emergency',url:location.origin+location.pathname+'?open=emergency'})});
+          if(!r.ok) console.warn('Push sender hatası',await r.text());
+        }
+      }catch(e){console.warn('FCM push gönderilemedi; Firestore canlı uyarı devam ediyor',e)}
+    }
   }
 
   async function enablePush(){
