@@ -44,3 +44,9 @@ Stellarium canlı görünümü üçüncü taraf web hizmetidir; yüklenmezse alt
 - Regl başlangıç tarihi, regl süresi ve döngü süresi ayarları eklendi.
 - Plan/görev ekleme, silme ve tamamlamada karşı tarafa OneSignal push gönderimi eklendi.
 - Tüm yeni veriler mevcut `save()` senkronizasyon akışına dahil edildi.
+
+## v8.0.1 hotfix
+- Ortak Takvim, Yapılacaklar ve Necati'yi Ara kartları doğru Modüller alanına taşındı.
+- data-open kartları artık gerçek dialog açıyor.
+- Boş sayfa/yanlış header yerleşimi düzeltildi.
+- Hesap butonundaki bozuk inline onclick kaldırıldı.

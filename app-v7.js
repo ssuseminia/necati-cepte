@@ -85,6 +85,23 @@ function hydrateV8Settings(){
   }
 }
 
+
+function openAppDialog(id){
+  const d=$(id);
+  if(!d){ toast('Bu bölüm bulunamadı'); return; }
+  try{
+    if(typeof d.showModal==='function'){
+      if(!d.open) d.showModal();
+    }else{
+      d.setAttribute('open','');
+      d.style.display='block';
+    }
+  }catch(e){
+    d.setAttribute('open','');
+    d.style.display='block';
+  }
+}
+
 function renderPlanner(){
   const title=$('calendarTitle'), grid=$('calendarGrid'), list=$('planList');
   if(!grid||!list) return;
@@ -219,10 +236,30 @@ $('saveSettings')?.addEventListener('click',()=>{
 document.addEventListener('click',e=>{
   const opener=e.target.closest?.('[data-open]');
   if(!opener)return;
+  e.preventDefault();
   const id=opener.dataset.open;
-  if(id==='plannerDialog'){renderPlanner();notify?.('📅 Ortak Takvim açıldı',`${actor()} ortak takvime girdi`,'module','planner').catch(()=>{})}
-  if(id==='todoDialog'){renderTodos();notify?.('✅ Yapılacaklar açıldı',`${actor()} yapılacaklar listesine girdi`,'module','todo').catch(()=>{})}
-  if(id==='necatiBotDialog'){renderBot()}
+
+  if(id==='plannerDialog'){
+    renderPlanner();
+    openAppDialog(id);
+    notify?.('📅 Ortak Takvim açıldı',`${actor()} ortak takvime girdi`,'module','planner').catch(()=>{});
+    return;
+  }
+
+  if(id==='todoDialog'){
+    renderTodos();
+    openAppDialog(id);
+    notify?.('✅ Yapılacaklar açıldı',`${actor()} yapılacaklar listesine girdi`,'module','todo').catch(()=>{});
+    return;
+  }
+
+  if(id==='necatiBotDialog'){
+    renderBot();
+    openAppDialog(id);
+    return;
+  }
+
+  openAppDialog(id);
 });
 
 $('calPrev')?.addEventListener('click',()=>{calendarCursor.setMonth(calendarCursor.getMonth()-1);renderPlanner()});
@@ -262,4 +299,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   hydrateV8Settings();
   renderPlanner();
   renderTodos();
+});
+
+$('userBtn')?.addEventListener('click',()=>{
+  if(window.openNecatiAuth){ window.openNecatiAuth(); return; }
+  openAppDialog('authDialog');
 });
