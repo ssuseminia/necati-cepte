@@ -304,7 +304,7 @@ $('settingsDialog').addEventListener('close',()=>{
 });
 $('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='necati-cepte-v7-yedek.json';a.click();URL.revokeObjectURL(a.href)};$('importInput').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{state=merge(defaultState,JSON.parse(r.result));save();updateIdentity();$('settingsDialog').close();toast('Yedek yüklendi ✅')}catch{toast('Geçersiz yedek')}};r.readAsText(f)};$('randomLoveBtn').onclick=()=>{$('loveDialogText').textContent=`Seni seviyorum çünkü ${dailyJar()}.`;$('loveDialog').showModal()};
 window.addEventListener('necati:authchange',()=>{if(currentModule==='mood')renderMood()});window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBtn').hidden=false});$('installBtn').onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBtn').hidden=true};
-window.NECATI_APP_VERSION='10.7';if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{const regs=await navigator.serviceWorker.getRegistrations();for(const r of regs){const u=String(r.active?.scriptURL||r.installing?.scriptURL||r.waiting?.scriptURL||'');if(u&&!u.includes('OneSignalSDK')&&!u.includes('sw-v7.js'))await r.unregister()}const reg=await navigator.serviceWorker.register('./sw-v7.js',{scope:'./',updateViaCache:'none'});await reg.update()}catch(e){console.warn('SW v7',e)}});
+window.NECATI_APP_VERSION='10.7.1';if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{const regs=await navigator.serviceWorker.getRegistrations();for(const r of regs){const u=String(r.active?.scriptURL||r.installing?.scriptURL||r.waiting?.scriptURL||'');if(u&&!u.includes('OneSignalSDK')&&!u.includes('sw-v7.js'))await r.unregister()}const reg=await navigator.serviceWorker.register('./sw-v7.js',{scope:'./',updateViaCache:'none'});await reg.update()}catch(e){console.warn('SW v7',e)}});
 
 document.addEventListener('DOMContentLoaded',()=>setTimeout(hydratePersonalSettings,50));
 
@@ -1618,3 +1618,28 @@ window.addEventListener('orientationchange',()=>setTimeout(()=>{v104RefreshSafeU
     applyAccountPersonalization();
   },150));
 })();
+
+
+// ===== v10.7.1 startup splash =====
+function v107StartupSplash(){
+  const splash=$('startupSplash');
+  if(!splash)return;
+  document.body.classList.add('splash-active');
+  requestAnimationFrame(()=>splash.classList.add('is-visible'));
+  const hide=()=>{
+    splash.classList.add('is-hiding');
+    document.body.classList.remove('splash-active');
+    setTimeout(()=>splash.remove(),520);
+  };
+  setTimeout(hide,2200);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  v107StartupSplash();
+  setTimeout(()=>{
+    const brand=document.querySelector('.mobile-brand strong');
+    if(brand) brand.innerHTML='Necati Cepte <em>v10.7.1</em>';
+    const pv=document.querySelector('.profile-version');
+    if(pv) pv.textContent='Necati Cepte • v10.7.1';
+  },80);
+});
