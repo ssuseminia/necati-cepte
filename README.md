@@ -32,3 +32,9 @@ Düzeltmeler:
 ## v6.1
 - OneSignal App ID eklendi.
 - OneSignalSDKUpdaterWorker.js eklendi.
+
+
+## v6.2
+- OneSignal serviceWorkerPath GitHub Pages için absolute path olarak düzeltildi.
+- SDK yükleme sırası deterministik hale getirildi.
+- OneSignal init hatası kullanıcıya gösteriliyor.

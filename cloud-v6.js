@@ -4,7 +4,7 @@
   const $=id=>document.getElementById(id);
   const configured=()=>cfg&&cfg.config&&cfg.config.apiKey&&!cfg.config.apiKey.startsWith('BURAYA_')&&cfg.config.projectId&&!cfg.config.projectId.startsWith('BURAYA_');
   const setStatus=(text,on=false)=>{const el=$('cloudStatus');if(!el)return;el.textContent=`● ${text}`;el.classList.toggle('online',on)};
-  const safeToast=m=>window.necatiToast?.(m); window.NECATI_CLOUD_VERSION='6';
+  const safeToast=m=>window.necatiToast?.(m); window.NECATI_CLOUD_VERSION='6.2';
   const notifStoreKey=()=>`necati-seen-notifs-${user?.uid||'anon'}`;
 
   const osCfg=window.NECATI_ONESIGNAL||{};
@@ -33,6 +33,7 @@
           resolve(true);
         }catch(e){
           console.warn('OneSignal init hatası',e);
+          safeToast('OneSignal başlatılamadı: '+(e?.message||e));
           resolve(false);
         }
       });
@@ -257,7 +258,7 @@
     showSystemNotification(n);
   }
 
-  window.NecatiCloud={version:'6',
+  window.NecatiCloud={version:'6.2',
     scheduleSave,uploadImage,sendEmergency,isReady:()=>ready,hasStorage:()=>!!storage,user:()=>user,enablePush,
     diagnostics:()=>({
       configured: configured(),
