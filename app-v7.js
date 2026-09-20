@@ -6,7 +6,7 @@ const defaultState={
  jar:['gülüşün en sıradan günümü bile güzelleştiriyor','yanında kendim olabiliyorum','birlikte saçmalamak dünyanın en güzel şeyi','zor günlerimde bile yanımda olduğunu hissediyorum','seninle gelecek düşünmek beni mutlu ediyor','sesini duyunca günüm değişiyor'],
  memories:[],stories:[{id:1,season:1,episode:1,date:'2025-04-12',title:'Biz olduk ❤️',text:'Nisa ve Necati hikâyesinin başladığı gün.',image:''},{id:2,season:2,episode:1,date:'2026-06-28',title:'Nişanımız 💍',text:'Hikâyemizin en özel bölümlerinden biri.',image:''}],
  specialDates:[{id:1,title:'Yıldönümümüz',date:'2027-04-12',repeat:'yearly'},{id:2,title:'Nişan yıldönümümüz',date:'2027-06-28',repeat:'yearly'}],
- nights:[],sky:{date:'',lat:37.0662,lon:37.3833,label:'Gaziantep',lastDaily:''},emergencyLog:[]
+ nights:[],sky:{date:'',lat:37.0662,lon:37.3833,label:'Gaziantep',lastDaily:''},emergencyLog:[],quickStatus:[],surpriseMode:{accepted:[],lastTask:null}
 };
 let state=loadState(),leafletMap=null,pickerMap=null,pickerMarker=null,deferredPrompt,currentModule=null;
 const moodMap={mutlu:{label:'Mutlu',emoji:'🥰'},iyi:{label:'İyi',emoji:'🙂'},yorgun:{label:'Yorgun',emoji:'😴'},uzgun:{label:'Üzgün',emoji:'😔'},gergin:{label:'Gergin',emoji:'😡'}};
@@ -15,7 +15,7 @@ const moodAssets={
  nisa:{mutlu:'assets/moods/nisa-mutlu.png',iyi:'assets/moods/nisa-iyi.png',yorgun:'assets/moods/nisa-yorgun.png',uzgun:'assets/moods/nisa-uzgun.png',gergin:'assets/moods/nisa-gergin.png'},
  necati:{mutlu:'assets/moods/necati-mutlu.png',iyi:'assets/moods/necati-iyi.png',yorgun:'assets/moods/necati-yorgun.png',uzgun:'assets/moods/necati-uzgun.png',gergin:'assets/moods/necati-gergin.png'}
 };
-const moduleNames={mood:'🌸 Nisa Modu',surprise:'🎁 Sürpriz Takvimi',jar:'🫙 Aşk Kavanozu',map:'📍 Anı Haritası',story:'🎬 Hikâyemiz',dates:'💍 Özel Günler',night:'🌙 İyi Geceler',emergency:'🚨 Acil Necati',birthday:'🎂 Doğduğun Gün'};
+const moduleNames={mood:'🌸 Nisa Modu',surprise:'🎁 Sürpriz Takvimi',map:'📍 Anı Haritası',story:'🎬 Hikâyemiz',dates:'💍 Özel Günler',night:'🌙 İyi Geceler',emergency:'🚨 Acil Necati'};
 function clone(x){return JSON.parse(JSON.stringify(x))}function merge(base,saved){if(!saved||typeof saved!=='object')return clone(base);const out=clone(base);for(const k of Object.keys(saved)){if(saved[k]&&typeof saved[k]==='object'&&!Array.isArray(saved[k])&&out[k]&&typeof out[k]==='object'&&!Array.isArray(out[k]))out[k]={...out[k],...saved[k]};else out[k]=saved[k]}return out}
 function loadState(){try{const s=merge(defaultState,JSON.parse(localStorage.getItem(STORAGE_KEY)||'null'));const legacy={'🥰':'mutlu','🙂':'iyi','😴':'yorgun','😔':'uzgun','😡':'gergin'};s.mood.today=legacy[s.mood.today]||s.mood.today||'mutlu';s.mood.history=(s.mood.history||[]).map(x=>({...x,mood:legacy[x.mood]||x.mood}));return s}catch{return clone(defaultState)}}
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));window.NecatiCloud?.scheduleSave(state)}
@@ -222,7 +222,7 @@ function renderBot(){
   c.scrollTop=c.scrollHeight;
 }
 
-function renderModule(n){({mood:renderMood,surprise:renderSurprise,jar:renderJar,map:renderMap,story:renderStory,dates:renderDates,night:renderNight,emergency:renderEmergency,birthday:renderBirthday}[n]||(()=>{}))()}
+function renderModule(n){({mood:renderMood,surprise:renderSurprise,map:renderMap,story:renderStory,dates:renderDates,night:renderNight,emergency:renderEmergency}[n]||(()=>{}))()}
 function viewerMoodOwner(){const r=window.NecatiCloud?.role?.();return r==='nisa'?'necati':'nisa'}
 function phaseInfo(){const s=state.settings;if(!s.lastPeriod)return null;const start=new Date(s.lastPeriod+'T12:00:00'),now=new Date(),elapsed=Math.floor((now-start)/86400000),day=((elapsed%s.cycleLength)+s.cycleLength)%s.cycleLength+1;let phase='Foliküler dönem';if(day<=s.periodLength)phase='Regl dönemi';else if(day>=s.cycleLength-13&&day<=s.cycleLength-11)phase='Tahmini yumurtlama dönemi';else if(day>s.cycleLength-11)phase='Luteal dönem';const next=new Date(start);next.setDate(next.getDate()+Math.ceil(Math.max(0,elapsed+1)/s.cycleLength)*s.cycleLength);if(next<=now)next.setDate(next.getDate()+s.cycleLength);return{day,phase,next}}
 function renderMood(){const p=phaseInfo(),set=moodAssets[viewerMoodOwner()];$('moduleContent').innerHTML=`<div class="panel"><h3>Bugün ruh hali nasıl? 🌸</h3><p class="muted">${viewerMoodOwner()==='nisa'?'Necati hesabında Nisa':'Nisa hesabında Necati'} emojileri gösteriliyor.</p><div class="mood-grid mood-image-grid">${Object.entries(moodMap).map(([k,v])=>`<button class="mood-btn mood-image-btn ${state.mood.today===k?'active':''}" data-mood="${k}"><img src="${set[k]}" alt="${v.label}"><span>${v.label}</span></button>`).join('')}</div><div class="hero-tip">${moodTips[state.mood.today]||''}</div></div><div class="panel"><h3>Döngü tahmini</h3>${p?`<div class="stats-grid"><div class="stat-card"><strong>${p.day}. gün</strong><span>Döngü günü</span></div><div class="stat-card"><strong>${p.phase}</strong><span>Tahmini dönem</span></div><div class="stat-card"><strong>${p.next.toLocaleDateString('tr-TR')}</strong><span>Sonraki başlangıç</span></div></div>`:'<div class="empty">Ayarlar bölümünden son regl başlangıcını gir.</div>'}</div><div class="panel"><h3>Son ruh halleri</h3>${state.mood.history.length?state.mood.history.slice(-7).reverse().map(x=>`<div class="surprise-card">${moodMap[x.mood]?.emoji||''} ${moodMap[x.mood]?.label||x.mood} · ${fmtDate(x.date)}</div>`).join(''):'<div class="empty">Henüz kayıt yok.</div>'}</div>`;document.querySelectorAll('[data-mood]').forEach(b=>b.onclick=async()=>{const next=b.dataset.mood,prev=state.mood.today;if(prev===next)return toast('Ruh hali zaten buydu 🌸');state.mood.today=next;state.mood.history.push({date:today(),mood:next});save();renderMood();toast('Ruh hali kaydedildi 🌸');await notify('🌸 Ruh hali değişti',`${actor()} ruh halini ${moodMap[next].label} yaptı ${moodMap[next].emoji}`,'mood','mood')})}
@@ -908,3 +908,137 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(runSmartReminderChec
 
 
 window.addEventListener('resize',()=>{try{v9RenderExpenses?.()}catch{}});
+
+
+// ===== v10.3 Daily couple features =====
+const v103DateIdeas=[
+  {emoji:'☕',title:'Kahve Date',text:'Telefonları biraz bırakıp birlikte kahve için.'},
+  {emoji:'🍰',title:'Tatlı Kaçamağı',text:'Yeni bir tatlıcı deneyin ya da favorinizi paylaşın.'},
+  {emoji:'🚗',title:'Gece Sürüşü',text:'Müzik açın ve amaçsızca kısa bir gece turuna çıkın.'},
+  {emoji:'🎬',title:'Film Gecesi',text:'Biriniz filmi seçsin, diğeriniz atıştırmalığı hazırlasın.'},
+  {emoji:'🍕',title:'Evde Date',text:'Sipariş verin, masayı güzelleştirin ve evde date yapın.'},
+  {emoji:'🌆',title:'Gün Batımı',text:'Güzel bir yere gidip gün batımını birlikte izleyin.'},
+  {emoji:'🎮',title:'Oyun Gecesi',text:'Birlikte oyun oynayın. Kaybeden içeceği hazırlasın 😄'},
+  {emoji:'📸',title:'Fotoğraf Date',text:'Birlikte 5 yeni fotoğraf çekin. En kötüsünü de saklayın 😄'},
+  {emoji:'🍳',title:'Birlikte Yemek',text:'Mutfağa birlikte girin ve bir şeyler hazırlayın.'},
+  {emoji:'🚶',title:'Akşam Yürüyüşü',text:'Kısa bir yürüyüş yapıp gününüzü birbirinize anlatın.'}
+];
+let v103WheelRotation=0,v103WheelBusy=false,v103SelectedDate=null;
+
+function v103DrawWheel(){
+  const c=$('dateWheelCanvas');if(!c)return;
+  const x=c.getContext('2d'),w=c.width,h=c.height,cx=w/2,cy=h/2,r=w*.46,n=v103DateIdeas.length;
+  x.clearRect(0,0,w,h);
+  v103DateIdeas.forEach((idea,i)=>{
+    const a0=-Math.PI/2+i*2*Math.PI/n,a1=-Math.PI/2+(i+1)*2*Math.PI/n;
+    x.beginPath();x.moveTo(cx,cy);x.arc(cx,cy,r,a0,a1);x.closePath();
+    const g=x.createLinearGradient(cx-r,cy-r,cx+r,cy+r);
+    g.addColorStop(0,i%2?'#8b6cff':'#ff6fae');g.addColorStop(1,i%2?'#6548d6':'#d94e91');
+    x.fillStyle=g;x.fill();
+    x.strokeStyle='rgba(255,255,255,.22)';x.lineWidth=3;x.stroke();
+    const mid=(a0+a1)/2;
+    x.save();x.translate(cx+Math.cos(mid)*r*.67,cy+Math.sin(mid)*r*.67);x.rotate(mid+Math.PI/2);
+    x.textAlign='center';x.fillStyle='#fff';x.font='700 24px system-ui';x.fillText(idea.emoji,0,-12);
+    x.font='700 13px system-ui';x.fillText(idea.title,0,14);x.restore();
+  });
+  x.beginPath();x.arc(cx,cy,r*.14,0,Math.PI*2);x.fillStyle='#1a102b';x.fill();
+  x.strokeStyle='rgba(255,255,255,.18)';x.lineWidth=5;x.stroke();
+  x.textAlign='center';x.textBaseline='middle';x.fillStyle='#fff';x.font='700 24px system-ui';x.fillText('❤️',cx,cy);
+}
+function v103SpinWheel(){
+  if(v103WheelBusy)return;
+  const c=$('dateWheelCanvas');if(!c)return;
+  v103WheelBusy=true;$('spinDateWheelBtn').disabled=true;
+  const index=Math.floor(Math.random()*v103DateIdeas.length);
+  const seg=360/v103DateIdeas.length;
+  const target=360*5 + (360-(index*seg+seg/2));
+  v103WheelRotation+=target;
+  c.style.transform=`rotate(${v103WheelRotation}deg)`;
+  setTimeout(()=>{
+    v103SelectedDate=v103DateIdeas[index];
+    $('dateWheelResult').innerHTML=`<strong>${v103SelectedDate.emoji} ${v103SelectedDate.title}</strong><small>${v103SelectedDate.text}</small>`;
+    $('saveDateWheelBtn').hidden=false;
+    v103WheelBusy=false;$('spinDateWheelBtn').disabled=false;
+  },2900);
+}
+function v103SaveWheelToCalendar(){
+  if(!v103SelectedDate)return;
+  const date=new Date().toISOString().slice(0,10);
+  state.plans=state.plans||[];
+  state.plans.push({id:uid(),title:v103SelectedDate.emoji+' '+v103SelectedDate.title,date,time:'',owner:'ortak',category:'date',reminder:0,note:v103SelectedDate.text,createdAt:Date.now(),createdBy:actor()});
+  save();toast('Date fikri takvime eklendi ❤️');
+  v9RenderCalendar?.();v10RefreshDashboard?.();
+  v9Notify('❤️ Date planı eklendi',`${actor()} çarktan “${v103SelectedDate.title}” seçti`,'plan','planner').catch(()=>{});
+}
+
+function v103RenderLastStatus(){
+  const box=$('lastStatusBox');if(!box)return;
+  const last=(state.quickStatus||[]).slice(-1)[0];
+  box.innerHTML=last?`<span>${last.icon||'❤️'}</span><div><small>Son gönderilen</small><strong>${escapeHtml(last.text)}</strong><em>${new Date(last.at).toLocaleString('tr-TR')}</em></div>`:'Henüz durum gönderilmedi.';
+}
+async function v103SendStatus(text,icon){
+  const who=actor();
+  state.quickStatus=state.quickStatus||[];
+  state.quickStatus.push({id:uid(),text,icon,by:who,at:Date.now()});
+  state.quickStatus=state.quickStatus.slice(-30);save();v103RenderLastStatus();
+  toast(`${text} gönderildi`);
+  await v9Notify(`${icon} ${who}'dan haber var`,text,'status','home').catch(()=>{});
+}
+
+const v103SurpriseTasks=[
+  {emoji:'☕',title:'Kahve Operasyonu',text:'Karşı tarafın sevdiği içeceği söylemeden hazırla ya da al.'},
+  {emoji:'💌',title:'Mini Aşk Notu',text:'Tek cümlelik ama içten bir mesaj bırak.'},
+  {emoji:'🤗',title:'Sarılma Görevi',text:'Hiçbir sebep yokken en az 10 saniye sarıl.'},
+  {emoji:'🍫',title:'Küçük Tatlı',text:'Sevdiği minik bir atıştırmalık sürprizi yap.'},
+  {emoji:'📸',title:'Anı Yakala',text:'Bugün birlikte bir fotoğraf çekip sakla.'},
+  {emoji:'🎵',title:'Şarkı Gönder',text:'Onu hatırlatan bir şarkı gönder.'},
+  {emoji:'📝',title:'3 Güzel Şey',text:'Onun hakkında sevdiğin 3 şeyi söyle.'},
+  {emoji:'🧹',title:'Bir İşini Hafiflet',text:'Bugün onun yapacağı küçük bir işi sen üstlen.'},
+  {emoji:'🍽️',title:'Yemek Sürprizi',text:'Ne yiyeceğini düşünmesine gerek kalmadan bir plan yap.'},
+  {emoji:'📞',title:'Sesini Duy',text:'Müsait olduğu anda kısa bir arama yap ve sadece halini sor.'},
+  {emoji:'🌙',title:'Gece Mesajı',text:'Uyumadan önce bugün onda sevdiğin bir şeyi yaz.'},
+  {emoji:'🌷',title:'Nedensiz Jest',text:'Bugün tamamen sebepsiz küçük bir jest yap.'}
+];
+let v103CurrentSurprise=null;
+function v103DrawSurprise(){
+  const previous=state.surpriseMode?.lastTask;
+  let choices=v103SurpriseTasks.filter(x=>x.title!==previous);
+  v103CurrentSurprise=choices[Math.floor(Math.random()*choices.length)];
+  state.surpriseMode=state.surpriseMode||{accepted:[],lastTask:null};
+  state.surpriseMode.lastTask=v103CurrentSurprise.title;save();
+  $('randomSurpriseEmoji').textContent=v103CurrentSurprise.emoji;
+  $('randomSurpriseTitle').textContent=v103CurrentSurprise.title;
+  $('randomSurpriseText').textContent=v103CurrentSurprise.text;
+  $('acceptSurpriseBtn').hidden=false;
+  v103RenderSurpriseStreak();
+}
+function v103RenderSurpriseStreak(){
+  const box=$('surpriseStreak');if(!box)return;
+  const all=state.surpriseMode?.accepted||[];
+  const thisMonth=new Date().toISOString().slice(0,7);
+  const count=all.filter(x=>new Date(x.at).toISOString().startsWith(thisMonth)).length;
+  box.innerHTML=`<span>🎁</span><div><small>Bu ay kabul edilen sürpriz görevi</small><strong>${count} görev</strong></div>`;
+}
+async function v103AcceptSurprise(){
+  if(!v103CurrentSurprise)return;
+  state.surpriseMode=state.surpriseMode||{accepted:[],lastTask:null};
+  state.surpriseMode.accepted=state.surpriseMode.accepted||[];
+  state.surpriseMode.accepted.push({id:uid(),title:v103CurrentSurprise.title,emoji:v103CurrentSurprise.emoji,by:actor(),at:Date.now()});
+  save();v103RenderSurpriseStreak();$('acceptSurpriseBtn').hidden=true;
+  toast('Görev kabul edildi 😄❤️');
+  await v9Notify('🎁 Sürpriz görevi seçildi',`${actor()} bugün “${v103CurrentSurprise.title}” görevini yapacak ❤️`,'surprise','home').catch(()=>{});
+}
+
+// v10.3 dialog open initialization
+document.addEventListener('click',e=>{
+  const opener=e.target.closest?.('[data-open]');
+  if(opener?.dataset.open==='dateWheelDialog')setTimeout(v103DrawWheel,80);
+  if(opener?.dataset.open==='statusDialog')setTimeout(v103RenderLastStatus,60);
+  if(opener?.dataset.open==='randomSurpriseDialog')setTimeout(v103RenderSurpriseStreak,60);
+});
+$('spinDateWheelBtn')?.addEventListener('click',v103SpinWheel);
+$('saveDateWheelBtn')?.addEventListener('click',v103SaveWheelToCalendar);
+document.querySelectorAll('.status-action').forEach(b=>b.addEventListener('click',()=>v103SendStatus(b.dataset.status,b.dataset.statusIcon)));
+$('drawSurpriseBtn')?.addEventListener('click',v103DrawSurprise);
+$('acceptSurpriseBtn')?.addEventListener('click',v103AcceptSurprise);
+document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>{v103DrawWheel();v103RenderSurpriseStreak()},200)});

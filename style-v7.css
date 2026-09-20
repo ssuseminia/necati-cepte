@@ -284,3 +284,29 @@ body{display:flex;justify-content:center;min-height:100dvh}
 .chart-legend span{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.05)}
 .chart-legend b{font-size:10px}.chart-legend small{font-size:10px;color:var(--mobile-muted)}
 @media(max-width:390px){.chart-legend{grid-template-columns:1fr}.calendar-color-legend{gap:7px}}
+
+/* ===== v10.3 Date wheel / Quick status / Surprise mode ===== */
+.feature-hero{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.feature-hero small{font-size:10px;color:var(--mobile-muted);text-transform:uppercase;letter-spacing:.07em}
+.feature-hero h2{margin:2px 0 0;font-size:23px}
+.feature-emoji{width:54px;height:54px;border-radius:18px;display:grid;place-items:center;font-size:28px;background:linear-gradient(135deg,rgba(255,111,174,.18),rgba(139,108,255,.18));border:1px solid rgba(255,255,255,.08)}
+.wheel-wrap{position:relative;width:min(78vw,340px);aspect-ratio:1;margin:20px auto}
+#dateWheelCanvas{width:100%;height:100%;display:block;filter:drop-shadow(0 18px 30px rgba(0,0,0,.28));transition:transform 2.9s cubic-bezier(.12,.66,.08,1)}
+.wheel-pointer{position:absolute;z-index:4;top:-13px;left:50%;transform:translateX(-50%);font-size:29px;color:#fff;text-shadow:0 4px 12px rgba(0,0,0,.35)}
+.wheel-result{min-height:74px;border-radius:18px;padding:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);display:grid;place-items:center;text-align:center;margin-bottom:12px}
+.wheel-result strong{display:block;font-size:17px}.wheel-result small{display:block;color:var(--mobile-muted);font-size:12px;margin-top:5px;line-height:1.45}
+.big-feature-btn{width:100%}
+.status-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0}
+.status-action{min-height:130px;border-radius:22px;padding:15px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.06);color:#fff;text-align:left;display:grid;align-content:space-between;gap:4px}
+.status-action span{font-size:31px}.status-action strong{font-size:14px}.status-action small{font-size:10px;color:var(--mobile-muted);line-height:1.35}
+.status-action:active{transform:scale(.98)}
+.last-status-box{display:flex;align-items:center;gap:12px;padding:14px;border-radius:18px;background:rgba(255,255,255,.055);color:var(--mobile-muted);font-size:12px}
+.last-status-box>span{font-size:28px}.last-status-box div{display:grid}.last-status-box strong{color:#fff;font-size:13px}.last-status-box em{font-style:normal;font-size:9px;margin-top:3px}
+.surprise-machine{margin:20px 0;padding:22px 18px;text-align:center;border-radius:26px;background:radial-gradient(circle at 50% 0,rgba(255,111,174,.22),transparent 58%),rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.09)}
+.surprise-machine-top{font-size:9px;letter-spacing:.13em;color:#ffd1e4;font-weight:800}
+.surprise-big-emoji{font-size:55px;margin:15px 0 7px;animation:surpriseFloat 2.5s ease-in-out infinite}
+.surprise-machine h3{font-size:20px;margin:0 0 7px}.surprise-machine p{font-size:12px;color:var(--mobile-muted);line-height:1.5;margin:0}
+.surprise-streak{display:flex;align-items:center;gap:12px;margin-top:15px;padding:13px;border-radius:17px;background:rgba(255,255,255,.055)}
+.surprise-streak>span{font-size:27px}.surprise-streak div{display:grid}.surprise-streak small{font-size:9px;color:var(--mobile-muted)}.surprise-streak strong{font-size:14px}
+@keyframes surpriseFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-7px) rotate(3deg)}}
+@media(max-width:365px){.status-grid{grid-template-columns:1fr}.status-action{min-height:100px}}

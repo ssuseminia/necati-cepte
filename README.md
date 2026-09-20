@@ -111,3 +111,27 @@ Stellarium canlı görünümü üçüncü taraf web hizmetidir; yüklenmezse alt
   - harcama ve kategori toplamlarını
   - son ruh halini okuyabilir
   - kendisinin bot olduğunu açıkça belirtir.
+
+## v10.3
+- 🎲 Date Çarkı eklendi.
+  - 10 farklı date fikri
+  - gerçek dönen çark animasyonu
+  - çıkan fikri tek tuşla Ortak Takvim'e ekleme
+- 🏠 Hızlı Durum eklendi.
+  - Eve geldim
+  - Yoldayım
+  - Çıktım
+  - Seni arayacağım
+  - seçildiğinde karşı tarafa push bildirim gönderir
+- 🎁 Rastgele Sürpriz Modu eklendi.
+  - 12 farklı mini ilişki görevi
+  - art arda aynı görevi seçmez
+  - “Bunu yapacağım” ile kabul edilir
+  - kabul edilince karşı tarafa tatlı bildirim gider
+  - aylık kabul edilen görev sayısını gösterir
+
+## v10.3.1 sadeleştirme
+- Aşk Kavanozu modülü arayüzden kaldırıldı.
+- Doğduğun Gün modülü arayüzden kaldırıldı.
+- Hızlı erişimdeki Aşk Kavanozu butonu kaldırıldı.
+- Eski kayıtlar silinmez; sadece artık uygulama arayüzünde gösterilmez.

@@ -23,7 +23,7 @@
         <div class="brand-mark">❤️</div>
         <div>
           <small id="mobileGreeting">Bugün de birlikte</small>
-          <strong>Necati Cepte <em>v10.2</em></strong>
+          <strong>Necati Cepte <em>v10.3.1</em></strong>
         </div>
       </div>
       <div class="mobile-actions">
@@ -115,10 +115,11 @@
         <div class="quick-scroll">
           <button class="quick-card danger-quick" data-module="emergency"><span>🚨</span><strong>Acil Necati</strong></button>
           <button class="quick-card" data-module="night"><span>🌙</span><strong>İyi Geceler</strong></button>
-          <button class="quick-card" data-module="jar"><span>🫙</span><strong>Aşk Kavanozu</strong></button>
           <button class="quick-card" data-module="dates"><span>💍</span><strong>Özel Günler</strong></button>
           <button class="quick-card" data-open="plannerDialog"><span>📅</span><strong>Plan Ekle</strong></button>
           <button class="quick-card" data-open="todoDialog"><span>✅</span><strong>Görevler</strong></button>
+          <button class="quick-card" data-open="statusDialog"><span>🏠</span><strong>Eve Geldim</strong></button>
+          <button class="quick-card" data-open="dateWheelDialog"><span>🎲</span><strong>Date Çarkı</strong></button>
         </div>
       </section>
 
@@ -128,17 +129,18 @@
       <section class="mobile-module-grid" id="allModulesGrid">
         <button class="mobile-module" data-module="mood"><span class="module-bubble">🌸</span><div><strong>Nisa Modu</strong><small>Ruh hali</small></div></button>
         <button class="mobile-module" data-module="surprise"><span class="module-bubble">🎁</span><div><strong>Sürpriz Takvimi</strong><small>Gizli sürprizler</small></div></button>
-        <button class="mobile-module" data-module="jar"><span class="module-bubble">🫙</span><div><strong>Aşk Kavanozu</strong><small>Sevgi kartları</small></div></button>
         <button class="mobile-module" data-module="map"><span class="module-bubble">📍</span><div><strong>Anı Haritası</strong><small>Bizim yerlerimiz</small></div></button>
                 <button class="mobile-module" data-module="story"><span class="module-bubble">🎬</span><div><strong>Hikâyemiz</strong><small>Sezon sezon</small></div></button>
         <button class="mobile-module" data-module="dates"><span class="module-bubble">💍</span><div><strong>Özel Günler</strong><small>Geri sayımlar</small></div></button>
         <button class="mobile-module" data-module="night"><span class="module-bubble">🌙</span><div><strong>İyi Geceler</strong><small>Fotoğraflı mesaj</small></div></button>
         <button class="mobile-module danger-mobile" data-module="emergency"><span class="module-bubble">🚨</span><div><strong>Acil Necati</strong><small>Hemen haber ver</small></div></button>
-        <button class="mobile-module" data-module="birthday"><span class="module-bubble">🎂</span><div><strong>Doğduğun Gün</strong><small>Yaşam istatistikleri</small></div></button>
         <button class="mobile-module" data-open="plannerDialog"><span class="module-bubble">📅</span><div><strong>Ortak Takvim</strong><small>Planlar</small></div></button>
         <button class="mobile-module" data-open="todoDialog"><span class="module-bubble">✅</span><div><strong>Yapılacaklar</strong><small>Görevler</small></div></button>
         <button class="mobile-module" data-open="expenseDialog"><span class="module-bubble">💸</span><div><strong>Harcamalar</strong><small>Ortak bütçe</small></div></button>
         <button class="mobile-module" data-open="necatiBotDialog"><span class="module-bubble">🤖</span><div><strong>Necati Bot</strong><small>Konuş & sor</small></div></button>
+        <button class="mobile-module" data-open="dateWheelDialog"><span class="module-bubble">🎲</span><div><strong>Date Çarkı</strong><small>Bugün ne yapalım?</small></div></button>
+        <button class="mobile-module" data-open="statusDialog"><span class="module-bubble">🏠</span><div><strong>Hızlı Durum</strong><small>Eve geldim / yoldayım</small></div></button>
+        <button class="mobile-module" data-open="randomSurpriseDialog"><span class="module-bubble">🎁</span><div><strong>Sürpriz Modu</strong><small>Rastgele çift görevi</small></div></button>
       </section>
     </main>
 
@@ -449,5 +451,63 @@
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
     <script src="cloud-v7.js"></script>
     <script src="app-v7.js"></script>
+
+  <dialog id="dateWheelDialog" class="app-dialog">
+    <div class="dialog-shell">
+      <button class="close-btn" type="button" data-close="dateWheelDialog">✕</button>
+      <div class="feature-hero">
+        <span class="feature-emoji">🎲</span>
+        <div><small>Karar veremediğiniz anlar için</small><h2>Date Çarkı</h2></div>
+      </div>
+      <p class="muted">Çarkı döndür, bugünkü date fikrini kader seçsin 😄❤️</p>
+      <div class="wheel-wrap">
+        <div class="wheel-pointer">▼</div>
+        <canvas id="dateWheelCanvas" width="720" height="720"></canvas>
+      </div>
+      <div id="dateWheelResult" class="wheel-result">Hazırsanız çarkı döndürün 🎡</div>
+      <button type="button" id="spinDateWheelBtn" class="primary-btn big-feature-btn">Çarkı Döndür 🎲</button>
+      <button type="button" id="saveDateWheelBtn" class="ghost-btn" hidden>📅 Takvime ekle</button>
+    </div>
+  </dialog>
+
+  <dialog id="statusDialog" class="app-dialog">
+    <div class="dialog-shell">
+      <button class="close-btn" type="button" data-close="statusDialog">✕</button>
+      <div class="feature-hero">
+        <span class="feature-emoji">🏠</span>
+        <div><small>Tek dokunuşla haber ver</small><h2>Hızlı Durum</h2></div>
+      </div>
+      <p class="muted">Seçtiğin durum karşı tarafa anında bildirim olarak gider.</p>
+      <div class="status-grid">
+        <button type="button" class="status-action" data-status="Eve geldim ❤️" data-status-icon="🏠"><span>🏠</span><strong>Eve geldim</strong><small>Merak etme, evdeyim</small></button>
+        <button type="button" class="status-action" data-status="Yoldayım 🚗" data-status-icon="🚗"><span>🚗</span><strong>Yoldayım</strong><small>Geliyorum</small></button>
+        <button type="button" class="status-action" data-status="Çıktım 👋" data-status-icon="👋"><span>👋</span><strong>Çıktım</strong><small>Şimdi çıktım</small></button>
+        <button type="button" class="status-action" data-status="Müsait olunca seni arayacağım 📞" data-status-icon="📞"><span>📞</span><strong>Seni arayacağım</strong><small>Müsait olunca</small></button>
+      </div>
+      <div id="lastStatusBox" class="last-status-box">Henüz durum gönderilmedi.</div>
+    </div>
+  </dialog>
+
+  <dialog id="randomSurpriseDialog" class="app-dialog">
+    <div class="dialog-shell">
+      <button class="close-btn" type="button" data-close="randomSurpriseDialog">✕</button>
+      <div class="feature-hero">
+        <span class="feature-emoji">🎁</span>
+        <div><small>Küçük şeyler, güzel günler</small><h2>Rastgele Sürpriz Modu</h2></div>
+      </div>
+      <div class="surprise-machine">
+        <div class="surprise-machine-top">✨ BUGÜNÜN MİNİ GÖREVİ ✨</div>
+        <div id="randomSurpriseEmoji" class="surprise-big-emoji">❤️</div>
+        <h3 id="randomSurpriseTitle">Bir görev çek bakalım</h3>
+        <p id="randomSurpriseText">Bugüne küçük bir sürpriz ekleyelim.</p>
+      </div>
+      <div class="actions">
+        <button type="button" id="drawSurpriseBtn" class="primary-btn">Yeni Görev Çek 🎁</button>
+        <button type="button" id="acceptSurpriseBtn" class="ghost-btn" hidden>Bunu yapacağım ❤️</button>
+      </div>
+      <div id="surpriseStreak" class="surprise-streak"></div>
+    </div>
+  </dialog>
+
 </body>
 </html>
