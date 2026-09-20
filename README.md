@@ -161,3 +161,20 @@ Stellarium canlı görünümü üçüncü taraf web hizmetidir; yüklenmezse alt
 - Sayfa ve dialog geçiş animasyonları eklendi.
 - Desteklenen cihazlarda hafif haptic titreşim eklendi.
 - PWA manifest tema rengi ve arka planı yeni mobil tasarımla uyumlu hale getirildi.
+
+## v10.5 Final Polish
+- Geçiş animasyonları daha akıcı hale getirildi.
+- Ana sayfa kişiselleştirildi:
+  - Nisa / Necati avatarları
+  - giriş yapan kişiye göre başlık
+  - birlikte geçirilen gün
+  - anı sayısı
+  - iyi geceler arşivi sayısı
+  - günün plan/görev özeti
+- Profil sekmesi artık Ayarlar'ı doğrudan açmak yerine gerçek bir Profil ekranı açar.
+- Profil ekranında çift bilgisi, ruh hali, plan/anı/iyi geceler istatistikleri ve hesap/ayar kısayolları vardır.
+- Ana navigasyon, modül kartları ve hızlı erişim ikonları tek çizgi SVG stiline geçirildi.
+- Ayarlar kaydedildiğinde tema, haptic ve akıllı bildirim saatlerini yanlışlıkla sıfırlayan state-overwrite bug'ı düzeltildi.
+- Ayarlar değişikliği için gereksiz push bildirimi kaldırıldı.
+- Uygulama sürüm değişkeni v10.5'e güncellendi.
+- Dokunma, scroll ve dialog geçişleri daha akıcı hale getirildi.

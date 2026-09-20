@@ -53,6 +53,7 @@ window.applyCloudState=remote=>{
   if(currentModule)renderModule(currentModule);
   try{v10RefreshDashboard?.()}catch{}
   try{v104ApplyAppearance?.()}catch{}
+  try{v105RefreshPersonalUI?.()}catch{}
   try{v9RenderCalendar?.();v9RenderTodos?.();v9RenderExpenses?.()}catch{}
 };
 updateIdentity();updateCounter();setInterval(updateCounter,1000);
@@ -267,10 +268,43 @@ function renderEmergency(){$('moduleContent').innerHTML=`<div class="panel"><h3>
 function renderBirthday(){const b=state.settings.birthDate;if(!b){$('moduleContent').innerHTML='<div class="panel"><div class="empty">Doğum tarihini Ayarlar bölümünden gir 🎂</div></div>';return}const birth=new Date(b+'T12:00:00'),now=new Date(),days=Math.floor((now-birth)/86400000),weeks=Math.floor(days/7),months=(now.getFullYear()-birth.getFullYear())*12+now.getMonth()-birth.getMonth(),years=now.getFullYear()-birth.getFullYear()-(new Date(now.getFullYear(),birth.getMonth(),birth.getDate())>now?1:0),weekday=birth.toLocaleDateString('tr-TR',{weekday:'long'});let next=new Date(now.getFullYear(),birth.getMonth(),birth.getDate());if(next<now)next.setFullYear(now.getFullYear()+1);$('moduleContent').innerHTML=`<div class="panel"><h3>${state.settings.partnerName}'nın dünyaya geldiği gün 🎂</h3><div class="stats-grid"><div class="stat-card"><strong>${weekday}</strong><span>Doğduğu gün</span></div><div class="stat-card"><strong>${years}</strong><span>Yaş</span></div><div class="stat-card"><strong>${days.toLocaleString('tr-TR')}</strong><span>Yaşadığı gün</span></div><div class="stat-card"><strong>${weeks.toLocaleString('tr-TR')}</strong><span>Hafta</span></div><div class="stat-card"><strong>${months.toLocaleString('tr-TR')}</strong><span>Ay</span></div><div class="stat-card"><strong>${Math.ceil((next-now)/86400000)}</strong><span>Doğum gününe kalan</span></div></div></div>`}
 
 window.addEventListener('necati:incoming',e=>{const n=e.detail||{};let d=$('emergencyAlertDialog');if(!d){d=document.createElement('dialog');d.id='emergencyAlertDialog';d.innerHTML='<div class="dialog-card emergency-alert-card"><div class="dialog-icon">🔔</div><h2 id="emergencyAlertTitle"></h2><p id="emergencyAlertBody" class="big-quote"></p><button id="emergencyAlertClose" class="primary-btn">Tamam ❤️</button></div>';document.body.appendChild(d);$('emergencyAlertClose').onclick=()=>d.close()}$('emergencyAlertTitle').textContent=n.title||'Necati Cepte';$('emergencyAlertBody').textContent=n.body||'Yeni bildirim';try{d.showModal()}catch{}if(navigator.vibrate)navigator.vibrate([250,100,250])});
-$('settingsBtn').onclick=()=>{const s=state.settings;for(const [id,k] of [['partnerName','partnerName'],['ownerName','ownerName'],['relationshipDate','relationshipDate'],['birthDate','birthDate'],['lastPeriod','lastPeriod'],['cycleLength','cycleLength'],['periodLength','periodLength']])$(id).value=s[k]||'';$('settingsDialog').showModal()};$('settingsDialog').addEventListener('close',async()=>{if($('settingsDialog').returnValue!=='save')return;state.settings={partnerName:$('partnerName').value.trim()||'Nisa',ownerName:$('ownerName').value.trim()||'Necati',relationshipDate:$('relationshipDate').value,birthDate:$('birthDate').value,lastPeriod:$('lastPeriod').value,cycleLength:+$('cycleLength').value||28,periodLength:+$('periodLength').value||5};save();updateIdentity();updateCounter();toast('Ayarlar kaydedildi ❤️');await notify('⚙️ Ayarlar güncellendi',`${actor()} ortak ayarlarda değişiklik yaptı`,'settings','home')});
+$('settingsBtn').onclick=()=>{
+  const s=state.settings||{};
+  for(const [id,k] of [['partnerName','partnerName'],['ownerName','ownerName'],['relationshipDate','relationshipDate'],['birthDate','birthDate'],['lastPeriod','lastPeriod'],['cycleLength','cycleLength'],['periodLength','periodLength']]){
+    if($(id))$(id).value=s[k]||'';
+  }
+  hydratePersonalSettings?.();
+  v104ApplyAppearance?.();
+  v9Open('settingsDialog');
+};
+$('settingsDialog').addEventListener('close',()=>{
+  if($('settingsDialog').returnValue!=='save')return;
+  const old={...(state.settings||{})};
+  state.settings={
+    ...old,
+    partnerName:$('partnerName')?.value.trim()||'Nisa',
+    ownerName:$('ownerName')?.value.trim()||'Necati',
+    relationshipDate:$('relationshipDate')?.value||old.relationshipDate,
+    birthDate:$('birthDate')?.value||'',
+    lastPeriod:$('lastPeriod')?.value||'',
+    cycleLength:+$('cycleLength')?.value||28,
+    periodLength:+$('periodLength')?.value||5,
+    notifyTodoHour:$('notifyTodoHour')?.value||old.notifyTodoHour||'09:00',
+    notifySpecialHour:$('notifySpecialHour')?.value||old.notifySpecialHour||'09:30',
+    notifyBirthdayHour:$('notifyBirthdayHour')?.value||old.notifyBirthdayHour||'10:00',
+    notifyPeriodHour:$('notifyPeriodHour')?.value||old.notifyPeriodHour||'10:30',
+    notifyExpenseHour:$('notifyExpenseHour')?.value||old.notifyExpenseHour||'20:00',
+    notifyQuietStart:$('notifyQuietStart')?.value||old.notifyQuietStart||'23:00',
+    notifyQuietEnd:$('notifyQuietEnd')?.value||old.notifyQuietEnd||'08:00',
+    uiTheme:old.uiTheme||'romantic',
+    uiAnimations:old.uiAnimations!==false,
+    uiHaptics:old.uiHaptics!==false
+  };
+  save();updateIdentity();updateCounter();v104ApplyAppearance?.();v105RefreshPersonalUI?.();toast('Ayarlar kaydedildi ❤️');
+});
 $('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='necati-cepte-v7-yedek.json';a.click();URL.revokeObjectURL(a.href)};$('importInput').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{state=merge(defaultState,JSON.parse(r.result));save();updateIdentity();$('settingsDialog').close();toast('Yedek yüklendi ✅')}catch{toast('Geçersiz yedek')}};r.readAsText(f)};$('randomLoveBtn').onclick=()=>{$('loveDialogText').textContent=`Seni seviyorum çünkü ${dailyJar()}.`;$('loveDialog').showModal()};
 window.addEventListener('necati:authchange',()=>{if(currentModule==='mood')renderMood()});window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBtn').hidden=false});$('installBtn').onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBtn').hidden=true};
-window.NECATI_APP_VERSION='7.0';if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{const regs=await navigator.serviceWorker.getRegistrations();for(const r of regs){const u=String(r.active?.scriptURL||r.installing?.scriptURL||r.waiting?.scriptURL||'');if(u&&!u.includes('OneSignalSDK')&&!u.includes('sw-v7.js'))await r.unregister()}const reg=await navigator.serviceWorker.register('./sw-v7.js',{scope:'./',updateViaCache:'none'});await reg.update()}catch(e){console.warn('SW v7',e)}});
+window.NECATI_APP_VERSION='10.5';if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{const regs=await navigator.serviceWorker.getRegistrations();for(const r of regs){const u=String(r.active?.scriptURL||r.installing?.scriptURL||r.waiting?.scriptURL||'');if(u&&!u.includes('OneSignalSDK')&&!u.includes('sw-v7.js'))await r.unregister()}const reg=await navigator.serviceWorker.register('./sw-v7.js',{scope:'./',updateViaCache:'none'});await reg.update()}catch(e){console.warn('SW v7',e)}});
 
 document.addEventListener('DOMContentLoaded',()=>setTimeout(hydratePersonalSettings,50));
 
@@ -1214,3 +1248,103 @@ document.addEventListener('DOMContentLoaded',()=>{
   v104RefreshSafeUI();
   setInterval(v104UpdateClock,30000);
 });
+
+
+// ===== v10.5 Smooth navigation + personal profile =====
+function v105DaysTogether(){
+  const start=new Date(state.settings?.relationshipDate||'2025-04-12T00:00');
+  return Math.max(0,Math.floor((Date.now()-start.getTime())/86400000));
+}
+function v105CurrentRole(){
+  try{return window.NecatiCloud?.role?.()||''}catch{return''}
+}
+function v105RefreshPersonalUI(){
+  const s=state.settings||{};
+  const nisa=s.partnerName||'Nisa',necati=s.ownerName||'Necati';
+  const days=v105DaysTogether();
+  const mood=state.mood?.today||'iyi';
+
+  if($('homeCoupleNames'))$('homeCoupleNames').textContent=`${nisa} ❤️ ${necati}`;
+  if($('homeTogetherDays'))$('homeTogetherDays').textContent=days.toLocaleString('tr-TR');
+  if($('homeMemoryCount'))$('homeMemoryCount').textContent=(state.memories||[]).length;
+  if($('homeNightCount'))$('homeNightCount').textContent=(state.nights||[]).length;
+
+  const role=v105CurrentRole();
+  const title=$('homePersonalTitle');
+  const subtitle=$('homePersonalSubtitle');
+  if(title){
+    if(role==='nisa')title.textContent=`Bugün de senin günün ${nisa} ❤️`;
+    else if(role==='necati')title.textContent=`${necati}, bugün ne yapıyoruz?`;
+    else title.textContent='Bizim küçük dünyamız';
+  }
+  if(subtitle){
+    const open=(state.todos||[]).filter(x=>!x.done).length;
+    const todayPlans=(state.plans||[]).filter(x=>x.date===new Date().toISOString().slice(0,10)).length;
+    subtitle.textContent=todayPlans||open?`Bugün ${todayPlans} plan ve ${open} açık görev var.`:'Bugün sakin görünüyor. Birlikte güzel bir şey yapın ✨';
+  }
+
+  if($('homeAvatarNisa'))$('homeAvatarNisa').src=moodAssets.nisa?.[mood]||'assets/moods/nisa-iyi.png';
+  if($('homeAvatarNecati'))$('homeAvatarNecati').src=moodAssets.necati?.iyi||'assets/moods/necati-iyi.png';
+
+  if($('profileCoupleName'))$('profileCoupleName').textContent=`${nisa} & ${necati}`;
+  if($('profileRelationshipText'))$('profileRelationshipText').textContent=`${days.toLocaleString('tr-TR')} gündür aynı hikâyede ❤️`;
+  if($('profileNisaName'))$('profileNisaName').textContent=nisa;
+  if($('profileNecatiName'))$('profileNecatiName').textContent=necati;
+  if($('profileNisaMood'))$('profileNisaMood').textContent=moodMap[mood]?`${moodMap[mood].emoji} ${moodMap[mood].label}`:'Ruh hali';
+  if($('profileNisaAvatar'))$('profileNisaAvatar').src=moodAssets.nisa?.[mood]||'assets/moods/nisa-iyi.png';
+  if($('profileNecatiAvatar'))$('profileNecatiAvatar').src=moodAssets.necati?.iyi||'assets/moods/necati-iyi.png';
+  if($('profileDays'))$('profileDays').textContent=days.toLocaleString('tr-TR');
+  if($('profilePlanCount'))$('profilePlanCount').textContent=(state.plans||[]).length;
+  if($('profileMemoryCount'))$('profileMemoryCount').textContent=(state.memories||[]).length;
+  if($('profileNightCount'))$('profileNightCount').textContent=(state.nights||[]).length;
+
+  const email=window.NecatiCloud?.user?.()?.email;
+  if($('profileAccountText'))$('profileAccountText').textContent=email||'Giriş yap / hesabı yönet';
+}
+
+function v105AnimatePage(el,direction='in'){
+  if(!el||state.settings?.uiAnimations===false)return;
+  el.classList.remove('page-motion-in','page-motion-out');
+  void el.offsetWidth;
+  el.classList.add(direction==='in'?'page-motion-in':'page-motion-out');
+  setTimeout(()=>el.classList.remove('page-motion-in','page-motion-out'),320);
+}
+
+function v105OpenProfile(){
+  v105RefreshPersonalUI();
+  v9Open('profileDialog');
+}
+$('profileSettingsBtn')?.addEventListener('click',()=>{
+  v9Close('profileDialog');
+  setTimeout(()=>$('settingsBtn')?.click(),170);
+});
+$('profileAccountBtn')?.addEventListener('click',()=>{
+  v9Close('profileDialog');
+  setTimeout(()=>$('userBtn')?.click(),170);
+});
+$('profileCalendarBtn')?.addEventListener('click',()=>{
+  v9Close('profileDialog');
+  setTimeout(()=>document.querySelector('[data-open="plannerDialog"]')?.click(),170);
+});
+
+// Better tab behavior: profile is now a real profile screen.
+document.querySelectorAll('.tab-item').forEach(btn=>{
+  if(btn.dataset.tab==='profile'){
+    btn.addEventListener('click',e=>{
+      e.stopImmediatePropagation();
+      v10ActivateTab('profile');
+      v105OpenProfile();
+    },true);
+  }
+});
+
+// Animate module and home surfaces.
+document.addEventListener('click',e=>{
+  const mod=e.target.closest?.('[data-module]');
+  if(mod)setTimeout(()=>v105AnimatePage($('moduleView'),'in'),0);
+  if(e.target.closest?.('#backBtn'))setTimeout(()=>v105AnimatePage($('homeView'),'in'),0);
+});
+
+window.addEventListener('necati:authchange',()=>setTimeout(v105RefreshPersonalUI,150));
+document.addEventListener('DOMContentLoaded',()=>setTimeout(v105RefreshPersonalUI,200));
+window.addEventListener('focus',()=>setTimeout(v105RefreshPersonalUI,120));
