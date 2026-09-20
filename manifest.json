@@ -4,8 +4,8 @@
   "description": "Necati ve Nisa için mobil tarzda ilişki uygulaması.",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#120f1c",
-  "theme_color": "#9b5de5",
+  "background_color": "#10091f",
+  "theme_color": "#10091f",
   "orientation": "portrait-primary",
   "icons": [
     {

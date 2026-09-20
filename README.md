@@ -146,3 +146,18 @@ Stellarium canlı görünümü üçüncü taraf web hizmetidir; yüklenmezse alt
 - Çark sonucu otomatik Ortak Takvim'e eklenir.
 - Çark sonucu karşı tarafa otomatik push olarak gönderilir.
 - Manuel “Takvime ekle” butonu kaldırıldı; çift kayıt riski engellendi.
+
+## v10.4 Native Mobile Polish
+- Uygulamanın tamamı ortak bir mobil tasarım sistemine geçirildi.
+- 3 tema eklendi: Romantik, Gece, Soft.
+- Tema seçimi kalıcıdır ve iki tema görünümü mobil arayüzün tamamına uygulanır.
+- Animasyonları ve dokunma/titreşim hissini açıp kapatma ayarı eklendi.
+- Üst bar, alt navigasyon, kartlar, formlar, dialoglar ve toast mesajları yeniden tasarlandı.
+- iOS input zoom sorunu için form fontları 16px'e sabitlendi.
+- Safe-area ve tam ekran PWA görünümü iyileştirildi.
+- Dialog açılırken arka sayfanın kayması engellendi.
+- Masaüstünde uygulama sabit telefon kasası gibi 430px genişlikte gösterilir.
+- Mobilde ekranı tam dolduran native uygulama görünümü korunur.
+- Sayfa ve dialog geçiş animasyonları eklendi.
+- Desteklenen cihazlarda hafif haptic titreşim eklendi.
+- PWA manifest tema rengi ve arka planı yeni mobil tasarımla uyumlu hale getirildi.

@@ -17,13 +17,18 @@
 <body>
   <div class="bg-orb orb-a"></div><div class="bg-orb orb-b"></div>
   <div class="app-shell">
+    <div class="native-status-strip" aria-hidden="true">
+      <span id="nativeClock">--:--</span>
+      <span class="native-pill"></span>
+      <span>●●●</span>
+    </div>
     
     <header class="mobile-appbar">
       <div class="mobile-brand">
-        <div class="brand-mark">❤️</div>
+        <div class="brand-mark"><img src="icons/icon-192.png" alt="" /></div>
         <div>
           <small id="mobileGreeting">Bugün de birlikte</small>
-          <strong>Necati Cepte <em>v10.3.2</em></strong>
+          <strong>Necati Cepte <em>v10.4</em></strong>
         </div>
       </div>
       <div class="mobile-actions">
@@ -152,11 +157,11 @@
 
     
     <nav class="mobile-tabbar" aria-label="Ana menü">
-      <button type="button" class="tab-item active" data-tab="home"><span>⌂</span><small>Ana Sayfa</small></button>
-      <button type="button" class="tab-item" data-tab="calendar"><span>▣</span><small>Takvim</small></button>
-      <button type="button" class="tab-item tab-heart" data-tab="love"><span>♥</span><small>Biz</small></button>
-      <button type="button" class="tab-item" data-tab="tasks"><span>✓</span><small>Planlar</small></button>
-      <button type="button" class="tab-item" data-tab="profile"><span>●</span><small>Profil</small></button>
+      <button type="button" class="tab-item active" data-tab="home"><span class="tab-icon">⌂</span><small>Ana Sayfa</small></button>
+      <button type="button" class="tab-item" data-tab="calendar"><span class="tab-icon">▣</span><small>Takvim</small></button>
+      <button type="button" class="tab-item tab-heart" data-tab="love"><span class="tab-icon">♥</span><small>Biz</small></button>
+      <button type="button" class="tab-item" data-tab="tasks"><span class="tab-icon">✓</span><small>Planlar</small></button>
+      <button type="button" class="tab-item" data-tab="profile"><span class="tab-icon">●</span><small>Profil</small></button>
       <button id="installBtn" hidden></button>
       <button id="homeBtn" hidden></button>
       <button id="randomLoveBtn" hidden></button>
@@ -177,7 +182,35 @@
         <label>Regl süresi (gün)<input id="periodLength" type="number" min="2" max="10" /></label>
       </div>
       
-      <section class="settings-section smart-notification-settings">
+      
+      <section class="settings-section app-appearance-settings">
+        <div class="settings-section-head">
+          <div>
+            <small>Görünüm</small>
+            <h3>🎨 Uygulama Teması</h3>
+          </div>
+        </div>
+        <div class="theme-picker" id="themePicker">
+          <button type="button" class="theme-option" data-theme-choice="romantic">
+            <span class="theme-preview romantic-preview"><i></i><i></i><i></i></span>
+            <strong>Romantik</strong><small>Pembe • mor</small>
+          </button>
+          <button type="button" class="theme-option" data-theme-choice="midnight">
+            <span class="theme-preview midnight-preview"><i></i><i></i><i></i></span>
+            <strong>Gece</strong><small>Lacivert • mor</small>
+          </button>
+          <button type="button" class="theme-option" data-theme-choice="soft">
+            <span class="theme-preview soft-preview"><i></i><i></i><i></i></span>
+            <strong>Soft</strong><small>Açık • pastel</small>
+          </button>
+        </div>
+        <div class="appearance-toggles">
+          <label class="toggle-row"><span><strong>✨ Animasyonlar</strong><small>Sayfa geçişleri ve küçük hareketler</small></span><input id="uiAnimations" type="checkbox" checked></label>
+          <label class="toggle-row"><span><strong>📳 Dokunma hissi</strong><small>Desteklenen cihazlarda hafif titreşim</small></span><input id="uiHaptics" type="checkbox" checked></label>
+        </div>
+      </section>
+
+<section class="settings-section smart-notification-settings">
         <div class="settings-section-head">
           <div>
             <small>Akıllı bildirimler</small>

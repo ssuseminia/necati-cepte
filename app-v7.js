@@ -1,7 +1,7 @@
 const $=id=>document.getElementById(id);
 const STORAGE_KEY='necati-cepte-v2';
 const defaultState={
- settings:{nisaBirthday:'',necatiBirthday:'',periodStartDate:'',periodLength:5,periodCycle:28,partnerName:'Nisa',ownerName:'Necati',relationshipDate:'2025-04-12T00:00',birthDate:'',lastPeriod:'',cycleLength:28,periodLength:5,notifyTodoHour:'09:00',notifySpecialHour:'09:30',notifyBirthdayHour:'10:00',notifyPeriodHour:'10:30',notifyExpenseHour:'20:00',notifyQuietStart:'23:00',notifyQuietEnd:'08:00'},
+ settings:{nisaBirthday:'',necatiBirthday:'',periodStartDate:'',periodLength:5,periodCycle:28,partnerName:'Nisa',ownerName:'Necati',relationshipDate:'2025-04-12T00:00',birthDate:'',lastPeriod:'',cycleLength:28,periodLength:5,notifyTodoHour:'09:00',notifySpecialHour:'09:30',notifyBirthdayHour:'10:00',notifyPeriodHour:'10:30',notifyExpenseHour:'20:00',notifyQuietStart:'23:00',notifyQuietEnd:'08:00',uiTheme:'romantic',uiAnimations:true,uiHaptics:true},
  mood:{today:'mutlu',history:[]},surprises:[{id:1,date:new Date().toISOString().slice(0,10),title:'Bugünün küçük sürprizi',message:'Bir adet uzun sarılma kazandın ❤️',type:'Mesaj'}],
  jar:['gülüşün en sıradan günümü bile güzelleştiriyor','yanında kendim olabiliyorum','birlikte saçmalamak dünyanın en güzel şeyi','zor günlerimde bile yanımda olduğunu hissediyorum','seninle gelecek düşünmek beni mutlu ediyor','sesini duyunca günüm değişiyor'],
  memories:[],stories:[{id:1,season:1,episode:1,date:'2025-04-12',title:'Biz olduk ❤️',text:'Nisa ve Necati hikâyesinin başladığı gün.',image:''},{id:2,season:2,episode:1,date:'2026-06-28',title:'Nişanımız 💍',text:'Hikâyemizin en özel bölümlerinden biri.',image:''}],
@@ -19,7 +19,13 @@ const moduleNames={mood:'🌸 Nisa Modu',surprise:'🎁 Sürpriz Takvimi',map:'�
 function clone(x){return JSON.parse(JSON.stringify(x))}function merge(base,saved){if(!saved||typeof saved!=='object')return clone(base);const out=clone(base);for(const k of Object.keys(saved)){if(saved[k]&&typeof saved[k]==='object'&&!Array.isArray(saved[k])&&out[k]&&typeof out[k]==='object'&&!Array.isArray(out[k]))out[k]={...out[k],...saved[k]};else out[k]=saved[k]}return out}
 function loadState(){try{const s=merge(defaultState,JSON.parse(localStorage.getItem(STORAGE_KEY)||'null'));const legacy={'🥰':'mutlu','🙂':'iyi','😴':'yorgun','😔':'uzgun','😡':'gergin'};s.mood.today=legacy[s.mood.today]||s.mood.today||'mutlu';s.mood.history=(s.mood.history||[]).map(x=>({...x,mood:legacy[x.mood]||x.mood}));return s}catch{return clone(defaultState)}}
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));window.NecatiCloud?.scheduleSave(state)}
-function uid(){return Date.now()+Math.floor(Math.random()*999)}function today(){return new Date().toISOString().slice(0,10)}function fmtDate(v){if(!v)return'—';return new Date(v+'T12:00:00').toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'})}function escapeHtml(s=''){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}function toast(m){const e=$('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2500)}window.necatiToast=toast;
+function uid(){return Date.now()+Math.floor(Math.random()*999)}function today(){return new Date().toISOString().slice(0,10)}function fmtDate(v){if(!v)return'—';return new Date(v+'T12:00:00').toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'})}function escapeHtml(s=''){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}function toast(m){
+  const e=$('toast');if(!e)return;
+  e.textContent=m;e.classList.add('show');
+  if(/eklendi|gönderildi|kaydedildi|tamamlandı|değiştirildi|kabul edildi/i.test(String(m)))try{v104Haptic?.('success')}catch{}
+  clearTimeout(window.__necatiToastTimer);
+  window.__necatiToastTimer=setTimeout(()=>e.classList.remove('show'),2500);
+}window.necatiToast=toast;
 function actor(){return window.NecatiCloud?.role?.()==='nisa'?'Nisa':window.NecatiCloud?.role?.()==='necati'?'Necati':'Biri'}
 async function notify(title,body,type='activity',open='home'){if(!window.NecatiCloud?.isReady?.())return;try{await window.NecatiCloud.sendActivity(title,body,type,open)}catch(e){console.warn('Push',e)}}
 function updateIdentity(){
@@ -46,6 +52,7 @@ window.applyCloudState=remote=>{
   updateIdentity();updateCounter();
   if(currentModule)renderModule(currentModule);
   try{v10RefreshDashboard?.()}catch{}
+  try{v104ApplyAppearance?.()}catch{}
   try{v9RenderCalendar?.();v9RenderTodos?.();v9RenderExpenses?.()}catch{}
 };
 updateIdentity();updateCounter();setInterval(updateCounter,1000);
@@ -79,6 +86,7 @@ function openModule(name){
 }
 
 function hydratePersonalSettings(){
+  try{v104ApplyAppearance?.();}catch{}
   const s=state.settings||{};
   const notifyDefaults={notifyTodoHour:'09:00',notifySpecialHour:'09:30',notifyBirthdayHour:'10:00',notifyPeriodHour:'10:30',notifyExpenseHour:'20:00',notifyQuietStart:'23:00',notifyQuietEnd:'08:00'};
   Object.entries(notifyDefaults).forEach(([id,fallback])=>{if($(id)) $(id).value=s[id]||fallback;});
@@ -364,12 +372,22 @@ let v9CalendarCursor = new Date();
 let v9SelectedDate = new Date().toISOString().slice(0,10);
 
 function v9Open(id){
-  const d=$(id);
-  if(!d)return;
-  try{ if(!d.open && d.showModal) d.showModal(); else d.setAttribute('open',''); }
-  catch{ d.setAttribute('open',''); d.style.display='block'; }
+  const d=$(id);if(!d)return;
+  try{if(!d.open&&d.showModal)d.showModal();else d.setAttribute('open','')}
+  catch{d.setAttribute('open','');d.style.display='block'}
+  d.classList.remove('closing');
+  requestAnimationFrame(()=>d.classList.add('opened'));
+  document.documentElement.classList.add('dialog-open');
 }
-function v9Close(id){ const d=$(id); if(!d)return; try{d.close()}catch{d.removeAttribute('open');d.style.display='none'} }
+function v9Close(id){
+  const d=$(id);if(!d)return;
+  d.classList.add('closing');
+  setTimeout(()=>{
+    try{d.close()}catch{d.removeAttribute('open');d.style.display='none'}
+    d.classList.remove('opened','closing');
+    document.documentElement.classList.remove('dialog-open');
+  },140);
+}
 function v9Date(v){ if(!v)return ''; try{return new Date(v+'T12:00:00').toLocaleDateString('tr-TR',{day:'2-digit',month:'short',year:'numeric'})}catch{return v} }
 function v9Money(n){ return new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY'}).format(Number(n)||0) }
 function v9Role(){ const e=(window.NecatiCloud?.user?.()?.email||'').toLowerCase(); if(e.includes('nisa'))return'nisa'; if(e.includes('necati'))return'necati'; return 'ortak' }
@@ -1126,4 +1144,73 @@ document.addEventListener('click',e=>{
     v103AcceptSurprise();
     return;
   }
+});
+
+
+// ===== v10.4 Native mobile polish =====
+function v104ApplyTheme(theme){
+  const allowed=['romantic','midnight','soft'];
+  const selected=allowed.includes(theme)?theme:'romantic';
+  document.documentElement.dataset.appTheme=selected;
+  state.settings=state.settings||{};
+  state.settings.uiTheme=selected;
+  document.querySelectorAll('[data-theme-choice]').forEach(b=>b.classList.toggle('selected',b.dataset.themeChoice===selected));
+}
+function v104ApplyAppearance(){
+  const s=state.settings||{};
+  v104ApplyTheme(s.uiTheme||'romantic');
+  document.documentElement.classList.toggle('reduce-app-motion',s.uiAnimations===false);
+  if($('uiAnimations')) $('uiAnimations').checked=s.uiAnimations!==false;
+  if($('uiHaptics')) $('uiHaptics').checked=s.uiHaptics!==false;
+}
+function v104Haptic(type='tap'){
+  if(state.settings?.uiHaptics===false)return;
+  if(!navigator.vibrate)return;
+  const pattern=type==='success'?[12,20,12]:type==='warning'?[22]:[8];
+  try{navigator.vibrate(pattern)}catch{}
+}
+function v104UpdateClock(){
+  const el=$('nativeClock');if(!el)return;
+  el.textContent=new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+}
+function v104LockForDialogs(){
+  const any=[...document.querySelectorAll('dialog')].some(d=>d.open);
+  document.documentElement.classList.toggle('dialog-open',any);
+}
+function v104RefreshSafeUI(){
+  v104UpdateClock();
+  v104LockForDialogs();
+}
+document.addEventListener('click',e=>{
+  const themeBtn=e.target.closest?.('[data-theme-choice]');
+  if(themeBtn){
+    e.preventDefault();
+    state.settings=state.settings||{};
+    state.settings.uiTheme=themeBtn.dataset.themeChoice;
+    save();
+    v104ApplyTheme(themeBtn.dataset.themeChoice);
+    v104Haptic('success');
+    toast('Tema değiştirildi 🎨');
+    return;
+  }
+
+  const actionable=e.target.closest?.('button,[data-module],[data-open]');
+  if(actionable && !actionable.disabled) v104Haptic('tap');
+});
+
+$('uiAnimations')?.addEventListener('change',e=>{
+  state.settings.uiAnimations=e.target.checked;save();v104ApplyAppearance();
+});
+$('uiHaptics')?.addEventListener('change',e=>{
+  state.settings.uiHaptics=e.target.checked;save();v104ApplyAppearance();
+});
+
+document.addEventListener('toggle',v104LockForDialogs,true);
+document.addEventListener('close',v104LockForDialogs,true);
+document.addEventListener('cancel',v104LockForDialogs,true);
+window.addEventListener('resize',v104RefreshSafeUI);
+document.addEventListener('DOMContentLoaded',()=>{
+  v104ApplyAppearance();
+  v104RefreshSafeUI();
+  setInterval(v104UpdateClock,30000);
 });
