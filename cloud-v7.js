@@ -78,17 +78,74 @@
   function scheduleSave(state){if(!ready||!user)return;clearTimeout(saveTimer);saveTimer=setTimeout(()=>db.collection('couples').doc(cfg.coupleId).set({data:JSON.parse(JSON.stringify(state)),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(console.error),350)}
 
   async function fileToDataUrl(file){
-    return new Promise((resolve,reject)=>{const fr=new FileReader();fr.onerror=reject;fr.onload=()=>{const img=new Image();img.onerror=reject;img.onload=()=>{
-      let max=1280,q=.76;let scale=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));c.getContext('2d').drawImage(img,0,0,c.width,c.height);let data=c.toDataURL('image/jpeg',q);
-      while(data.length>850000&&q>.46){q-=.08;data=c.toDataURL('image/jpeg',q)}resolve(data)
-    };img.src=fr.result};fr.readAsDataURL(file)})
+    if(!file) return '';
+    return new Promise((resolve,reject)=>{
+      const fr=new FileReader();
+      fr.onerror=()=>reject(new Error('Fotoğraf okunamadı'));
+      fr.onload=()=>{
+        const img=new Image();
+        img.onerror=()=>reject(new Error('Fotoğraf açılamadı'));
+        img.onload=()=>{
+          try{
+            // Firestore document limitine güvenli biçimde sığmak için
+            // hem çözünürlüğü hem kaliteyi gerektiğinde düşür.
+            let maxSide=960;
+            let quality=.70;
+            let data='';
+
+            for(let pass=0; pass<7; pass++){
+              const scale=Math.min(1,maxSide/Math.max(img.width,img.height));
+              const c=document.createElement('canvas');
+              c.width=Math.max(1,Math.round(img.width*scale));
+              c.height=Math.max(1,Math.round(img.height*scale));
+              const ctx=c.getContext('2d');
+              ctx.drawImage(img,0,0,c.width,c.height);
+              data=c.toDataURL('image/jpeg',quality);
+
+              // ~600 KB base64 altında tut.
+              if(data.length<620000) break;
+
+              if(quality>.46) quality-=.08;
+              else maxSide=Math.max(520,Math.round(maxSide*.78));
+            }
+
+            if(!data || data.length>850000){
+              return reject(new Error('Fotoğraf çok büyük. Daha küçük bir fotoğraf seç'));
+            }
+            resolve(data);
+          }catch(e){ reject(e); }
+        };
+        img.src=fr.result;
+      };
+      fr.readAsDataURL(file);
+    });
   }
+
   async function uploadImage(file){
     if(!file)return '';
     if(!ready)throw new Error('Önce hesaba giriş yap');
-    if(storage){try{const ext=(file.name.split('.').pop()||'jpg').replace(/[^a-z0-9]/gi,'');const path=`couples/${cfg.coupleId}/photos/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;const ref=storage.ref(path);await ref.put(file);return await ref.getDownloadURL()}catch(e){console.warn('Storage kullanılamadı, Firestore fotoğraf yedeğine geçiliyor',e)}}
-    const dataUrl=await fileToDataUrl(file);const ref=db.collection('couples').doc(cfg.coupleId).collection('photos').doc();await ref.set({dataUrl,ownerUid:user.uid,createdAt:firebase.firestore.FieldValue.serverTimestamp()});imageCache.set(ref.id,dataUrl);return `firestore-photo:${ref.id}`;
+
+    // v7.0.1: Firebase Storage ücretli/kapalı olduğu için kesinlikle denenmez.
+    // Fotoğraf küçültülüp Firestore'da ayrı belge olarak tutulur.
+    const dataUrl=await fileToDataUrl(file);
+    const photoRef=db.collection('couples').doc(cfg.coupleId).collection('photos').doc();
+
+    const savePromise=photoRef.set({
+      dataUrl,
+      ownerUid:user.uid,
+      ownerEmail:user.email||'',
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    const timeout=new Promise((_,reject)=>
+      setTimeout(()=>reject(new Error('Fotoğraf yükleme zaman aşımına uğradı')),15000)
+    );
+
+    await Promise.race([savePromise,timeout]);
+    imageCache.set(photoRef.id,dataUrl);
+    return `firestore-photo:${photoRef.id}`;
   }
+
   async function resolveImage(ref){
     if(!ref||!String(ref).startsWith('firestore-photo:'))return ref||'';const id=String(ref).split(':')[1];if(imageCache.has(id))return imageCache.get(id);if(!ready)return '';
     const snap=await db.collection('couples').doc(cfg.coupleId).collection('photos').doc(id).get();const url=snap.data()?.dataUrl||'';if(url)imageCache.set(id,url);return url;
@@ -115,6 +172,6 @@
   async function showSystemNotification(n,force=false){if(!('Notification'in window)||Notification.permission!=='granted'){if(force)safeToast('Önce bildirim izni ver 🔔');return}try{const reg=await navigator.serviceWorker.ready;await reg.showNotification(n.title||'Necati Cepte ❤️',{body:n.body||'',icon:'./icons/icon-192.png',badge:'./icons/icon-192.png',tag:n.type||'necati',renotify:true,requireInteraction:n.type==='emergency',vibrate:[250,120,250]})}catch{}}
   function showIncoming(n){safeToast(`${n.title||'Necati Cepte'} — ${n.body||''}`);window.dispatchEvent(new CustomEvent('necati:incoming',{detail:n}));showSystemNotification(n)}
 
-  window.NecatiCloud={version:'7.0',scheduleSave,uploadImage,resolveImage,sendActivity,sendEmergency,sendMoodChange,enablePush,isReady:()=>ready,user:()=>user,role:()=>roleFromEmail(user?.email||''),displayName,diagnostics:()=>({ready,role:roleFromEmail(user?.email||''),oneSignalReady,subscriptionId:window.NecatiOneSignal?.User?.PushSubscription?.id||null})};
+  window.NecatiCloud={version:'7.0.1',scheduleSave,uploadImage,resolveImage,sendActivity,sendEmergency,sendMoodChange,enablePush,isReady:()=>ready,user:()=>user,role:()=>roleFromEmail(user?.email||''),displayName,diagnostics:()=>({ready,role:roleFromEmail(user?.email||''),oneSignalReady,subscriptionId:window.NecatiOneSignal?.User?.PushSubscription?.id||null})};
   window.addEventListener('DOMContentLoaded',init);
 })();

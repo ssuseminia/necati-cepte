@@ -22,3 +22,10 @@ Mevcut çalışan Cloudflare Worker ve OneSignal secretları değişmez. `cloudf
 
 ## Not
 Stellarium canlı görünümü üçüncü taraf web hizmetidir; yüklenmezse alttaki yerel astronomik yıldız haritası çalışmaya devam eder.
+
+## v7.0.1 hotfix
+- İyi Geceler fotoğraf yüklemesinde Firebase Storage tamamen devre dışı bırakıldı.
+- Fotoğraflar güvenli boyuta küçültülüp Firestore `photos` koleksiyonunda tutuluyor.
+- 15 saniyelik yükleme zaman aşımı eklendi.
+- Gönderim sırasında aşamalar ayrı gösteriliyor.
+- Push hatası artık mesajın kendisini göndermeyi bloke etmiyor.
