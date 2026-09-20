@@ -16,6 +16,19 @@
 </head>
 <body>
   <div class="bg-orb orb-a"></div><div class="bg-orb orb-b"></div>
+  
+    <div id="networkStatus" class="network-status" role="status" aria-live="polite" hidden>
+      <span class="network-dot"></span>
+      <strong id="networkStatusText">Çevrimdışı</strong>
+    </div>
+
+    <div id="globalLoader" class="global-loader" aria-hidden="true">
+      <div class="global-loader-card">
+        <span class="loader-heart">♥</span>
+        <small>Necati Cepte hazırlanıyor…</small>
+      </div>
+    </div>
+
   <div class="app-shell">
     <div class="native-status-strip" aria-hidden="true">
       <span id="nativeClock">--:--</span>
@@ -25,10 +38,10 @@
     
     <header class="mobile-appbar">
       <div class="mobile-brand">
-        <div class="brand-mark"><img src="icons/icon-192.png" alt="" /></div>
+        <div class="brand-mark"><img src="icons/icon-192.png" alt="" decoding="async" /></div>
         <div>
           <small id="mobileGreeting">Bugün de birlikte</small>
-          <strong>Necati Cepte <em>v10.5</em></strong>
+          <strong>Necati Cepte <em>v10.6</em></strong>
         </div>
       </div>
       <div class="mobile-actions">
@@ -40,12 +53,12 @@
 
 
     
-    <main id="homeView" class="mobile-home">
+    <main id="homeView" class="mobile-home" aria-label="Ana sayfa">
       <section class="mobile-hero-card">
         <div class="personal-home-head">
           <div class="couple-avatars">
-            <img id="homeAvatarNisa" src="assets/moods/nisa-iyi.png" alt="Nisa">
-            <img id="homeAvatarNecati" src="assets/moods/necati-iyi.png" alt="Necati">
+            <img id="homeAvatarNisa" src="assets/moods/nisa-iyi.png" alt="Nisa" loading="lazy" decoding="async">
+            <img id="homeAvatarNecati" src="assets/moods/necati-iyi.png" alt="Necati" loading="lazy" decoding="async">
           </div>
           <div class="hero-copy">
             <span class="soft-pill" id="homeCoupleNames">Nisa ❤️ Necati</span>
@@ -161,18 +174,18 @@
     </main>
 
 
-    <section id="moduleView" class="module-view" hidden>
+    <section id="moduleView" class="module-view" hidden aria-label="Modül ekranı">
       <div class="module-screenbar"><button id="backBtn" class="round-icon">←</button><h2 id="moduleTitle"></h2><span class="screen-spacer"></span></div>
       <div id="moduleContent"></div>
     </section>
 
     
     <nav class="mobile-tabbar" aria-label="Ana menü">
-      <button type="button" class="tab-item active" data-tab="home"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M9.5 20v-6h5v6"/></svg></span><small>Ana Sayfa</small></button>
-      <button type="button" class="tab-item" data-tab="calendar"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M7 3.5v4M17 3.5v4M3.5 9.5h17"/></svg></span><small>Takvim</small></button>
-      <button type="button" class="tab-item tab-heart" data-tab="love"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.8c-2.2-2.2-5.7-2.2-7.9 0L12 5.7l-.9-.9a5.6 5.6 0 0 0-7.9 7.9L12 21l8.8-8.3a5.6 5.6 0 0 0 0-7.9Z"/></svg></span><small>Biz</small></button>
-      <button type="button" class="tab-item" data-tab="tasks"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.2 4.2L19 7"/></svg></span><small>Planlar</small></button>
-      <button type="button" class="tab-item" data-tab="profile"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 20c.5-4 3-6 6.5-6s6 2 6.5 6"/></svg></span><small>Profil</small></button>
+      <button type="button" class="tab-item active" data-tab="home" aria-label="Ana Sayfa"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M9.5 20v-6h5v6"/></svg></span><small>Ana Sayfa</small></button>
+      <button type="button" class="tab-item" data-tab="calendar" aria-label="Takvim"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M7 3.5v4M17 3.5v4M3.5 9.5h17"/></svg></span><small>Takvim</small></button>
+      <button type="button" class="tab-item tab-heart" data-tab="love" aria-label="Biz"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.8c-2.2-2.2-5.7-2.2-7.9 0L12 5.7l-.9-.9a5.6 5.6 0 0 0-7.9 7.9L12 21l8.8-8.3a5.6 5.6 0 0 0 0-7.9Z"/></svg></span><small>Biz</small></button>
+      <button type="button" class="tab-item" data-tab="tasks" aria-label="Planlar"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.2 4.2L19 7"/></svg></span><small>Planlar</small></button>
+      <button type="button" class="tab-item" data-tab="profile" aria-label="Profil"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 20c.5-4 3-6 6.5-6s6 2 6.5 6"/></svg></span><small>Profil</small></button>
       <button id="installBtn" hidden></button>
       <button id="homeBtn" hidden></button>
       <button id="randomLoveBtn" hidden></button>
@@ -331,7 +344,7 @@
           </div>
           <label class="field"><span>Not</span><textarea id="planNote" rows="3" placeholder="Planla ilgili detaylar..."></textarea></label>
           <div class="actions">
-            <button type="button" id="savePlanBtn" class="primary-btn">Planı kaydet 📅</button>
+            <button type="button" id="savePlanBtn" aria-busy="false" class="primary-btn">Planı kaydet 📅</button>
             <button type="button" id="cancelPlanEditBtn" class="ghost-btn" hidden>Düzenlemeyi iptal et</button>
           </div>
         </section>
@@ -394,7 +407,7 @@
           </label>
         </div>
         <div class="actions">
-          <button type="button" id="saveTodoBtn" class="primary-btn">Görevi kaydet ✅</button>
+          <button type="button" id="saveTodoBtn" aria-busy="false" class="primary-btn">Görevi kaydet ✅</button>
           <button type="button" id="cancelTodoEditBtn" class="ghost-btn" hidden>Düzenlemeyi iptal et</button>
         </div>
       </section>
@@ -458,7 +471,7 @@
           </label>
         </div>
         <label class="field"><span>Not</span><textarea id="expenseNote" rows="2"></textarea></label>
-        <button type="button" id="addExpenseBtn" class="primary-btn">Harcama ekle 💸</button>
+        <button type="button" id="addExpenseBtn" aria-busy="false" class="primary-btn">Harcama ekle 💸</button>
       </section>
 
       <div id="expenseList" class="stack-list"></div>
@@ -478,7 +491,7 @@
       <div id="botChat" class="bot-chat"></div>
       <div class="bot-compose">
         <input id="botInput" placeholder="Necati Bot’a yaz...">
-        <button type="button" id="botSendBtn" class="primary-btn">Gönder</button>
+        <button type="button" id="botSendBtn" aria-busy="false" class="primary-btn">Gönder</button>
       </div>
     </div>
   </dialog>
@@ -495,7 +508,7 @@
         <canvas id="dateWheelCanvas" width="720" height="720"></canvas>
       </div>
       <div id="dateWheelResult" class="wheel-result">Hazırsanız çarkı döndürün 🎡</div>
-      <button type="button" id="spinDateWheelBtn" class="primary-btn big-feature-btn">Çarkı Döndür 🎲</button>
+      <button type="button" id="spinDateWheelBtn" aria-busy="false" class="primary-btn big-feature-btn">Çarkı Döndür 🎲</button>
       <div id="dateWheelAutoInfo" class="wheel-auto-info">Çıkan sonuç otomatik olarak ortak takvime eklenecek ve karşı tarafa bildirilecek ❤️</div>
     </div>
   </dialog>
@@ -532,8 +545,8 @@
         <p id="randomSurpriseText">Bugüne küçük ama gerçekten güzel bir sürpriz ekleyelim.</p>
       </div>
       <div class="actions">
-        <button type="button" id="drawSurpriseBtn" class="primary-btn">Yeni Görev Çek 🎁</button>
-        <button type="button" id="acceptSurpriseBtn" class="ghost-btn" hidden>Bunu yapacağım ❤️</button>
+        <button type="button" id="drawSurpriseBtn" aria-busy="false" class="primary-btn">Yeni Görev Çek 🎁</button>
+        <button type="button" id="acceptSurpriseBtn" aria-busy="false" class="ghost-btn" hidden>Bunu yapacağım ❤️</button>
       </div>
       <div id="surpriseStreak" class="surprise-streak"></div>
     </div>
@@ -545,7 +558,7 @@
     <div class="dialog-shell profile-shell">
       <button class="close-btn" type="button" data-close="profileDialog" aria-label="Kapat">✕</button>
       <section class="profile-cover">
-        <div class="profile-app-icon"><img src="icons/icon-192.png" alt=""></div>
+        <div class="profile-app-icon"><img src="icons/icon-192.png" alt="" decoding="async"></div>
         <div>
           <small>NECATİ CEPTE</small>
           <h2 id="profileCoupleName">Nisa & Necati</h2>
@@ -555,13 +568,13 @@
 
       <section class="profile-couple-card">
         <div class="profile-person">
-          <img id="profileNisaAvatar" src="assets/moods/nisa-iyi.png" alt="Nisa">
+          <img id="profileNisaAvatar" src="assets/moods/nisa-iyi.png" alt="Nisa" loading="lazy" decoding="async">
           <strong id="profileNisaName">Nisa</strong>
           <small id="profileNisaMood">Ruh hali</small>
         </div>
         <div class="profile-heart-line"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.8c-2.2-2.2-5.7-2.2-7.9 0L12 5.7l-.9-.9a5.6 5.6 0 0 0-7.9 7.9L12 21l8.8-8.3a5.6 5.6 0 0 0 0-7.9Z"/></svg></div>
         <div class="profile-person">
-          <img id="profileNecatiAvatar" src="assets/moods/necati-iyi.png" alt="Necati">
+          <img id="profileNecatiAvatar" src="assets/moods/necati-iyi.png" alt="Necati" loading="lazy" decoding="async">
           <strong id="profileNecatiName">Necati</strong>
           <small>Birlikte ❤️</small>
         </div>

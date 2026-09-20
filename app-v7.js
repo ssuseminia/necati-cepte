@@ -304,7 +304,7 @@ $('settingsDialog').addEventListener('close',()=>{
 });
 $('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='necati-cepte-v7-yedek.json';a.click();URL.revokeObjectURL(a.href)};$('importInput').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{state=merge(defaultState,JSON.parse(r.result));save();updateIdentity();$('settingsDialog').close();toast('Yedek yüklendi ✅')}catch{toast('Geçersiz yedek')}};r.readAsText(f)};$('randomLoveBtn').onclick=()=>{$('loveDialogText').textContent=`Seni seviyorum çünkü ${dailyJar()}.`;$('loveDialog').showModal()};
 window.addEventListener('necati:authchange',()=>{if(currentModule==='mood')renderMood()});window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBtn').hidden=false});$('installBtn').onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBtn').hidden=true};
-window.NECATI_APP_VERSION='10.5';if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{const regs=await navigator.serviceWorker.getRegistrations();for(const r of regs){const u=String(r.active?.scriptURL||r.installing?.scriptURL||r.waiting?.scriptURL||'');if(u&&!u.includes('OneSignalSDK')&&!u.includes('sw-v7.js'))await r.unregister()}const reg=await navigator.serviceWorker.register('./sw-v7.js',{scope:'./',updateViaCache:'none'});await reg.update()}catch(e){console.warn('SW v7',e)}});
+window.NECATI_APP_VERSION='10.6';if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{const regs=await navigator.serviceWorker.getRegistrations();for(const r of regs){const u=String(r.active?.scriptURL||r.installing?.scriptURL||r.waiting?.scriptURL||'');if(u&&!u.includes('OneSignalSDK')&&!u.includes('sw-v7.js'))await r.unregister()}const reg=await navigator.serviceWorker.register('./sw-v7.js',{scope:'./',updateViaCache:'none'});await reg.update()}catch(e){console.warn('SW v7',e)}});
 
 document.addEventListener('DOMContentLoaded',()=>setTimeout(hydratePersonalSettings,50));
 
@@ -1023,7 +1023,7 @@ async function v103AutoAddWheelResult(){
     createdBy:actor()
   };
   state.plans.push(plan);
-  save();
+  v106BackupState?.();save();
   v9RenderCalendar?.();
   v10RefreshDashboard?.();
   toast(`${v103SelectedDate.title} takvime eklendi ❤️`);
@@ -1068,7 +1068,7 @@ async function v103SendStatus(text,icon){
   const who=actor();
   state.quickStatus=state.quickStatus||[];
   state.quickStatus.push({id:uid(),text,icon,by:who,at:Date.now()});
-  state.quickStatus=state.quickStatus.slice(-30);save();v103RenderLastStatus();
+  state.quickStatus=state.quickStatus.slice(-30);v106BackupState?.();save();v103RenderLastStatus();
   toast(`${text} gönderildi`);
   await v9Notify(`${icon} ${who}'dan haber var`,text,'status','home').catch(()=>{});
 }
@@ -1111,7 +1111,7 @@ function v103DrawSurprise(){
   let choices=v103SurpriseTasks.filter(x=>x.title!==previous);
   v103CurrentSurprise=choices[Math.floor(Math.random()*choices.length)];
   state.surpriseMode=state.surpriseMode||{accepted:[],lastTask:null};
-  state.surpriseMode.lastTask=v103CurrentSurprise.title;save();
+  state.surpriseMode.lastTask=v103CurrentSurprise.title;v106BackupState?.();save();
   $('randomSurpriseEmoji').textContent=v103CurrentSurprise.emoji;
   $('randomSurpriseTitle').textContent=v103CurrentSurprise.title;
   $('randomSurpriseText').textContent=v103CurrentSurprise.text;
@@ -1130,7 +1130,7 @@ async function v103AcceptSurprise(){
   state.surpriseMode=state.surpriseMode||{accepted:[],lastTask:null};
   state.surpriseMode.accepted=state.surpriseMode.accepted||[];
   state.surpriseMode.accepted.push({id:uid(),title:v103CurrentSurprise.title,emoji:v103CurrentSurprise.emoji,by:actor(),at:Date.now()});
-  save();v103RenderSurpriseStreak();$('acceptSurpriseBtn').hidden=true;
+  v106BackupState?.();save();v103RenderSurpriseStreak();$('acceptSurpriseBtn').hidden=true;
   toast('Görev kabul edildi 😄❤️');
   await v9Notify('🎁 Sürpriz görevi seçildi',`${actor()} bugün “${v103CurrentSurprise.title}” görevini yapacak ❤️`,'surprise','home').catch(()=>{});
 }
@@ -1348,3 +1348,162 @@ document.addEventListener('click',e=>{
 window.addEventListener('necati:authchange',()=>setTimeout(v105RefreshPersonalUI,150));
 document.addEventListener('DOMContentLoaded',()=>setTimeout(v105RefreshPersonalUI,200));
 window.addEventListener('focus',()=>setTimeout(v105RefreshPersonalUI,120));
+
+
+// ===== v10.6 Quality & reliability layer =====
+const V106_BACKUP_KEY='necati-cepte-backup-v106';
+let v106LastGoodState=null;
+
+function v106DeepClone(obj){
+  try{return structuredClone(obj)}catch{
+    try{return JSON.parse(JSON.stringify(obj))}catch{return null}
+  }
+}
+
+function v106BackupState(){
+  try{
+    const snapshot=v106DeepClone(state);
+    if(!snapshot)return;
+    localStorage.setItem(V106_BACKUP_KEY,JSON.stringify({at:Date.now(),state:snapshot}));
+    v106LastGoodState=snapshot;
+  }catch(err){console.warn('Backup failed',err)}
+}
+
+function v106SafeSave(){
+  try{
+    v106BackupState();
+    save();
+    return true;
+  }catch(err){
+    console.error('Save failed',err);
+    toast('Kaydederken küçük bir sorun oldu. Veriler korunuyor.');
+    return false;
+  }
+}
+
+function v106RestoreBackupIfNeeded(){
+  try{
+    const raw=localStorage.getItem(V106_BACKUP_KEY);
+    if(!raw)return;
+    const parsed=JSON.parse(raw);
+    if(parsed?.state && typeof parsed.state==='object')v106LastGoodState=parsed.state;
+  }catch{}
+}
+
+function v106SetBusy(el,busy,label){
+  if(!el)return;
+  el.setAttribute('aria-busy',busy?'true':'false');
+  el.disabled=!!busy;
+  if(busy){
+    if(!el.dataset.originalText)el.dataset.originalText=el.textContent;
+    if(label)el.textContent=label;
+    el.classList.add('is-busy');
+  }else{
+    if(el.dataset.originalText)el.textContent=el.dataset.originalText;
+    el.classList.remove('is-busy');
+  }
+}
+
+function v106OnlineState(){
+  const online=navigator.onLine;
+  const box=$('networkStatus'),txt=$('networkStatusText');
+  if(!box||!txt)return;
+  box.hidden=online;
+  txt.textContent=online?'Bağlantı geri geldi':'Çevrimdışı • değişiklikler cihazda korunur';
+  box.classList.toggle('online',online);
+  if(online){
+    box.hidden=false;
+    setTimeout(()=>{box.hidden=true},1800);
+  }
+}
+window.addEventListener('online',v106OnlineState);
+window.addEventListener('offline',v106OnlineState);
+
+function v106GlobalError(message){
+  const text=String(message||'Beklenmeyen bir hata oluştu');
+  console.error(text);
+  try{toast('Bir şey ters gitti ama uygulama çalışmaya devam ediyor ❤️')}catch{}
+}
+
+window.addEventListener('error',e=>v106GlobalError(e.message));
+window.addEventListener('unhandledrejection',e=>v106GlobalError(e.reason?.message||e.reason));
+
+function v106EnhanceImages(){
+  document.querySelectorAll('img').forEach(img=>{
+    if(!img.hasAttribute('decoding'))img.setAttribute('decoding','async');
+    img.addEventListener('error',()=>{
+      img.classList.add('image-failed');
+      if(!img.dataset.fallbackApplied){
+        img.dataset.fallbackApplied='1';
+        if(/nisa/i.test(img.id||img.alt||''))img.src='assets/moods/nisa-iyi.png';
+        else if(/necati/i.test(img.id||img.alt||''))img.src='assets/moods/necati-iyi.png';
+      }
+    },{once:true});
+  });
+}
+
+function v106TouchTargets(){
+  document.querySelectorAll('button,.tab-item,.quick-card,.mobile-module').forEach(el=>{
+    if(!el.hasAttribute('role') && el.tagName!=='BUTTON')el.setAttribute('role','button');
+  });
+}
+
+function v106MarkReady(){
+  document.documentElement.classList.add('app-ready');
+  const loader=$('globalLoader');
+  if(loader){
+    loader.classList.add('hide');
+    setTimeout(()=>loader.remove(),360);
+  }
+}
+
+function v106RefreshQualityUI(){
+  v106OnlineState();
+  v106EnhanceImages();
+  v106TouchTargets();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  v106RestoreBackupIfNeeded();
+  v106RefreshQualityUI();
+  setTimeout(v106MarkReady,280);
+  setTimeout(v106BackupState,900);
+});
+
+window.addEventListener('focus',()=>setTimeout(v106BackupState,300));
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='hidden')v106BackupState();
+});
+
+// Loading feedback for critical actions without changing their original behavior.
+document.addEventListener('click',e=>{
+  const b=e.target.closest?.('#savePlanBtn,#saveTodoBtn,#addExpenseBtn,#botSendBtn,#spinDateWheelBtn,#drawSurpriseBtn,#acceptSurpriseBtn');
+  if(!b||b.disabled)return;
+  const labels={
+    savePlanBtn:'Kaydediliyor…',
+    saveTodoBtn:'Kaydediliyor…',
+    addExpenseBtn:'Ekleniyor…',
+    botSendBtn:'Düşünüyor…',
+    spinDateWheelBtn:'Dönüyor… 🎡',
+    drawSurpriseBtn:'Görev seçiliyor…',
+    acceptSurpriseBtn:'Kaydediliyor…'
+  };
+  v106SetBusy(b,true,labels[b.id]);
+  const delay=b.id==='spinDateWheelBtn'?3300:b.id==='botSendBtn'?900:520;
+  setTimeout(()=>v106SetBusy(b,false),delay);
+},true);
+
+// Prevent accidental rapid double taps on destructive / submit-like controls.
+document.addEventListener('click',e=>{
+  const b=e.target.closest?.('button');
+  if(!b)return;
+  const now=Date.now();
+  if(b.dataset.lastTap && now-Number(b.dataset.lastTap)<280){
+    if(/save|add|send|accept|delete|remove/i.test(b.id||b.dataset.action||'')){
+      e.preventDefault();e.stopImmediatePropagation();return;
+    }
+  }
+  b.dataset.lastTap=String(now);
+},true);
+
+window.addEventListener('orientationchange',()=>setTimeout(()=>{v104RefreshSafeUI?.();v105RefreshPersonalUI?.();},250));

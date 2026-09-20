@@ -1,7 +1,7 @@
 {
   "name": "Necati Cepte",
   "short_name": "Necati Cepte",
-  "description": "Necati ve Nisa için mobil tarzda ilişki uygulaması.",
+  "description": "Nisa ve Necati için ortak planlar, anılar, görevler ve küçük sürprizler.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#10091f",
@@ -23,5 +23,10 @@
   ],
   "id": "./?homescreen=1",
   "scope": "./",
-  "lang": "tr"
+  "lang": "tr",
+  "categories": [
+    "lifestyle",
+    "social"
+  ],
+  "dir": "ltr"
 }

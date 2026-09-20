@@ -178,3 +178,19 @@ Stellarium canlı görünümü üçüncü taraf web hizmetidir; yüklenmezse alt
 - Ayarlar değişikliği için gereksiz push bildirimi kaldırıldı.
 - Uygulama sürüm değişkeni v10.5'e güncellendi.
 - Dokunma, scroll ve dialog geçişleri daha akıcı hale getirildi.
+
+## v10.6 Quality Upgrade
+- Açılışta kısa ve temiz bir yükleme ekranı eklendi; ilk boyama sırasında oluşan görsel sıçramalar azaltıldı.
+- İnternet kesildiğinde üstte çevrimdışı durumu gösterilir; bağlantı geri geldiğinde kısa bilgi verir.
+- Global JavaScript hata yakalama eklendi; tek bir hata tüm uygulamayı sessizce kırmasın diye koruma katmanı oluşturuldu.
+- Kritik veri değişikliklerinden önce cihazda otomatik state yedeği alınır.
+- Kaydet / gönder / çevir / görev çek gibi kritik butonlara loading durumu ve aria-busy eklendi.
+- Hızlı çift tıklama nedeniyle oluşabilecek yinelenen kayıtlar azaltıldı.
+- Görseller için async decoding, hata halinde avatar fallback ve bazı alanlarda lazy loading eklendi.
+- Tüm önemli dokunma alanları minimum 44px yapıldı.
+- Alt navigasyon ve ana ekran semantik/aria etiketleri iyileştirildi.
+- prefers-reduced-motion desteği eklendi.
+- iPhone safe-area davranışı bir kez daha iyileştirildi.
+- Kartlarda content-visibility ve layout containment kullanılarak uzun sayfalarda render maliyeti azaltıldı.
+- Orientation change sonrası kişisel/profil arayüzü yeniden senkronlanır.
+- PWA manifest açıklama, dil ve kategori bilgileri iyileştirildi.
