@@ -1,4 +1,4 @@
-# Necati Cepte v7.0 ❤️
+# Necati Cepte ❤️ ) Tamamen Necati tarafından hazırlanmıştır.
 
 Final toplu güncelleme.
 
@@ -13,15 +13,6 @@ Final toplu güncelleme.
 - İyi Geceler: fotoğraf zorunlu; fotoğraf yoksa gönderim engellenir.
 - Anı/Hikâye/İyi Geceler fotoğrafları iki hesap arasında senkron görüntülenebilir.
 
-## Yayınlama
-Bu klasördeki **tüm dosyaları** GitHub `necati-cepte` reposunun köküne yükle. Klasör yapısını koru (`assets/moods/...`).
-Sonra bir kez `https://ssuseminia.github.io/necati-cepte/reset.html` aç.
-
-## Cloudflare
-Mevcut çalışan Cloudflare Worker ve OneSignal secretları değişmez. `cloudflare-worker/worker.js` v6 ile uyumludur ve generic title/body gönderdiği için v7 aktivitelerini de push olarak yollar.
-
-## Not
-Stellarium canlı görünümü üçüncü taraf web hizmetidir; yüklenmezse alttaki yerel astronomik yıldız haritası çalışmaya devam eder.
 
 ## v7.0.1 hotfix
 - İyi Geceler fotoğraf yüklemesinde Firebase Storage tamamen devre dışı bırakıldı.
