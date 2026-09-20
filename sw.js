@@ -1,4 +1,4 @@
-const CACHE='necati-cepte-v3.0';
+const CACHE='necati-cepte-v4.0';
 const CORE=['./','./index.html','./style.css','./app.js','./cloud.js','./firebase-config.js','./manifest.json','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
@@ -15,7 +15,7 @@ try{
     const messaging=firebase.messaging();
     messaging.onBackgroundMessage(payload=>{
       const data=payload.data||{};
-      return self.registration.showNotification(data.title||'Necati Cepte ❤️',{body:data.body||'Yeni bir bildirim var',icon:'./icons/icon-192.png',badge:'./icons/icon-192.png',data:{url:data.url||'./'}});
+      return self.registration.showNotification(data.title||'Necati Cepte ❤️',{body:data.body||'Yeni bir bildirim var',icon:'./icons/icon-192.png',badge:'./icons/icon-192.png',tag:data.type==='emergency'?'necati-emergency':'necati-notification',renotify:true,requireInteraction:data.type==='emergency',vibrate:[250,120,250,120,500],data:{url:data.url||'./?open=emergency'}});
     });
   }
 }catch(e){console.warn('FCM service worker pasif:',e)}

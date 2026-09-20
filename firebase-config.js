@@ -1,6 +1,8 @@
+// Necati Cepte Firebase ayarları
 (function(g){
   g.NECATI_FIREBASE = {
     coupleId: 'nisa-necati',
+    // Tam kapalı uygulamaya FCM push istersen daha sonra Cloud Messaging VAPID public key ekle.
     vapidKey: 'BURAYA_WEB_PUSH_VAPID_KEY',
     config: {
       apiKey: 'AIzaSyAtCHvfVp9gpU96hUJsOI9W-Z41B8cf9tc',
