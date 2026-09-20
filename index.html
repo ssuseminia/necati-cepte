@@ -3,22 +3,29 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#9b5de5" />
+  <meta name="theme-color" content="#7c3aed" />
   <meta name="description" content="Nisa ve Necati için özel ilişki uygulaması." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <link rel="stylesheet" href="style.css" />
   <title>Necati Cepte</title>
 </head>
 <body>
+  <div class="bg-orb orb-a"></div><div class="bg-orb orb-b"></div>
   <div class="app-shell">
     <header class="hero">
-      <div class="badge">Nisa ❤️ Necati</div>
+      <div class="top-row">
+        <div class="badge" id="coupleBadge">Nisa ❤️ Necati</div>
+        <button class="icon-btn" id="settingsBtn" aria-label="Ayarlar">⚙️</button>
+      </div>
       <h1>Necati Cepte</h1>
       <p class="subtitle">Sevgi, anılar ve küçük sürprizler hep yanında.</p>
 
       <section class="counter-card" aria-label="İlişki sayacı">
-        <div class="eyebrow">12.04.2025'ten beri</div>
+        <div class="eyebrow" id="counterSince">12.04.2025'ten beri</div>
         <div class="counter-grid">
           <div><strong id="days">0</strong><span>gün</span></div>
           <div><strong id="hours">0</strong><span>saat</span></div>
@@ -28,7 +35,7 @@
       </section>
     </header>
 
-    <main>
+    <main id="homeView">
       <section class="daily-card">
         <div>
           <span class="pill">Bugünün notu 💌</span>
@@ -38,44 +45,55 @@
         <button id="newMessageBtn" class="ghost-btn">Başka not</button>
       </section>
 
-      <section class="section-head">
-        <div>
-          <span class="eyebrow">Bizim dünyamız</span>
-          <h2>Modüller</h2>
-        </div>
-      </section>
-
+      <section class="section-head"><div><span class="eyebrow">Bizim dünyamız</span><h2>Modüller</h2></div></section>
       <section class="module-grid">
-        <button class="module-card" data-module="Nisa Modu"><span>🌸</span><div><h3>Nisa Modu</h3><p>Ruh hali ve küçük Necati tavsiyeleri.</p></div></button>
-        <button class="module-card" data-module="Sürpriz Takvimi"><span>🎁</span><div><h3>Sürpriz Takvimi</h3><p>Gün gün açılan mesajlar ve mini sürprizler.</p></div></button>
-        <button class="module-card" data-module="Aşk Kavanozu"><span>🫙</span><div><h3>Aşk Kavanozu</h3><p>Her gün yeni bir “Seni seviyorum çünkü...” kartı.</p></div></button>
-        <button class="module-card" data-module="Anı Haritası"><span>📍</span><div><h3>Anı Haritası</h3><p>Özel yerler, fotoğraflar ve notlar.</p></div></button>
-        <button class="module-card" data-module="Bizim Gökyüzümüz"><span>✨</span><div><h3>Bizim Gökyüzümüz</h3><p>Özel gecelerimizin yıldız haritası.</p></div></button>
-        <button class="module-card" data-module="Hikâyemiz"><span>🎬</span><div><h3>Hikâyemiz</h3><p>Sezon sezon Nisa & Necati.</p></div></button>
-        <button class="module-card" data-module="Özel Günler"><span>💍</span><div><h3>Özel Günler</h3><p>Yıldönümü, nişan ve özel tarihler.</p></div></button>
-        <button class="module-card" data-module="İyi Geceler"><span>🌙</span><div><h3>İyi Geceler</h3><p>Geçmiş iyi geceler mesajlarımız.</p></div></button>
-        <button class="module-card danger" data-module="Acil Necati"><span>🚨</span><div><h3>Acil Necati</h3><p>Sarılma, tatlı ve ilgi çağrısı.</p></div></button>
-        <button class="module-card" data-module="Doğduğun Gün"><span>🎂</span><div><h3>Doğduğun Gün</h3><p>Nisa'nın doğduğu güne özel eğlenceli bilgiler.</p></div></button>
+        <button class="module-card" data-module="mood"><span>🌸</span><div><h3>Nisa Modu</h3><p>Ruh hali, döngü ve Necati tavsiyeleri.</p></div></button>
+        <button class="module-card" data-module="surprise"><span>🎁</span><div><h3>Sürpriz Takvimi</h3><p>Tarihi gelince açılan mesaj ve sürprizler.</p></div></button>
+        <button class="module-card" data-module="jar"><span>🫙</span><div><h3>Aşk Kavanozu</h3><p>Her gün bir “Seni seviyorum çünkü...” kartı.</p></div></button>
+        <button class="module-card" data-module="map"><span>📍</span><div><h3>Anı Haritası</h3><p>Özel yerler, fotoğraflar ve notlar.</p></div></button>
+        <button class="module-card" data-module="sky"><span>✨</span><div><h3>Bizim Gökyüzümüz</h3><p>Tarih ve konuma göre yıldız görünümü.</p></div></button>
+        <button class="module-card" data-module="story"><span>🎬</span><div><h3>Hikâyemiz</h3><p>Sezon sezon Nisa & Necati.</p></div></button>
+        <button class="module-card" data-module="dates"><span>💍</span><div><h3>Özel Günler</h3><p>Yıldönümü, nişan ve geri sayımlar.</p></div></button>
+        <button class="module-card" data-module="night"><span>🌙</span><div><h3>İyi Geceler</h3><p>Mesajlarını tarih tarih sakla.</p></div></button>
+        <button class="module-card danger" data-module="emergency"><span>🚨</span><div><h3>Acil Necati</h3><p>Sarılma, tatlı, ilgi ve ara çağrısı.</p></div></button>
+        <button class="module-card" data-module="birthday"><span>🎂</span><div><h3>Doğduğun Gün</h3><p>Nisa'nın yaşam istatistikleri.</p></div></button>
       </section>
     </main>
 
+    <section id="moduleView" class="module-view" hidden>
+      <div class="module-toolbar"><button id="backBtn" class="ghost-btn">← Ana Sayfa</button><h2 id="moduleTitle"></h2></div>
+      <div id="moduleContent"></div>
+    </section>
+
     <nav class="bottom-nav" aria-label="Alt menü">
-      <button class="active">🏠<span>Ana Sayfa</span></button>
-      <button>❤️<span>Biz</span></button>
+      <button id="homeBtn" class="active">🏠<span>Ana Sayfa</span></button>
+      <button id="randomLoveBtn">❤️<span>Sevgi</span></button>
       <button id="installBtn" hidden>📲<span>Yükle</span></button>
     </nav>
   </div>
 
-  <dialog id="moduleDialog">
-    <div class="dialog-card">
-      <button id="closeDialog" class="close-btn" aria-label="Kapat">×</button>
-      <div id="dialogIcon" class="dialog-icon">❤️</div>
-      <h2 id="dialogTitle">Modül</h2>
-      <p id="dialogText">Bu modülü sonraki adımda birlikte dolduracağız.</p>
-      <button id="dialogOk" class="primary-btn">Tamam ❤️</button>
-    </div>
+  <dialog id="settingsDialog">
+    <form method="dialog" class="dialog-card settings-card" id="settingsForm">
+      <div class="dialog-head"><div><div class="dialog-icon">⚙️</div><h2>Ayarlar</h2></div><button class="close-btn" value="cancel" aria-label="Kapat">×</button></div>
+      <div class="form-grid">
+        <label>Nisa'nın adı<input id="partnerName" required /></label>
+        <label>Senin adın<input id="ownerName" required /></label>
+        <label>İlişki başlangıcı<input id="relationshipDate" type="datetime-local" required /></label>
+        <label>Nisa'nın doğum tarihi<input id="birthDate" type="date" /></label>
+        <label>Son regl başlangıcı<input id="lastPeriod" type="date" /></label>
+        <label>Ortalama döngü (gün)<input id="cycleLength" type="number" min="20" max="45" /></label>
+        <label>Regl süresi (gün)<input id="periodLength" type="number" min="2" max="10" /></label>
+      </div>
+      <div class="dialog-actions"><button type="button" id="exportBtn" class="ghost-btn">Yedekle</button><label class="ghost-btn file-label">Yedeği yükle<input id="importInput" type="file" accept="application/json" hidden /></label><button class="primary-btn" value="save">Kaydet ❤️</button></div>
+      <p class="tiny">Veriler bu cihazda saklanır. GitHub reponuza otomatik olarak gönderilmez.</p>
+    </form>
   </dialog>
 
+  <dialog id="loveDialog"><div class="dialog-card"><button class="close-btn" onclick="this.closest('dialog').close()">×</button><div class="dialog-icon">❤️</div><h2>Necati'den Nisa'ya</h2><p id="loveDialogText" class="big-quote"></p><button class="primary-btn" onclick="this.closest('dialog').close()">Kalbime yazdım ❤️</button></div></dialog>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="app.js"></script>
 </body>
 </html>
