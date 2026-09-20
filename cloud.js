@@ -6,9 +6,21 @@
   const setStatus=(text,on=false)=>{const el=$('cloudStatus');if(!el)return;el.textContent=`● ${text}`;el.classList.toggle('online',on)};
   const safeToast=m=>window.necatiToast?.(m);
   const notifStoreKey=()=>`necati-seen-notifs-${user?.uid||'anon'}`;
+  function openAuthDialog(){
+    const d=$('authDialog');
+    if(!d)return safeToast('Hesap ekranı bulunamadı');
+    $('authSetupWarning').hidden=configured();
+    try{
+      if(typeof d.showModal==='function') d.showModal();
+      else { d.setAttribute('open',''); d.style.display='block'; }
+    }catch(e){
+      d.setAttribute('open',''); d.style.display='block';
+    }
+  }
 
   async function init(){
-    $('userBtn')?.addEventListener('click',()=>{ $('authSetupWarning').hidden=configured(); $('authDialog').showModal(); });
+    $('userBtn')?.addEventListener('click',()=>openAuthDialog());
+    window.openNecatiAuth=openAuthDialog;
     $('loginBtn')?.addEventListener('click',login);
     $('logoutBtn')?.addEventListener('click',()=>auth?.signOut());
     $('enablePushBtn')?.addEventListener('click',enablePush);
@@ -118,7 +130,7 @@
             console.warn('Push sender hatası',pushText);
             safeToast('Push gönderilemedi: '+(pushResult?.error||pushResult?.errors?.[0]||('HTTP '+r.status)));
           } else if(pushResult?.sent===0){
-            safeToast('Karşı cihazın push kaydı yok. Diğer telefonda Bildirimleri Aç'a bas.');
+            safeToast("Karşı cihazın push kaydı yok. Diğer telefonda Bildirimleri Aç butonuna bas.");
           }
         }
       }catch(e){console.warn('FCM push gönderilemedi; Firestore canlı uyarı devam ediyor',e)}
@@ -174,6 +186,18 @@
     showSystemNotification(n);
   }
 
-  window.NecatiCloud={scheduleSave,uploadImage,sendEmergency,isReady:()=>ready,hasStorage:()=>!!storage,user:()=>user,enablePush};
+  window.NecatiCloud={
+    scheduleSave,uploadImage,sendEmergency,isReady:()=>ready,hasStorage:()=>!!storage,user:()=>user,enablePush,
+    diagnostics:()=>({
+      configured: configured(),
+      ready,
+      hasAuth: !!auth,
+      hasDb: !!db,
+      hasMessaging: !!messaging,
+      notificationPermission: ('Notification' in window)?Notification.permission:'unsupported',
+      firebaseApps: (window.firebase&&firebase.apps)?firebase.apps.length:0,
+      pushSenderUrl: cfg?.pushSenderUrl||''
+    })
+  };
   window.addEventListener('DOMContentLoaded',init);
 })();
