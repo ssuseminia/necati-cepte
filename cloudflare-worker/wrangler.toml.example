@@ -1,0 +1,9 @@
+name = "necati-cepte-push"
+main = "worker.js"
+compatibility_date = "2026-09-20"
+
+[vars]
+FIREBASE_PROJECT_ID = "necati-cepte"
+FIREBASE_API_KEY = "BURAYA_FIREBASE_WEB_API_KEY"
+FIREBASE_CLIENT_EMAIL = "BURAYA_SERVICE_ACCOUNT_CLIENT_EMAIL"
+# FIREBASE_PRIVATE_KEY'i düz metin buraya koyma; Cloudflare Secret olarak ekle.
