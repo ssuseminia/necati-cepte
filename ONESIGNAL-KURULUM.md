@@ -55,3 +55,14 @@ OneSignal kullanıcı rolünü Firebase giriş e-postasından belirler:
 
 
 Bu pakette App ID hazırdır. Sadece Cloudflare secret olarak ONESIGNAL_REST_API_KEY eklenmelidir.
+
+## v6.4 kritik ayar
+OneSignal Dashboard > Web Push > Advanced Settings > Service Workers:
+- Path to service worker files: `/necati-cepte/`
+- Main service worker filename: `OneSignalSDKWorker.js`
+- Updater service worker filename: `OneSignalSDKUpdaterWorker.js`
+- Service worker registration scope: `/necati-cepte/`
+
+GitHub Pages üzerinde şu iki URL tarayıcıda açılabilmelidir:
+- https://ssuseminia.github.io/necati-cepte/OneSignalSDKWorker.js
+- https://ssuseminia.github.io/necati-cepte/OneSignalSDKUpdaterWorker.js

@@ -44,3 +44,9 @@ Düzeltmeler:
 - Bildirim izni sonrası `OneSignal.User.PushSubscription.optIn()` çağrısı eklendi.
 - Push Subscription ID için 5 saniyelik bekleme ve kontrol eklendi.
 - Sistem testine OneSignal permission/subscription/optedIn değerleri eklendi.
+
+
+## v6.4
+- OneSignal worker dosyaları repo köküne taşındı.
+- Service worker path `/necati-cepte/` scope'una alındı.
+- GitHub Pages 404 sorunu hedeflendi.
