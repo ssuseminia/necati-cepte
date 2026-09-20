@@ -23,7 +23,7 @@
         <div class="brand-mark">❤️</div>
         <div>
           <small id="mobileGreeting">Bugün de birlikte</small>
-          <strong>Necati Cepte <em>v10.1</em></strong>
+          <strong>Necati Cepte <em>v10.2</em></strong>
         </div>
       </div>
       <div class="mobile-actions">
@@ -174,6 +174,26 @@
         <label>Ortalama döngü (gün)<input id="cycleLength" type="number" min="20" max="45" /></label>
         <label>Regl süresi (gün)<input id="periodLength" type="number" min="2" max="10" /></label>
       </div>
+      
+      <section class="settings-section smart-notification-settings">
+        <div class="settings-section-head">
+          <div>
+            <small>Akıllı bildirimler</small>
+            <h3>🔔 Saat & kategori ayarları</h3>
+          </div>
+        </div>
+        <p class="tiny">Tarihi olan bildirimler seçtiğin saatte gelir. Planların saatli hatırlatması kendi plan saatine göre çalışır.</p>
+        <div class="form-grid two-col">
+          <label>✅ Görev hatırlatma saati<input id="notifyTodoHour" type="time" value="09:00"></label>
+          <label>💍 Özel gün saati<input id="notifySpecialHour" type="time" value="09:30"></label>
+          <label>🎂 Doğum günü saati<input id="notifyBirthdayHour" type="time" value="10:00"></label>
+          <label>🌸 Regl hatırlatma saati<input id="notifyPeriodHour" type="time" value="10:30"></label>
+          <label>💸 Harcama özeti saati<input id="notifyExpenseHour" type="time" value="20:00"></label>
+          <label>🌙 Sessiz saat başlangıcı<input id="notifyQuietStart" type="time" value="23:00"></label>
+          <label>☀️ Sessiz saat bitişi<input id="notifyQuietEnd" type="time" value="08:00"></label>
+        </div>
+      </section>
+
       <div class="dialog-actions"><button type="button" id="exportBtn" class="ghost-btn">Yedekle</button><label class="ghost-btn file-label">Yedeği yükle<input id="importInput" type="file" accept="application/json" hidden /></label><button class="primary-btn" value="save">Kaydet ❤️</button></div>
       <p class="tiny">Veriler bu cihazda saklanır. GitHub reponuza otomatik olarak gönderilmez.</p>
     </form>
@@ -218,6 +238,16 @@
         <button type="button" id="calNext" class="ghost-btn">›</button>
       </div>
       <div id="calendarGrid" class="calendar-grid v9-calendar"></div>
+
+      <div class="calendar-color-legend">
+        <span><i class="dot dot-date"></i>Date</span>
+        <span><i class="dot dot-family"></i>Aile</span>
+        <span><i class="dot dot-work"></i>İş</span>
+        <span><i class="dot dot-health"></i>Sağlık</span>
+        <span><i class="dot dot-payment"></i>Ödeme</span>
+        <span><i class="dot dot-task"></i>Görev</span>
+      </div>
+
 
       <div class="planner-layout">
         <section class="planner-form card-panel">
@@ -340,6 +370,19 @@
       </div>
 
       <div id="expenseStats" class="expense-stats"></div>
+
+      <section class="expense-chart-card card-panel">
+        <div class="mini-head">
+          <div>
+            <small>Aylık dağılım</small>
+            <h3>📊 Harcama grafiği</h3>
+          </div>
+          <span id="expenseChartTotal" class="chart-total">₺0</span>
+        </div>
+        <canvas id="expenseChart" width="760" height="340" aria-label="Harcama kategori grafiği"></canvas>
+        <div id="expenseChartLegend" class="chart-legend"></div>
+      </section>
+
 
       <section class="card-panel">
         <div class="form-grid two-col">

@@ -1,7 +1,7 @@
 const $=id=>document.getElementById(id);
 const STORAGE_KEY='necati-cepte-v2';
 const defaultState={
- settings:{nisaBirthday:'',necatiBirthday:'',periodStartDate:'',periodLength:5,periodCycle:28,partnerName:'Nisa',ownerName:'Necati',relationshipDate:'2025-04-12T00:00',birthDate:'',lastPeriod:'',cycleLength:28,periodLength:5},
+ settings:{nisaBirthday:'',necatiBirthday:'',periodStartDate:'',periodLength:5,periodCycle:28,partnerName:'Nisa',ownerName:'Necati',relationshipDate:'2025-04-12T00:00',birthDate:'',lastPeriod:'',cycleLength:28,periodLength:5,notifyTodoHour:'09:00',notifySpecialHour:'09:30',notifyBirthdayHour:'10:00',notifyPeriodHour:'10:30',notifyExpenseHour:'20:00',notifyQuietStart:'23:00',notifyQuietEnd:'08:00'},
  mood:{today:'mutlu',history:[]},surprises:[{id:1,date:new Date().toISOString().slice(0,10),title:'Bugünün küçük sürprizi',message:'Bir adet uzun sarılma kazandın ❤️',type:'Mesaj'}],
  jar:['gülüşün en sıradan günümü bile güzelleştiriyor','yanında kendim olabiliyorum','birlikte saçmalamak dünyanın en güzel şeyi','zor günlerimde bile yanımda olduğunu hissediyorum','seninle gelecek düşünmek beni mutlu ediyor','sesini duyunca günüm değişiyor'],
  memories:[],stories:[{id:1,season:1,episode:1,date:'2025-04-12',title:'Biz olduk ❤️',text:'Nisa ve Necati hikâyesinin başladığı gün.',image:''},{id:2,season:2,episode:1,date:'2026-06-28',title:'Nişanımız 💍',text:'Hikâyemizin en özel bölümlerinden biri.',image:''}],
@@ -80,6 +80,9 @@ function openModule(name){
 
 function hydratePersonalSettings(){
   const s=state.settings||{};
+  const notifyDefaults={notifyTodoHour:'09:00',notifySpecialHour:'09:30',notifyBirthdayHour:'10:00',notifyPeriodHour:'10:30',notifyExpenseHour:'20:00',notifyQuietStart:'23:00',notifyQuietEnd:'08:00'};
+  Object.entries(notifyDefaults).forEach(([id,fallback])=>{if($(id)) $(id).value=s[id]||fallback;});
+
   if($('birthDate')) $('birthDate').value=s.birthDate||'';
   if($('lastPeriodDate')) $('lastPeriodDate').value=s.lastPeriodDate||'';
   if($('cycleLength')) $('cycleLength').value=String(s.cycleLength||28);
@@ -264,6 +267,10 @@ window.NECATI_APP_VERSION='7.0';if('serviceWorker'in navigator)window.addEventLi
 document.addEventListener('DOMContentLoaded',()=>setTimeout(hydratePersonalSettings,50));
 
 $('saveSettings')?.addEventListener('click',()=>{
+  ['notifyTodoHour','notifySpecialHour','notifyBirthdayHour','notifyPeriodHour','notifyExpenseHour','notifyQuietStart','notifyQuietEnd'].forEach(id=>{
+    if($(id)) state.settings[id]=$(id).value;
+  });
+
   state.settings=state.settings||{};
   state.settings.nisaBirthday=$('nisaBirthday')?.value||'';
   state.settings.necatiBirthday=$('necatiBirthday')?.value||'';
@@ -398,7 +405,14 @@ function v9RenderCalendar(){
     const b=document.createElement('button');b.type='button';b.className='cal-day';
     if(iso===v9SelectedDate)b.classList.add('selected');
     if(iso===new Date().toISOString().slice(0,10))b.classList.add('today');
-    b.innerHTML=`<span>${d}</span>${events.length?`<b>${events.length}</b>`:''}`;
+    const types=[...new Set(events.map(e=>{
+      if(e._type==='todo')return'task';
+      if(e._type==='expense')return'payment';
+      if(e._type==='birthday')return'date';
+      return ({date:'date',aile:'family',is:'work',saglik:'health',odeme:'payment',genel:'general'}[e.category]||'general');
+    }))].slice(0,4);
+    const dots=types.map(t=>`<i class="event-dot event-${t}"></i>`).join('');
+    b.innerHTML=`<span>${d}</span>${events.length?`<b>${events.length}</b>`:''}<em class="event-dots">${dots}</em>`;
     b.onclick=()=>{v9SelectedDate=iso;$('planDate').value=iso;v9RenderCalendar();v9RenderSelectedDay()};
     grid.appendChild(b);
   }
@@ -412,7 +426,9 @@ function v9RenderSelectedDay(){
   box.innerHTML='';
   if(!events.length){box.innerHTML='<p class="muted">Bu gün için kayıt yok.</p>';return}
   events.forEach(e=>{
-    const row=document.createElement('div');row.className=`list-card event-${e._type}`;
+    const row=document.createElement('div');
+    const catClass=e._type==='plan'?` event-cat-${e.category||'general'}`:'';
+    row.className=`list-card event-${e._type}${catClass}`;
     const sub=e._type==='plan'?[e.time,v9OwnerLabel(e.owner),e.category].filter(Boolean).join(' • '):
               e._type==='todo'?[v9OwnerLabel(e.owner),e.done?'Tamamlandı':'Açık'].join(' • '):
               e._type==='expense'?[v9OwnerLabel(e.payer),e.category].join(' • '):'Özel gün';
@@ -493,11 +509,64 @@ function v9RenderTodos(){
 }
 
 function v9ExpenseMonth(){return $('expenseMonth')?.value||new Date().toISOString().slice(0,7)}
+
+function v102ExpenseChart(items){
+  const canvas=$('expenseChart'), legend=$('expenseChartLegend'), totalEl=$('expenseChartTotal');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  const cssW=Math.max(300,canvas.clientWidth||760), cssH=250;
+  canvas.width=Math.round(cssW*dpr);canvas.height=Math.round(cssH*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+
+  const labels={market:'Market',yemek:'Yemek',ev:'Ev',ulasim:'Ulaşım',eglence:'Eğlence',fatura:'Fatura',diger:'Diğer'};
+  const sums={};
+  items.forEach(x=>sums[x.category||'diger']=(sums[x.category||'diger']||0)+Number(x.amount||0));
+  const data=Object.entries(sums).sort((a,b)=>b[1]-a[1]);
+  const total=data.reduce((s,x)=>s+x[1],0);
+  if(totalEl)totalEl.textContent=v9Money(total);
+
+  ctx.clearRect(0,0,cssW,cssH);
+  if(!data.length){
+    ctx.fillStyle='rgba(255,255,255,.55)';
+    ctx.font='13px system-ui';
+    ctx.textAlign='center';
+    ctx.fillText('Bu ay grafik oluşturacak harcama yok',cssW/2,cssH/2);
+    if(legend)legend.innerHTML='';
+    return;
+  }
+  const max=Math.max(...data.map(x=>x[1]),1);
+  const left=86,right=18,top=14,bottom=20;
+  const plotW=cssW-left-right;
+  const rowH=Math.min(36,(cssH-top-bottom)/data.length);
+  ctx.font='11px system-ui';
+  ctx.textBaseline='middle';
+  data.forEach(([key,val],i)=>{
+    const y=top+i*rowH;
+    ctx.fillStyle='rgba(255,255,255,.7)';
+    ctx.textAlign='right';
+    ctx.fillText(labels[key]||key,left-10,y+rowH*.42);
+    ctx.fillStyle='rgba(255,255,255,.08)';
+    ctx.fillRect(left,y+5,plotW,rowH-12);
+    const w=Math.max(4,plotW*(val/max));
+    const grad=ctx.createLinearGradient(left,0,left+w,0);
+    grad.addColorStop(0,'rgba(255,111,174,.9)');
+    grad.addColorStop(1,'rgba(139,108,255,.9)');
+    ctx.fillStyle=grad;
+    ctx.fillRect(left,y+5,w,rowH-12);
+    ctx.fillStyle='#fff';
+    ctx.textAlign='right';
+    ctx.fillText(v9Money(val),cssW-right,y+rowH*.42);
+  });
+  if(legend)legend.innerHTML=data.map(([key,val])=>`<span><b>${labels[key]||key}</b><small>${total?Math.round(val/total*100):0}%</small></span>`).join('');
+}
+
 function v9RenderExpenses(){
   const list=$('expenseList'), stats=$('expenseStats');if(!list)return;
   const month=v9ExpenseMonth();
   const items=(state.expenses||[]).filter(x=>(x.date||'').startsWith(month)).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const total=items.reduce((s,x)=>s+Number(x.amount||0),0), n=items.filter(x=>x.payer==='necati').reduce((s,x)=>s+Number(x.amount||0),0), ni=items.filter(x=>x.payer==='nisa').reduce((s,x)=>s+Number(x.amount||0),0);
+  v102ExpenseChart(items);
   if(stats)stats.innerHTML=`<div><small>Bu ay</small><strong>${v9Money(total)}</strong></div><div><small>Necati</small><strong>${v9Money(n)}</strong></div><div><small>Nisa</small><strong>${v9Money(ni)}</strong></div>`;
   list.innerHTML='';if(!items.length){list.innerHTML='<p class="muted">Bu ay kayıtlı harcama yok.</p>';return}
   items.forEach(x=>{
@@ -517,24 +586,81 @@ async function v9AddExpense(){
 }
 
 function v9BotContextAnswer(text){
-  const t=text.toLocaleLowerCase('tr-TR'), today=new Date().toISOString().slice(0,10), month=today.slice(0,7);
-  if(/bugün.*plan|plan.*bugün/.test(t)){
-    const p=(state.plans||[]).filter(x=>x.date===today);
-    return p.length?`Bugün ${p.length} plan var: `+p.map(x=>`${x.time?x.time+' ':''}${x.title}`).join(', '):'Bugün ortak takvimde plan görünmüyor 😄';
+  const raw=(text||'').trim();
+  const t=raw.toLocaleLowerCase('tr-TR');
+  const todayStr=new Date().toISOString().slice(0,10), month=todayStr.slice(0,7);
+  const role=v9Role();
+  const plans=(state.plans||[]).filter(x=>x.date>=todayStr).sort((a,b)=>(a.date+(a.time||'')).localeCompare(b.date+(b.time||'')));
+  const todayPlans=plans.filter(x=>x.date===todayStr);
+  const openTodos=(state.todos||[]).filter(x=>!x.done);
+  const mine=openTodos.filter(x=>x.owner===role||x.owner==='ortak');
+  const expenses=(state.expenses||[]).filter(x=>(x.date||'').startsWith(month));
+  const total=expenses.reduce((s,x)=>s+Number(x.amount||0),0);
+  const mood=state.mood?.today;
+  const moodName=moodMap[mood]?.label||'';
+  const partner=state.settings?.partnerName||'Nisa';
+
+  const pick=a=>a[Math.floor(Math.random()*a.length)];
+  const prefix=pick(['hmm','bak şimdi','tamam tamam','şöyle diyim','gel buna birlikte bakalım']);
+
+  if(/sen gerçek necati misin|gerçek misin|bot musun/.test(t))
+    return 'Ben Necati Botum 😄 Gerçek Necati değilim ama ortak planlarınızı ve uygulamadaki bilgileri kullanıp yardımcı olabiliyorum ❤️';
+
+  if(/bugün.*plan|plan.*bugün|bugün ne var/.test(t)){
+    if(!todayPlans.length) return `Bugün takvim tertemiz 😄 ${partner} ile spontane bir şey yapma ihtimaliniz yüksek`;
+    const list=todayPlans.slice(0,4).map(x=>`${x.time?x.time+' — ':''}${x.title}`).join(' • ');
+    return `${prefix} bugün ${todayPlans.length} plan var ❤️ ${list}`;
   }
-  if(/yapılacak|görev|işler/.test(t)){
-    const open=(state.todos||[]).filter(x=>!x.done);
-    return open.length?`Açık ${open.length} görev var: `+open.slice(0,6).map(x=>x.text).join(', '):'Şu an açık görev yok, tertemiz 😄';
+
+  if(/yarın/.test(t) && /plan|ne var|takvim/.test(t)){
+    const d=new Date();d.setDate(d.getDate()+1);const tomorrow=d.toISOString().slice(0,10);
+    const list=(state.plans||[]).filter(x=>x.date===tomorrow).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+    return list.length?`Yarın ${list.length} plan görünüyor: ${list.map(x=>`${x.time?x.time+' ':''}${x.title}`).join(' • ')}`:'Yarın için şu an plan görünmüyor 😄';
   }
-  if(/harca|para|gider|bu ay/.test(t)){
-    const items=(state.expenses||[]).filter(x=>(x.date||'').startsWith(month));
-    const total=items.reduce((s,x)=>s+Number(x.amount||0),0);
-    return `Bu ay ortak harcama toplamı ${v9Money(total)} görünüyor.`;
+
+  if(/yapılacak|görev|işler|ne yapmam/.test(t)){
+    if(!mine.length) return 'Sana/ortak tarafa ait açık görev yok. Şimdilik rahatsın 😄';
+    const urgent=mine.filter(x=>x.priority==='urgent');
+    const first=(urgent.length?urgent:mine).slice(0,5);
+    return `${urgent.length?'Önce acillere bakalım 🚨':'Şu an yapılacaklar şöyle'}: ${first.map(x=>x.text+(x.date?` (${v9Date(x.date)})`:'')).join(' • ')}`;
   }
-  if(/üzgün|moral|kötü|canım sıkkın/.test(t)) return 'gel buraya anlat bakalım ne oldu ben burdayım ❤️';
-  if(/özledim|özlüyorum/.test(t)) return 'ben de seni özledim gelince sarılma borcum var 😄❤️';
-  if(/seviyor musun|seviyorum/.test(t)) return 'bunu hâlâ soruyor musun 😄 seni çok seviyorum ❤️';
-  return ['anlat bakalım seni dinliyorum ❤️','tamam devam et merak ettim 😄','ben olsam önce seni bi sarardım sonra konuşurduk ❤️'][Math.floor(Math.random()*3)];
+
+  if(/harca|para|gider|bütçe|bu ay/.test(t)){
+    if(!expenses.length)return 'Bu ay henüz harcama kaydı yok. Cüzdan modu şaşırtıcı derecede sakin 😄';
+    const top=[...expenses].sort((a,b)=>Number(b.amount)-Number(a.amount))[0];
+    return `Bu ay toplam ${v9Money(total)} harcamışsınız. En büyük tek kayıt ${top.title}: ${v9Money(top.amount)}. Biraz daha detay istersen kategori kategori de bakabilirim 💸`;
+  }
+
+  if(/kategori/.test(t) && /harca|para|gider/.test(t)){
+    const sums={};expenses.forEach(x=>sums[x.category]=(sums[x.category]||0)+Number(x.amount||0));
+    const rows=Object.entries(sums).sort((a,b)=>b[1]-a[1]).slice(0,4);
+    return rows.length?`Bu ay en çok gidenler: ${rows.map(([k,v])=>`${k} ${v9Money(v)}`).join(' • ')}`:'Bu ay kategori çıkaracak harcama yok.';
+  }
+
+  if(/modu|ruh hali|nasıl hissed/.test(t)){
+    return moodName?`${partner} için uygulamadaki son ruh hali “${moodName}” görünüyor. ${moodTips[mood]||'Yanında olmak yeter ❤️'}`:'Bugün ruh hali seçilmemiş. Bir yoklama mesajı fena olmaz ❤️';
+  }
+
+  if(/özledim|özlüyorum/.test(t))
+    return pick(['ben de seni özledim desem Necati adına konuşmuş olurum 😄 ama şu kesin: gidip ona sarılma vakti gelmiş ❤️','özlem seviyesi yükselmiş 😄 bence ilk fırsatta uzun sarılma + biraz birlikte vakit']);
+  if(/üzgün|moralim bozuk|canım sıkkın|kötüyüm/.test(t))
+    return pick(['gel anlat biraz ❤️ çözüm vermeden önce seni dinleyeyim','bugün ağır geldiyse her şeyi hemen çözmek zorunda değilsin. Necati Bot burada, gerçek Necati’ye de bir sarılma talebi açabiliriz 😄❤️']);
+  if(/sinir|kızdım|gergin/.test(t))
+    return 'tamam önce siniri masaya bırakalım 😄 neye kızdığını anlat, ben olayları toparlamana yardım edeyim';
+  if(/seviyor musun|sevgi/.test(t))
+    return 'Ben botum, Necati adına “seviyorum” diyemem 😄 ama bu uygulamanın tamamına bakınca seni önemsediği oldukça belli ❤️';
+
+  const contextual=[];
+  if(todayPlans.length) contextual.push(`bugün ${todayPlans.length} planınız var`);
+  if(openTodos.length) contextual.push(`${openTodos.length} açık görev var`);
+  if(moodName) contextual.push(`son ruh hali ${moodName}`);
+  const tail=contextual.length?` Bu arada ${contextual.join(', ')}.`:'';
+  return pick([
+    `anlat bakalım, dinliyorum 😄${tail}`,
+    `hmm bunu biraz daha aç, ne kısmı kafana takıldı?${tail}`,
+    `ben olsam önce olayı ikiye ayırırdım: ne hissediyorsun ve ne yapmak istiyorsun ❤️${tail}`,
+    `tamamdır, buradayım. İstersen takvim/görev tarafına da birlikte bakalım 😄${tail}`
+  ]);
 }
 function v9RenderBot(){
   const c=$('botChat');if(!c)return;c.innerHTML='';
@@ -678,105 +804,107 @@ document.addEventListener('click', async (e)=>{
 
 
 
-// ===== v10.1 Smart reminders =====
-const SMART_REMINDER_KEY='necati-smart-reminders-v1';
-function loadSmartReminderCache(){ try{return JSON.parse(localStorage.getItem(SMART_REMINDER_KEY)||'{}')}catch{return {}} }
-function saveSmartReminderCache(v){ localStorage.setItem(SMART_REMINDER_KEY, JSON.stringify(v)); }
-function markSmartReminder(key){ const c=loadSmartReminderCache(); c[key]=Date.now(); saveSmartReminderCache(c); }
-function reminderAlreadySent(key){ const c=loadSmartReminderCache(); return !!c[key]; }
-async function showLocalSmartNotification(title, body, tag='necati-smart'){
+
+// ===== v10.2 Smart reminders: category + preferred hour =====
+const SMART_REMINDER_KEY='necati-smart-reminders-v2';
+function loadSmartReminderCache(){try{return JSON.parse(localStorage.getItem(SMART_REMINDER_KEY)||'{}')}catch{return{}}}
+function saveSmartReminderCache(v){localStorage.setItem(SMART_REMINDER_KEY,JSON.stringify(v))}
+function reminderAlreadySent(k){return !!loadSmartReminderCache()[k]}
+function markSmartReminder(k){const c=loadSmartReminderCache();c[k]=Date.now();saveSmartReminderCache(c)}
+function v102TimeParts(v, fallback='09:00'){const s=v||fallback;const [h,m]=s.split(':').map(Number);return{h:h||0,m:m||0}}
+function v102AtHour(dateStr,timeStr){
+  const {h,m}=v102TimeParts(timeStr);const d=new Date(dateStr+'T12:00:00');d.setHours(h,m,0,0);return d;
+}
+function v102MinutesOfDay(timeStr){const {h,m}=v102TimeParts(timeStr);return h*60+m}
+function v102InQuietHours(){
+  const s=state.settings||{},now=new Date(),n=now.getHours()*60+now.getMinutes();
+  const a=v102MinutesOfDay(s.notifyQuietStart||'23:00'),b=v102MinutesOfDay(s.notifyQuietEnd||'08:00');
+  return a>b ? (n>=a||n<b) : (n>=a&&n<b);
+}
+async function showLocalSmartNotification(title,body,tag='necati-smart',category='genel'){
+  if(v102InQuietHours() && !['acil','plan'].includes(category))return;
   try{
-    if('Notification' in window && Notification.permission==='granted'){
-      const reg = await navigator.serviceWorker?.getRegistration?.();
-      if(reg && reg.showNotification){
-        await reg.showNotification(title,{body,tag,icon:'icons/icon-192.png',badge:'icons/icon-192.png'});
-      }else{
-        new Notification(title,{body,tag,icon:'icons/icon-192.png'});
-      }
+    if('Notification'in window&&Notification.permission==='granted'){
+      const reg=await navigator.serviceWorker?.getRegistration?.();
+      const opts={body,tag,icon:'icons/icon-192.png',badge:'icons/icon-192.png',data:{category}};
+      if(reg?.showNotification)await reg.showNotification(title,opts);else new Notification(title,opts);
     }
-  }catch(err){ console.warn('Local notification error', err); }
+  }catch(err){console.warn('Local notification',err)}
   toast(title);
 }
-function nextOccurrence(dateStr){
-  if(!dateStr) return null;
-  const d = new Date(dateStr+'T12:00:00');
-  const now = new Date();
-  let target = new Date(now.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0, 0);
-  if(target < now) target = new Date(now.getFullYear()+1, d.getMonth(), d.getDate(), 12, 0, 0, 0);
-  return target;
-}
-function maybeTriggerTimeReminder(key, targetMs, title, body, validAfterMs=0, validUntilMs=30*60*1000){
-  const now = Date.now();
-  if(reminderAlreadySent(key)) return;
-  if(now >= targetMs-validAfterMs && now <= targetMs+validUntilMs){
-    markSmartReminder(key);
-    showLocalSmartNotification(title, body, key);
+function v102FireOnce(key,target,title,body,category='genel',windowMin=3){
+  if(reminderAlreadySent(key))return;
+  const now=Date.now(),targetMs=target.getTime();
+  if(now>=targetMs&&now<=targetMs+windowMin*60000){
+    markSmartReminder(key);showLocalSmartNotification(title,body,key,category);
   }
 }
 function runSmartReminderChecks(){
-  const now = new Date();
-  const todayStr = now.toISOString().slice(0,10);
+  const s=state.settings||{},now=new Date(),todayStr=now.toISOString().slice(0,10);
 
-  // Plans
+  // PLAN: relative to the exact event time, category-aware
   (state.plans||[]).forEach(p=>{
-    if(!p.date || !p.reminder) return;
-    const eventMs = new Date(`${p.date}T${p.time||'09:00'}`).getTime();
-    const reminderMs = eventMs - Number(p.reminder||0)*60000;
-    const key = `plan:${p.id}:${p.reminder}`;
-    maybeTriggerTimeReminder(key, reminderMs, '📅 Yaklaşan plan', `${p.title} birazdan geliyor${p.time?' • '+p.time:''}`);
+    if(!p.date||!p.reminder)return;
+    const event=new Date(`${p.date}T${p.time||'09:00'}`);
+    const target=new Date(event.getTime()-Number(p.reminder)*60000);
+    const category=p.category||'plan';
+    v102FireOnce(`plan:${p.id}:${p.reminder}`,target,
+      category==='odeme'?'💸 Ödeme planı yaklaşıyor':'📅 Plan yaklaşıyor',
+      `${p.title}${p.time?' • '+p.time:''}`, 'plan', 5);
   });
 
-  // Todos
+  // TODO: day based reminder at preferred task hour
   (state.todos||[]).forEach(t=>{
-    if(t.done || !t.date || !t.reminder) return;
-    const dueMs = new Date(`${t.date}T09:00`).getTime();
-    const reminderMs = dueMs - Number(t.reminder||0)*60000;
-    const key = `todo:${t.id}:${t.reminder}`;
-    maybeTriggerTimeReminder(key, reminderMs, '✅ Yapılacak hatırlatma', `${t.text} için son tarih yaklaşıyor`);
+    if(t.done||!t.date||!t.reminder)return;
+    const due=new Date(t.date+'T12:00:00');
+    const daysBefore=Math.max(0,Math.round(Number(t.reminder)/1440));
+    due.setDate(due.getDate()-daysBefore);
+    const target=v102AtHour(due.toISOString().slice(0,10),s.notifyTodoHour||'09:00');
+    v102FireOnce(`todo:${t.id}:${t.reminder}`,target,
+      t.priority==='urgent'?'🚨 Acil görev hatırlatması':'✅ Görev hatırlatması',
+      `${t.text}${t.date?' • '+v9Date(t.date):''}`,t.priority==='urgent'?'acil':'görev',5);
   });
 
-  // Special dates
+  // Special dates 7d / 1d / today at preferred hour
   (state.specialDates||[]).forEach(sd=>{
-    const days = daysUntil(sd.date, sd.repeat||'yearly');
-    if([7,1,0].includes(days)){
-      const phase = days===0?'today':days===1?'1day':'7day';
-      const key = `special:${sd.id}:${phase}:${todayStr}`;
-      if(!reminderAlreadySent(key)){
-        markSmartReminder(key);
-        const body = days===0 ? `${sd.title} bugün ❤️` : `${sd.title} için ${days} gün kaldı`;
-        showLocalSmartNotification('💍 Özel gün hatırlatması', body, key);
-      }
-    }
+    const days=daysUntil(sd.date,sd.repeat||'yearly');
+    if(![7,1,0].includes(days))return;
+    const target=v102AtHour(todayStr,s.notifySpecialHour||'09:30');
+    v102FireOnce(`special:${sd.id}:${days}:${todayStr}`,target,'💍 Özel gün',
+      days===0?`${sd.title} bugün ❤️`:`${sd.title} için ${days} gün kaldı`,'özel',10);
   });
 
-  // Birthday of Nisa
-  const bdayTarget = nextOccurrence(state.settings.birthDate);
-  if(bdayTarget){
-    const diffDays = Math.ceil((bdayTarget - now)/86400000);
-    if([7,1,0].includes(diffDays)){
-      const key=`birthday:${diffDays}:${todayStr}`;
-      if(!reminderAlreadySent(key)){
-        markSmartReminder(key);
-        showLocalSmartNotification('🎂 Doğum günü yaklaşıyor', diffDays===0?`${state.settings.partnerName||'Nisa'} için bugün doğum günü 🎉`:`${state.settings.partnerName||'Nisa'} için ${diffDays} gün sonra doğum günü`, key);
-      }
+  // Birthday 7d / 1d / today
+  const bd=nextBirthday(s.birthDate);
+  if([7,1,0].includes(bd)){
+    const target=v102AtHour(todayStr,s.notifyBirthdayHour||'10:00');
+    v102FireOnce(`birthday:${bd}:${todayStr}`,target,'🎂 Doğum günü',
+      bd===0?`${s.partnerName||'Nisa'} için bugün doğum günü 🎉`:`${s.partnerName||'Nisa'} için ${bd} gün kaldı`,'doğum',10);
+  }
+
+  // Period day before / today
+  const pi=periodInfo();
+  if(pi&&!pi.inPeriod){
+    const diff=Math.max(0,Math.ceil((new Date(pi.nextStart+'T12:00:00')-new Date(todayStr+'T12:00:00'))/86400000));
+    if([1,0].includes(diff)){
+      const target=v102AtHour(todayStr,s.notifyPeriodHour||'10:30');
+      v102FireOnce(`period:${diff}:${todayStr}`,target,'🌸 Regl hatırlatması',
+        diff===0?'Tahmini regl başlangıcı bugün görünüyor ❤️':'Tahmini regl başlangıcı yarın görünüyor ❤️','regl',10);
     }
   }
 
-  // Period reminder
-  const pinfo=periodInfo();
-  if(pinfo){
-    const nextStart = new Date(pinfo.nextStart+'T09:00:00');
-    const diffDays = Math.ceil((nextStart - now)/86400000);
-    if([1,0].includes(diffDays)){
-      const key=`period:${diffDays}:${todayStr}`;
-      if(!reminderAlreadySent(key)){
-        markSmartReminder(key);
-        showLocalSmartNotification('🌸 Regl hatırlatması', diffDays===0?'Regl başlangıcı bugün görünüyor. Biraz daha anlayışlı mod açılabilir ❤️':'Regl başlangıcı yarın görünüyor. Küçük bir destek iyi gelebilir.', key);
-      }
-    }
+  // Expense evening summary when there was spending today
+  const todayExpenses=(state.expenses||[]).filter(x=>x.date===todayStr);
+  if(todayExpenses.length){
+    const total=todayExpenses.reduce((a,x)=>a+Number(x.amount||0),0);
+    const target=v102AtHour(todayStr,s.notifyExpenseHour||'20:00');
+    v102FireOnce(`expense-summary:${todayStr}`,target,'💸 Günlük harcama özeti',
+      `Bugün ${todayExpenses.length} harcama • toplam ${v9Money(total)}`,'harcama',10);
   }
 }
+setInterval(runSmartReminderChecks,60000);
+window.addEventListener('focus',()=>setTimeout(runSmartReminderChecks,400));
+document.addEventListener('DOMContentLoaded',()=>setTimeout(runSmartReminderChecks,1400));
 
-setInterval(runSmartReminderChecks, 60000);
-window.addEventListener('focus', ()=>setTimeout(runSmartReminderChecks, 500));
-document.addEventListener('DOMContentLoaded', ()=>setTimeout(runSmartReminderChecks, 1200));
+
+window.addEventListener('resize',()=>{try{v9RenderExpenses?.()}catch{}});

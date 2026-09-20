@@ -97,3 +97,17 @@ Stellarium canlı görünümü üçüncü taraf web hizmetidir; yüklenmezse alt
   - doğum günü için 7 gün / 1 gün / bugün
   - regl için 1 gün önce / bugün
 - Yerel bildirim izni varsa service worker üzerinden bildirim gösterir, yoksa en azından uygulama içinde toast gösterir.
+
+## v10.2
+- Akıllı bildirimlere saat bazlı kategori sistemi:
+  - görev, özel gün, doğum günü, regl ve harcama özeti için ayrı saat
+  - sessiz saat aralığı
+  - planlar kendi saatine ve seçili hatırlatma süresine göre çalışır
+- Ortak Harcamalara aylık kategori grafiği eklendi.
+- Takvimde Date / Aile / İş / Sağlık / Ödeme / Görev renk kodları eklendi.
+- Necati Bot 2.0 daha doğal ve bağlamsal hale getirildi:
+  - bugünkü/yarınki planları
+  - görevleri
+  - harcama ve kategori toplamlarını
+  - son ruh halini okuyabilir
+  - kendisinin bot olduğunu açıkça belirtir.

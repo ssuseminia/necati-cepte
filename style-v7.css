@@ -262,3 +262,25 @@ body{display:flex;justify-content:center;min-height:100dvh}
   .mobile-tabbar{border-radius:0 0 34px 34px}
   dialog.app-dialog,dialog:not(#loveDialog){max-width:430px!important}
 }
+
+
+/* ===== v10.2 calendar colors / expense graph / smart settings ===== */
+.settings-section{margin:14px 0;padding:14px;border-radius:20px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.07)}
+.settings-section-head h3{margin:2px 0 8px}.settings-section-head small{opacity:.6;text-transform:uppercase;font-size:10px;letter-spacing:.08em}
+.calendar-color-legend{display:flex;flex-wrap:wrap;gap:8px 12px;margin:8px 0 14px;font-size:10px;color:var(--mobile-muted)}
+.calendar-color-legend span{display:inline-flex;align-items:center;gap:5px}
+.dot,.event-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.dot-date,.event-date{background:#ff6fae}.dot-family,.event-family{background:#ffb35c}.dot-work,.event-work{background:#6ea8ff}
+.dot-health,.event-health{background:#61d6a6}.dot-payment,.event-payment{background:#ffd75e}.dot-task,.event-task{background:#ad82ff}
+.event-general{background:#9aa2b1}
+.event-dots{position:absolute;left:5px;bottom:5px;display:flex;gap:2px;font-style:normal}
+.cal-day{position:relative}
+.event-cat-date{border-left:3px solid #ff6fae}.event-cat-aile{border-left:3px solid #ffb35c}.event-cat-is{border-left:3px solid #6ea8ff}
+.event-cat-saglik{border-left:3px solid #61d6a6}.event-cat-odeme{border-left:3px solid #ffd75e}.event-cat-genel{border-left:3px solid #9aa2b1}
+.expense-chart-card{margin:12px 0}
+#expenseChart{width:100%;height:250px;display:block}
+.chart-total{font-size:14px;font-weight:800}
+.chart-legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}
+.chart-legend span{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.05)}
+.chart-legend b{font-size:10px}.chart-legend small{font-size:10px;color:var(--mobile-muted)}
+@media(max-width:390px){.chart-legend{grid-template-columns:1fr}.calendar-color-legend{gap:7px}}
