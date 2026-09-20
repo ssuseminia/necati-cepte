@@ -1,6 +1,6 @@
 (function(){
   const cfg=window.NECATI_FIREBASE;
-  let auth,db,storage,messaging,user=null,unsubState=null,unsubNotifs=null,saveTimer=null,ready=false;
+  let auth,db,storage,messaging,user=null,unsubState=null,unsubNotifs=null,saveTimer=null,ready=false,pollTimer=null,lastNotifCheck=Date.now();
   const $=id=>document.getElementById(id);
   const configured=()=>cfg&&cfg.config&&cfg.config.apiKey&&!cfg.config.apiKey.startsWith('BURAYA_')&&cfg.config.projectId&&!cfg.config.projectId.startsWith('BURAYA_');
   const setStatus=(text,on=false)=>{const el=$('cloudStatus');if(!el)return;el.textContent=`● ${text}`;el.classList.toggle('online',on)};
@@ -40,7 +40,7 @@
     } else {setStatus(configured()?'Giriş yok':'Yerel');stopSync();}
   }
 
-  function stopSync(){unsubState?.();unsubNotifs?.();unsubState=unsubNotifs=null;ready=false;}
+  function stopSync(){unsubState?.();unsubNotifs?.();clearInterval(pollTimer);pollTimer=null;unsubState=unsubNotifs=null;ready=false;}
 
   function loadSeen(){try{return new Set(JSON.parse(localStorage.getItem(notifStoreKey())||'[]'))}catch{return new Set()}}
   function saveSeen(seen){localStorage.setItem(notifStoreKey(),JSON.stringify([...seen].slice(-200)))}
@@ -56,20 +56,25 @@
 
     const seen=loadSeen();
     let booting=true;
+    const processDoc=(doc,fromBoot=false)=>{
+      if(seen.has(doc.id))return;
+      const n=doc.data();
+      const created=n.createdAt?.toMillis?.()||n.clientCreatedAt||0;
+      const fresh=!created || (Date.now()-created)<300000;
+      seen.add(doc.id);
+      if(n.senderUid===user.uid)return;
+      if(fromBoot&&!fresh)return;
+      showIncoming(n);
+    };
     unsubNotifs=ref.collection('notifications').orderBy('createdAt','desc').limit(30).onSnapshot(q=>{
-      q.docChanges().forEach(ch=>{
-        if(ch.type!=='added'||seen.has(ch.doc.id))return;
-        const n=ch.doc.data();
-        const created=n.createdAt?.toMillis?.()||0;
-        const fresh=!created || (Date.now()-created)<120000;
-        seen.add(ch.doc.id);
-        if(n.senderUid===user.uid)return;
-        if(booting&&!fresh)return;
-        showIncoming(n);
-      });
-      booting=false;
-      saveSeen(seen);
-    });
+      q.docChanges().forEach(ch=>{if(ch.type==='added')processDoc(ch.doc,booting)});
+      booting=false;saveSeen(seen);
+    },err=>{console.error('Bildirim dinleyicisi hatası',err);safeToast('Canlı bildirim bağlantısı yeniden deneniyor…')});
+    // Bazı mobil tarayıcılar arka plana geçince canlı Firestore bağlantısını uyutabiliyor.
+    // Uygulama tekrar aktif olduğunda ve her 20 sn'de bir kısa sorgu ile kaçan çağrıları yakala.
+    const poll=async()=>{if(!ready||document.hidden)return;try{const q=await ref.collection('notifications').orderBy('createdAt','desc').limit(10).get();q.docs.slice().reverse().forEach(d=>processDoc(d,false));saveSeen(seen)}catch(e){console.warn('Bildirim yedek sorgusu',e)}};
+    pollTimer=setInterval(poll,20000);
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll()},{passive:true});
   }
 
   function scheduleSave(state){
@@ -91,7 +96,7 @@
     const title='🚨 Acil Necati';
     const body=`${type} ❤️`;
     await db.collection('couples').doc(cfg.coupleId).collection('notifications').add({
-      title,body,type:'emergency',senderUid:user.uid,senderEmail:user.email||'',createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      title,body,type:'emergency',senderUid:user.uid,senderEmail:user.email||'',clientCreatedAt:Date.now(),createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
   }
 
@@ -140,9 +145,10 @@
 
   function showIncoming(n){
     safeToast(`${n.title||'Necati Cepte'} — ${n.body||''}`);
+    window.dispatchEvent(new CustomEvent('necati:incoming',{detail:n}));
     showSystemNotification(n);
   }
 
-  window.NecatiCloud={scheduleSave,uploadImage,sendEmergency,isReady:()=>ready,user:()=>user,enablePush};
+  window.NecatiCloud={scheduleSave,uploadImage,sendEmergency,isReady:()=>ready,hasStorage:()=>!!storage,user:()=>user,enablePush};
   window.addEventListener('DOMContentLoaded',init);
 })();
