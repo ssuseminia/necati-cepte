@@ -1,7 +1,7 @@
 const $=id=>document.getElementById(id);
 const STORAGE_KEY='necati-cepte-v2';
 const defaultState={
- settings:{partnerName:'Nisa',ownerName:'Necati',relationshipDate:'2025-04-12T00:00',birthDate:'',lastPeriod:'',cycleLength:28,periodLength:5},
+ settings:{nisaBirthday:'',necatiBirthday:'',periodStartDate:'',periodLength:5,periodCycle:28,partnerName:'Nisa',ownerName:'Necati',relationshipDate:'2025-04-12T00:00',birthDate:'',lastPeriod:'',cycleLength:28,periodLength:5},
  mood:{today:'mutlu',history:[]},surprises:[{id:1,date:new Date().toISOString().slice(0,10),title:'Bugünün küçük sürprizi',message:'Bir adet uzun sarılma kazandın ❤️',type:'Mesaj'}],
  jar:['gülüşün en sıradan günümü bile güzelleştiriyor','yanında kendim olabiliyorum','birlikte saçmalamak dünyanın en güzel şeyi','zor günlerimde bile yanımda olduğunu hissediyorum','seninle gelecek düşünmek beni mutlu ediyor','sesini duyunca günüm değişiyor'],
  memories:[],stories:[{id:1,season:1,episode:1,date:'2025-04-12',title:'Biz olduk ❤️',text:'Nisa ve Necati hikâyesinin başladığı gün.',image:''},{id:2,season:2,episode:1,date:'2026-06-28',title:'Nişanımız 💍',text:'Hikâyemizin en özel bölümlerinden biri.',image:''}],
@@ -31,6 +31,131 @@ const messages=[['Nisa’ya küçük bir hatırlatma','Bugün de seni seçiyorum
 document.querySelectorAll('.module-card').forEach(b=>b.onclick=()=>openModule(b.dataset.module));$('backBtn').onclick=showHome;$('homeBtn').onclick=showHome;
 function showHome(){currentModule=null;if(leafletMap){leafletMap.remove();leafletMap=null}if(pickerMap){pickerMap.remove();pickerMap=null} $('homeView').hidden=false;$('moduleView').hidden=true;$('homeBtn').classList.add('active');scrollTo({top:0,behavior:'smooth'})}
 function openModule(name){currentModule=name;$('homeView').hidden=true;$('moduleView').hidden=false;$('homeBtn').classList.remove('active');$('moduleTitle').textContent=moduleNames[name];renderModule(name);notify('📲 Modül açıldı',`${actor()} ${moduleNames[name]} bölümüne girdi`,'module-open',name);scrollTo({top:0,behavior:'smooth'})}
+
+function hydratePersonalSettings(){
+  const s=state.settings||{};
+  if($('birthDate')) $('birthDate').value=s.birthDate||'';
+  if($('lastPeriodDate')) $('lastPeriodDate').value=s.lastPeriodDate||'';
+  if($('cycleLength')) $('cycleLength').value=String(s.cycleLength||28);
+}
+
+
+
+function nextBirthday(dateStr){
+  if(!dateStr)return null;
+  const d=new Date(dateStr+'T12:00:00'), now=new Date();
+  let n=new Date(now.getFullYear(),d.getMonth(),d.getDate(),12);
+  if(n<now)n=new Date(now.getFullYear()+1,d.getMonth(),d.getDate(),12);
+  return Math.ceil((n-now)/86400000);
+}
+function periodInfo(){
+  const s=state.settings||{};
+  if(!s.periodStartDate)return null;
+  const start=new Date(s.periodStartDate+'T12:00:00');
+  const cycle=Number(s.periodCycle)||28, len=Number(s.periodLength)||5;
+  const now=new Date(); now.setHours(12,0,0,0);
+  const elapsed=Math.floor((now-start)/86400000);
+  const mod=((elapsed%cycle)+cycle)%cycle;
+  const inPeriod=mod<len;
+  const nextStart=new Date(start); nextStart.setDate(start.getDate() + (Math.floor(elapsed/cycle)+1)*cycle);
+  return {inPeriod,day:mod+1,nextStart:nextStart.toISOString().slice(0,10)};
+}
+
+let calendarCursor=new Date();
+
+function fmtDateTR(v){
+  if(!v) return '';
+  try{return new Date(v+'T12:00:00').toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'})}catch{return v}
+}
+function fmtDateTimeTR(date,time){
+  return [fmtDateTR(date),time||''].filter(Boolean).join(' • ');
+}
+function oppositeName(){ return actor?.()==='Nisa' ? 'Necati' : 'Nisa'; }
+
+function hydrateV8Settings(){
+  const s=state.settings||{};
+  for(const [id,val] of Object.entries({
+    nisaBirthday:s.nisaBirthday||'',
+    necatiBirthday:s.necatiBirthday||'',
+    periodStartDate:s.periodStartDate||s.lastPeriodDate||'',
+    periodLength:s.periodLength||5,
+    periodCycle:s.periodCycle||s.cycleLength||28
+  })){
+    const el=$(id); if(el) el.value=val;
+  }
+}
+
+function renderPlanner(){
+  const title=$('calendarTitle'), grid=$('calendarGrid'), list=$('planList');
+  if(!grid||!list) return;
+  const y=calendarCursor.getFullYear(), m=calendarCursor.getMonth();
+  if(title) title.textContent=new Date(y,m,1).toLocaleDateString('tr-TR',{month:'long',year:'numeric'});
+  grid.innerHTML='';
+  ['Pt','Sa','Ça','Pe','Cu','Ct','Pz'].forEach(d=>{const h=document.createElement('div');h.className='cal-h';h.textContent=d;grid.appendChild(h)});
+  let first=(new Date(y,m,1).getDay()+6)%7;
+  for(let i=0;i<first;i++){const e=document.createElement('div');e.className='cal-empty';grid.appendChild(e)}
+  const days=new Date(y,m+1,0).getDate();
+  for(let d=1;d<=days;d++){
+    const iso=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const cell=document.createElement('button');cell.type='button';cell.className='cal-day';
+    const count=(state.plans||[]).filter(p=>p.date===iso).length;
+    cell.innerHTML=`<span>${d}</span>${count?`<b>${count}</b>`:''}`;
+    cell.onclick=()=>{$('planDate').value=iso;renderPlanner()};
+    grid.appendChild(cell);
+  }
+  list.innerHTML='';
+  const items=[...(state.plans||[])].sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  if(!items.length){list.innerHTML='<p class="muted">Henüz plan yok.</p>';return}
+  items.forEach(p=>{
+    const row=document.createElement('div');row.className='list-card';
+    row.innerHTML=`<div><strong>${escapeHtml(p.title)}</strong><small>${fmtDateTimeTR(p.date,p.time)}</small>${p.note?`<p>${escapeHtml(p.note)}</p>`:''}</div>
+    <button type="button" class="danger-btn" data-id="${p.id}">Sil</button>`;
+    row.querySelector('button').onclick=async()=>{state.plans=state.plans.filter(x=>x.id!==p.id);save();renderPlanner();notify?.('📅 Plan silindi',`${actor()} ortak takvimden bir plan sildi`,'plan','planner').catch(()=>{})};
+    list.appendChild(row);
+  });
+}
+
+function renderTodos(){
+  const list=$('todoList'); if(!list)return;
+  list.innerHTML='';
+  const prio={normal:'',high:'⭐ ',urgent:'🚨 '};
+  const items=[...(state.todos||[])].sort((a,b)=>Number(a.done)-Number(b.done));
+  if(!items.length){list.innerHTML='<p class="muted">Henüz görev yok.</p>';return}
+  items.forEach(t=>{
+    const row=document.createElement('div');row.className='list-card todo-card'+(t.done?' done':'');
+    row.innerHTML=`<label class="todo-line"><input type="checkbox" ${t.done?'checked':''}><span>${prio[t.priority]||''}${escapeHtml(t.text)}</span></label>
+    <small>${t.owner==='ortak'?'Ortak':t.owner==='necati'?'Necati':'Nisa'}${t.date?' • '+fmtDateTR(t.date):''}</small>
+    <button type="button" class="danger-btn">Sil</button>`;
+    row.querySelector('input').onchange=async e=>{
+      t.done=e.target.checked;save();renderTodos();
+      notify?.('✅ Görev güncellendi',`${actor()} “${t.text}” görevini ${t.done?'tamamladı':'yeniden açtı'}`,'todo','todo').catch(()=>{});
+    };
+    row.querySelector('button').onclick=async()=>{state.todos=state.todos.filter(x=>x.id!==t.id);save();renderTodos();notify?.('🗑️ Görev silindi',`${actor()} bir görevi sildi`,'todo','todo').catch(()=>{})};
+    list.appendChild(row);
+  });
+}
+
+function botReply(text){
+  const t=text.toLocaleLowerCase('tr-TR');
+  if(/üzgün|moral|kötü|canım sıkkın/.test(t)) return 'gel buraya anlat bakalım ne oldu ben burdayım ❤️';
+  if(/özledim|özlüyorum/.test(t)) return 'ben de seni özledim gelince sarılma borcum var 😄❤️';
+  if(/açım|yemek|tatlı/.test(t)) return 'hemen bir şeyler yiyelim sen aç kalma sonra bana kızıyorsun 😄';
+  if(/kızdım|sinir|gergin/.test(t)) return 'tamam tamam ben sakinim 😄 sen anlat ben dinliyorum';
+  if(/iyi geceler|uyuyorum|uyku/.test(t)) return 'iyi geceler güzelim güzel uyu ben hep yanındayım ❤️';
+  if(/seviyor musun|seviyorum/.test(t)) return 'bunu hâlâ soruyor musun seni çok seviyorum ❤️';
+  if(/ne yapıyorsun|napıyorsun/.test(t)) return 'şu an burda seninle konuşuyorum daha önemli ne işim olabilir 😄';
+  return ['anlat bakalım seni dinliyorum ❤️','hmm tamam devam et merak ettim 😄','ben olsam önce seni bi sarardım sonra konuşurduk ❤️','tamamdır bunu not ettim 😄'][Math.floor(Math.random()*4)];
+}
+function renderBot(){
+  const c=$('botChat');if(!c)return;c.innerHTML='';
+  const hist=state.botHistory||[];
+  if(!hist.length) hist.push({from:'bot',text:'Alooo 😄 Necati Bot hatta ne oldu güzelim ❤️'});
+  hist.slice(-40).forEach(m=>{
+    const b=document.createElement('div');b.className='bubble '+(m.from==='user'?'me':'bot');b.textContent=m.text;c.appendChild(b);
+  });
+  c.scrollTop=c.scrollHeight;
+}
+
 function renderModule(n){({mood:renderMood,surprise:renderSurprise,jar:renderJar,map:renderMap,sky:renderSky,story:renderStory,dates:renderDates,night:renderNight,emergency:renderEmergency,birthday:renderBirthday}[n]||(()=>{}))()}
 function viewerMoodOwner(){const r=window.NecatiCloud?.role?.();return r==='nisa'?'necati':'nisa'}
 function phaseInfo(){const s=state.settings;if(!s.lastPeriod)return null;const start=new Date(s.lastPeriod+'T12:00:00'),now=new Date(),elapsed=Math.floor((now-start)/86400000),day=((elapsed%s.cycleLength)+s.cycleLength)%s.cycleLength+1;let phase='Foliküler dönem';if(day<=s.periodLength)phase='Regl dönemi';else if(day>=s.cycleLength-13&&day<=s.cycleLength-11)phase='Tahmini yumurtlama dönemi';else if(day>s.cycleLength-11)phase='Luteal dönem';const next=new Date(start);next.setDate(next.getDate()+Math.ceil(Math.max(0,elapsed+1)/s.cycleLength)*s.cycleLength);if(next<=now)next.setDate(next.getDate()+s.cycleLength);return{day,phase,next}}
@@ -72,3 +197,69 @@ $('settingsBtn').onclick=()=>{const s=state.settings;for(const [id,k] of [['part
 $('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='necati-cepte-v7-yedek.json';a.click();URL.revokeObjectURL(a.href)};$('importInput').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{state=merge(defaultState,JSON.parse(r.result));save();updateIdentity();$('settingsDialog').close();toast('Yedek yüklendi ✅')}catch{toast('Geçersiz yedek')}};r.readAsText(f)};$('randomLoveBtn').onclick=()=>{$('loveDialogText').textContent=`Seni seviyorum çünkü ${dailyJar()}.`;$('loveDialog').showModal()};
 window.addEventListener('necati:authchange',()=>{if(currentModule==='mood')renderMood()});window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBtn').hidden=false});$('installBtn').onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBtn').hidden=true};
 window.NECATI_APP_VERSION='7.0';if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{const regs=await navigator.serviceWorker.getRegistrations();for(const r of regs){const u=String(r.active?.scriptURL||r.installing?.scriptURL||r.waiting?.scriptURL||'');if(u&&!u.includes('OneSignalSDK')&&!u.includes('sw-v7.js'))await r.unregister()}const reg=await navigator.serviceWorker.register('./sw-v7.js',{scope:'./',updateViaCache:'none'});await reg.update()}catch(e){console.warn('SW v7',e)}});
+
+document.addEventListener('DOMContentLoaded',()=>setTimeout(hydratePersonalSettings,50));
+
+$('saveSettings')?.addEventListener('click',()=>{
+  state.settings=state.settings||{};
+  state.settings.nisaBirthday=$('nisaBirthday')?.value||'';
+  state.settings.necatiBirthday=$('necatiBirthday')?.value||'';
+  state.settings.periodStartDate=$('periodStartDate')?.value||'';
+  state.settings.periodLength=Math.max(2,Math.min(10,Number($('periodLength')?.value)||5));
+  state.settings.periodCycle=Math.max(20,Math.min(45,Number($('periodCycle')?.value)||28));
+
+  state.settings=state.settings||{};
+  state.settings.birthDate=$('birthDate')?.value||'';
+  state.settings.lastPeriodDate=$('lastPeriodDate')?.value||'';
+  state.settings.cycleLength=Math.max(20,Math.min(45,Number($('cycleLength')?.value)||28));
+  save();
+  toast('Ayarlar kaydedildi ❤️');
+});
+
+document.addEventListener('click',e=>{
+  const opener=e.target.closest?.('[data-open]');
+  if(!opener)return;
+  const id=opener.dataset.open;
+  if(id==='plannerDialog'){renderPlanner();notify?.('📅 Ortak Takvim açıldı',`${actor()} ortak takvime girdi`,'module','planner').catch(()=>{})}
+  if(id==='todoDialog'){renderTodos();notify?.('✅ Yapılacaklar açıldı',`${actor()} yapılacaklar listesine girdi`,'module','todo').catch(()=>{})}
+  if(id==='necatiBotDialog'){renderBot()}
+});
+
+$('calPrev')?.addEventListener('click',()=>{calendarCursor.setMonth(calendarCursor.getMonth()-1);renderPlanner()});
+$('calNext')?.addEventListener('click',()=>{calendarCursor.setMonth(calendarCursor.getMonth()+1);renderPlanner()});
+
+$('addPlanBtn')?.addEventListener('click',async()=>{
+  const title=$('planTitle')?.value.trim(), date=$('planDate')?.value, time=$('planTime')?.value, note=$('planNote')?.value.trim();
+  if(!title||!date)return toast('Plan başlığı ve tarih gerekli 📅');
+  state.plans=state.plans||[];
+  state.plans.push({id:uid(),title,date,time,note,createdBy:actor(),createdAt:Date.now()});
+  save();renderPlanner();
+  $('planTitle').value='';$('planNote').value='';
+  toast('Plan eklendi 📅');
+  notify?.('📅 Yeni ortak plan',`${actor()} “${title}” planını ekledi • ${fmtDateTimeTR(date,time)}`,'plan','planner').catch(()=>{});
+});
+
+$('addTodoBtn')?.addEventListener('click',async()=>{
+  const text=$('todoText')?.value.trim();
+  if(!text)return toast('Görev yazmalısın ✅');
+  state.todos=state.todos||[];
+  state.todos.push({id:uid(),text,owner:$('todoOwner')?.value||'ortak',date:$('todoDate')?.value||'',priority:$('todoPriority')?.value||'normal',done:false,createdBy:actor(),createdAt:Date.now()});
+  save();renderTodos();$('todoText').value='';
+  toast('Görev eklendi ✅');
+  notify?.('✅ Yeni görev',`${actor()} “${text}” görevini ekledi`,'todo','todo').catch(()=>{});
+});
+
+$('botSendBtn')?.addEventListener('click',()=>{
+  const inp=$('botInput');const text=inp?.value.trim();if(!text)return;
+  state.botHistory=state.botHistory||[];
+  state.botHistory.push({from:'user',text,at:Date.now()});
+  state.botHistory.push({from:'bot',text:botReply(text),at:Date.now()+1});
+  inp.value='';save();renderBot();
+});
+$('botInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('botSendBtn')?.click()}});
+
+document.addEventListener('DOMContentLoaded',()=>{
+  hydrateV8Settings();
+  renderPlanner();
+  renderTodos();
+});

@@ -29,3 +29,18 @@ Stellarium canlı görünümü üçüncü taraf web hizmetidir; yüklenmezse alt
 - 15 saniyelik yükleme zaman aşımı eklendi.
 - Gönderim sırasında aşamalar ayrı gösteriliyor.
 - Push hatası artık mesajın kendisini göndermeyi bloke etmiyor.
+
+## v7.0.2 hotfix
+- Ayarlar bölümüne doğum tarihi geri eklendi.
+- Son regl tarihi geri eklendi.
+- Ortalama döngü süresi geri eklendi.
+- Bu alanlar state içinde saklanır ve mevcut senkronizasyon akışına dahil olur.
+
+## v8.0
+- Ortak Takvim / Planlayıcı eklendi.
+- Ortak Yapılacaklar listesi eklendi.
+- Necati Bot (yerel, ücretsiz, şablon tabanlı) eklendi.
+- Nisa ve Necati doğum günü ayarları eklendi.
+- Regl başlangıç tarihi, regl süresi ve döngü süresi ayarları eklendi.
+- Plan/görev ekleme, silme ve tamamlamada karşı tarafa OneSignal push gönderimi eklendi.
+- Tüm yeni veriler mevcut `save()` senkronizasyon akışına dahil edildi.

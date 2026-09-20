@@ -4,3 +4,26 @@
 
 /* v7 */
 .mood-image-grid{grid-template-columns:repeat(5,minmax(0,1fr));align-items:stretch}.mood-image-btn{padding:7px;overflow:hidden;display:grid;gap:6px;place-items:center}.mood-image-btn img{width:100%;aspect-ratio:1/1;object-fit:contain;border-radius:13px;background:rgba(255,255,255,.03)}.mood-image-btn span{font-size:.78rem}.mood-image-btn.active img{transform:scale(1.04)}.picker-map{height:300px;margin:12px 0}.upload-preview{display:block;width:min(100%,420px);max-height:320px;object-fit:cover;border-radius:18px;margin:12px 0;border:1px solid var(--line)}.upload-status{font-size:.82rem;color:var(--muted);margin:8px 0}.night-photo{width:100%;max-height:360px;object-fit:cover;border-radius:15px;margin-bottom:10px}.stellarium-frame{width:100%;height:520px;border:0;border-radius:18px;background:#02040c}.link-btn{text-decoration:none;display:inline-flex;align-items:center}.primary-btn:disabled{opacity:.55;cursor:wait}@media(max-width:640px){.mood-image-grid{grid-template-columns:repeat(2,1fr)}.mood-image-btn:last-child{grid-column:1/-1}.stellarium-frame{height:420px}}
+
+/* v8 */
+.calendar-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin:1rem 0}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:.35rem;margin-bottom:1rem}
+.cal-h,.cal-empty,.cal-day{min-height:42px;border-radius:12px;display:grid;place-items:center}
+.cal-h{font-size:.75rem;opacity:.6}
+.cal-day{border:0;background:rgba(255,255,255,.08);color:inherit;position:relative}
+.cal-day b{position:absolute;right:4px;bottom:3px;font-size:.65rem;background:#ff7ab6;color:white;border-radius:999px;padding:1px 5px}
+.stack-list{display:grid;gap:.7rem;margin-top:1rem}
+.list-card{display:flex;gap:.8rem;align-items:center;justify-content:space-between;padding:.9rem;border-radius:16px;background:rgba(255,255,255,.08)}
+.list-card>div{display:grid;gap:.2rem}
+.list-card small{opacity:.7}
+.todo-card.done{opacity:.55}
+.todo-card.done .todo-line span{text-decoration:line-through}
+.todo-line{display:flex;gap:.6rem;align-items:center;flex:1}
+.danger-btn{border:0;border-radius:10px;padding:.5rem .7rem;background:rgba(255,70,100,.18);color:inherit}
+.bot-shell{max-width:520px}
+.bot-chat{height:360px;overflow:auto;display:flex;flex-direction:column;gap:.65rem;padding:.8rem;border-radius:18px;background:rgba(0,0,0,.12)}
+.bubble{max-width:82%;padding:.75rem .9rem;border-radius:18px;line-height:1.35}
+.bubble.bot{align-self:flex-start;background:rgba(255,255,255,.12)}
+.bubble.me{align-self:flex-end;background:linear-gradient(135deg,#ff7ab6,#9d74ff);color:white}
+.bot-compose{display:flex;gap:.6rem;margin-top:.75rem}
+.bot-compose input{flex:1}
