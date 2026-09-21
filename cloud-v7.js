@@ -3,6 +3,7 @@
   const osCfg=window.NECATI_ONESIGNAL||{};
   let auth,db,storage,messaging,user=null,unsubState=null,unsubNotifs=null,saveTimer=null,ready=false,pollTimer=null;
   let oneSignalReady=false;
+  let oneSignalInitPromise=null;
   let presenceTimer=null,lastPresenceWrite=0;
   const imageCache=new Map();
   const $=id=>document.getElementById(id);
@@ -23,22 +24,48 @@
   function saveSeen(s){localStorage.setItem(notifStoreKey(),JSON.stringify([...s].slice(-300)))}
 
   async function initOneSignal(){
+    if(oneSignalInitPromise)return oneSignalInitPromise;
     if(!osCfg.appId||osCfg.appId.startsWith('BURAYA_'))return false;
     window.OneSignalDeferred=window.OneSignalDeferred||[];
-    return new Promise(resolve=>{
+    oneSignalInitPromise=new Promise(resolve=>{
+      let settled=false;
+      const finish=v=>{if(settled)return;settled=true;resolve(v)};
       window.OneSignalDeferred.push(async OneSignal=>{
         try{
           await OneSignal.init({appId:osCfg.appId,serviceWorkerPath:osCfg.serviceWorkerPath,serviceWorkerParam:{scope:osCfg.serviceWorkerScope}});
-          oneSignalReady=true; window.NecatiOneSignal=OneSignal; resolve(true);
-        }catch(e){console.warn('OneSignal init',e);safeToast('OneSignal başlatılamadı: '+(e?.message||e));resolve(false)}
+          oneSignalReady=true;
+          window.NecatiOneSignal=OneSignal;
+          finish(true);
+          // Firebase auth can restore faster than OneSignal loads, especially on iPhone/PWA.
+          // If a user is already known, bind that subscription immediately after init.
+          if(user) setTimeout(()=>identifyOneSignal(user).catch(console.warn),0);
+        }catch(e){
+          console.warn('OneSignal init',e);
+          safeToast('OneSignal başlatılamadı: '+(e?.message||e));
+          oneSignalInitPromise=null;
+          finish(false);
+        }
       });
-      setTimeout(()=>resolve(oneSignalReady),8000);
+      setTimeout(()=>finish(oneSignalReady),10000);
     });
+    return oneSignalInitPromise;
   }
   async function identifyOneSignal(u){
-    if(!u||!oneSignalReady||!window.NecatiOneSignal)return;
-    const role=roleFromEmail(u.email);if(!role)return;
-    try{await window.NecatiOneSignal.login(role);await window.NecatiOneSignal.User.addTag('role',role)}catch(e){console.warn(e)}
+    if(!u)return false;
+    if(!oneSignalReady||!window.NecatiOneSignal){
+      const ok=await initOneSignal();
+      if(!ok||!window.NecatiOneSignal)return false;
+    }
+    const role=roleFromEmail(u.email);if(!role)return false;
+    try{
+      await window.NecatiOneSignal.login(role);
+      await window.NecatiOneSignal.User.addTag('role',role);
+      console.info('[Necati Push] OneSignal identity:',role,'subscription:',window.NecatiOneSignal.User.PushSubscription?.id||null);
+      return true;
+    }catch(e){
+      console.warn('[Necati Push] identify failed',e);
+      return false;
+    }
   }
   async function unidentifyOneSignal(){try{if(oneSignalReady)await window.NecatiOneSignal?.logout()}catch{}}
   function openAuthDialog(){const d=$('authDialog');if(!d)return; $('authSetupWarning').hidden=configured(); try{d.showModal()}catch{d.setAttribute('open','')}}
@@ -181,12 +208,12 @@
 
   async function enablePush(){
     if(osCfg.appId&&!osCfg.appId.startsWith('BURAYA_')){
-      try{if(!oneSignalReady)await initOneSignal();const O=window.NecatiOneSignal;if(!O)throw new Error('OneSignal yüklenemedi');if(user)await identifyOneSignal(user);await O.Notifications.requestPermission();if(!O.Notifications.permission)return safeToast('Bildirim izni verilmedi');await O.User.PushSubscription.optIn();let id=O.User.PushSubscription.id;for(let i=0;i<10&&!id;i++){await new Promise(r=>setTimeout(r,500));id=O.User.PushSubscription.id}if(id){$('enablePushBtn').textContent='✅ Bildirimler açık';safeToast('Gerçek push aktif 🔔❤️')}else safeToast('İzin verildi ama push token oluşmadı')}catch(e){safeToast('Bildirim açılamadı: '+(e?.message||e))}
+      try{if(!oneSignalReady)await initOneSignal();const O=window.NecatiOneSignal;if(!O)throw new Error('OneSignal yüklenemedi');await O.Notifications.requestPermission();if(!O.Notifications.permission)return safeToast('Bildirim izni verilmedi');await O.User.PushSubscription.optIn();let id=O.User.PushSubscription.id;for(let i=0;i<12&&!id;i++){await new Promise(r=>setTimeout(r,500));id=O.User.PushSubscription.id}if(user)await identifyOneSignal(user);if(id){$('enablePushBtn').textContent='✅ Bildirimler açık';safeToast('Gerçek push aktif 🔔❤️')}else safeToast('İzin verildi ama push token oluşmadı')}catch(e){safeToast('Bildirim açılamadı: '+(e?.message||e))}
     }
   }
   async function showSystemNotification(n,force=false){if(!('Notification'in window)||Notification.permission!=='granted'){if(force)safeToast('Önce bildirim izni ver 🔔');return}try{const reg=await navigator.serviceWorker.ready;await reg.showNotification(n.title||'Necati Cepte ❤️',{body:n.body||'',icon:'./icons/icon-192.png',badge:'./icons/icon-192.png',tag:n.type||'necati',renotify:true,requireInteraction:n.type==='emergency',vibrate:[250,120,250]})}catch{}}
   function showIncoming(n){safeToast(`${n.title||'Necati Cepte'} — ${n.body||''}`);window.dispatchEvent(new CustomEvent('necati:incoming',{detail:n}));showSystemNotification(n)}
 
-  window.NecatiCloud={version:'10.0',scheduleSave,uploadImage,resolveImage,sendActivity,sendEmergency,sendMoodChange,enablePush,isReady:()=>ready,user:()=>user,role:()=>roleFromEmail(user?.email||''),displayName,diagnostics:()=>({ready,role:roleFromEmail(user?.email||''),oneSignalReady,subscriptionId:window.NecatiOneSignal?.User?.PushSubscription?.id||null})};
+  window.NecatiCloud={version:'10.0',scheduleSave,uploadImage,resolveImage,sendActivity,sendEmergency,sendMoodChange,enablePush,isReady:()=>ready,user:()=>user,role:()=>roleFromEmail(user?.email||''),displayName,diagnostics:()=>({ready,role:roleFromEmail(user?.email||''),email:user?.email||null,oneSignalReady,permission:window.NecatiOneSignal?.Notifications?.permission??null,optedIn:window.NecatiOneSignal?.User?.PushSubscription?.optedIn??null,subscriptionId:window.NecatiOneSignal?.User?.PushSubscription?.id||null,oneSignalId:window.NecatiOneSignal?.User?.onesignalId||null})};
   window.addEventListener('focus',()=>updatePresence(true));document.addEventListener('visibilitychange',()=>{if(!document.hidden)updatePresence(true)});window.addEventListener('DOMContentLoaded',init);
 })();
