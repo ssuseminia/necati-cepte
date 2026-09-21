@@ -13,17 +13,26 @@
   try{
     if('serviceWorker' in navigator){
       const regs=await navigator.serviceWorker.getRegistrations();
-      await Promise.all(regs.map(r=>r.unregister()));
+      await Promise.all(regs.map(async r=>{
+        const url=String(r.active?.scriptURL||r.waiting?.scriptURL||r.installing?.scriptURL||'');
+        if(url.includes('OneSignalSDK')) return false;
+        return r.unregister();
+      }));
     }
     if('caches' in window){
       const keys=await caches.keys();
-      await Promise.all(keys.map(k=>caches.delete(k)));
+      await Promise.all(keys.map(k=>{
+        // OneSignal önbelleklerine dokunma; sadece Necati Cepte cache'lerini temizle.
+        if(/onesignal/i.test(k)) return Promise.resolve(false);
+        if(/^necati-cepte-/i.test(k)) return caches.delete(k);
+        return Promise.resolve(false);
+      }));
     }
     document.getElementById('s').textContent='Tamam ✅ Yeni sürüm açılıyor…';
   }catch(e){
     document.getElementById('s').textContent='Temizleme tamamlanamadı ama devam ediliyor…';
   }
-  setTimeout(()=>location.replace('./?fresh=10800&ts='+Date.now()),900);
+  setTimeout(()=>location.replace('./?fresh=10810&ts='+Date.now()),900);
 })();
 </script>
 </body>
