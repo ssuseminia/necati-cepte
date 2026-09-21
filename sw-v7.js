@@ -1,6 +1,4 @@
-importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
-
-const CACHE='necati-cepte-v10.8.6';
+const CACHE='necati-cepte-v10.8.7';
 const CORE=['./','./index.html','./style-v7.css','./app-v7.js','./cloud-v7.js','./firebase-config-v7.js','./onesignal-config.js','./manifest.json','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>/^necati-cepte-/i.test(k)&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));

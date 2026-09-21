@@ -13,10 +13,7 @@
   try{
     if('serviceWorker' in navigator){
       const regs=await navigator.serviceWorker.getRegistrations();
-      await Promise.all(regs.map(async r=>{
-        const url=String(r.active?.scriptURL||r.waiting?.scriptURL||r.installing?.scriptURL||'');
-        return r.unregister();
-      }));
+      await Promise.all(regs.map(r=>r.unregister()));
     }
     if('caches' in window){
       const keys=await caches.keys();
@@ -31,7 +28,7 @@
   }catch(e){
     document.getElementById('s').textContent='Temizleme tamamlanamadı ama devam ediliyor…';
   }
-  setTimeout(()=>location.replace('./?fresh=1086&ts='+Date.now()),900);
+  setTimeout(()=>location.replace('./?fresh=1087&ts='+Date.now()),900);
 })();
 </script>
 </body>
