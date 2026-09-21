@@ -15,7 +15,6 @@
       const regs=await navigator.serviceWorker.getRegistrations();
       await Promise.all(regs.map(async r=>{
         const url=String(r.active?.scriptURL||r.waiting?.scriptURL||r.installing?.scriptURL||'');
-        if(url.includes('OneSignalSDK')) return false;
         return r.unregister();
       }));
     }
@@ -32,7 +31,7 @@
   }catch(e){
     document.getElementById('s').textContent='Temizleme tamamlanamadı ama devam ediliyor…';
   }
-  setTimeout(()=>location.replace('./?fresh=1084&ts='+Date.now()),900);
+  setTimeout(()=>location.replace('./?fresh=1086&ts='+Date.now()),900);
 })();
 </script>
 </body>

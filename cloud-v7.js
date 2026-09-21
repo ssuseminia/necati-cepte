@@ -38,7 +38,7 @@
           finish(true);
           // Firebase auth can restore faster than OneSignal loads, especially on iPhone/PWA.
           // If a user is already known, bind that subscription immediately after init.
-          if(user) setTimeout(()=>identifyOneSignal(user).catch(console.warn),0);
+          if(user) setTimeout(()=>syncPushState({repair:true}).catch(console.warn),0);
         }catch(e){
           console.warn('OneSignal init',e);
           safeToast('OneSignal başlatılamadı: '+(e?.message||e));
@@ -67,6 +67,55 @@
       return false;
     }
   }
+  async function syncPushState({repair=false}={}){
+    const btn=$('enablePushBtn');
+    try{
+      if(!oneSignalReady||!window.NecatiOneSignal){
+        const ok=await initOneSignal();
+        if(!ok||!window.NecatiOneSignal){
+          if(btn)btn.textContent='🔔 Bildirimleri aç';
+          return false;
+        }
+      }
+
+      const O=window.NecatiOneSignal;
+      const permission=O.Notifications?.permission===true || Notification?.permission==='granted';
+
+      // Browser permission was already granted on a previous visit.
+      // Re-opt-in silently so reopening the PWA does not require another manual tap.
+      if(repair && permission && O.User?.PushSubscription){
+        try{
+          if(O.User.PushSubscription.optedIn!==true || !O.User.PushSubscription.id){
+            await O.User.PushSubscription.optIn();
+          }
+        }catch(e){console.warn('[Necati Push] optIn restore failed',e)}
+      }
+
+      if(user) await identifyOneSignal(user);
+
+      let id=O.User?.PushSubscription?.id||null;
+      if(repair && permission && !id){
+        for(let i=0;i<8&&!id;i++){
+          await new Promise(r=>setTimeout(r,350));
+          id=O.User?.PushSubscription?.id||null;
+        }
+      }
+
+      const optedIn=O.User?.PushSubscription?.optedIn===true;
+      const active=!!permission && !!id && optedIn;
+
+      if(btn){
+        btn.textContent=active?'✅ Bildirimler açık':'🔔 Bildirimleri aç';
+        btn.dataset.pushActive=active?'1':'0';
+      }
+      return active;
+    }catch(e){
+      console.warn('[Necati Push] sync state failed',e);
+      if(btn)btn.textContent='🔔 Bildirimleri aç';
+      return false;
+    }
+  }
+
   async function unidentifyOneSignal(){try{if(oneSignalReady)await window.NecatiOneSignal?.logout()}catch{}}
   function openAuthDialog(){const d=$('authDialog');if(!d)return; $('authSetupWarning').hidden=configured(); try{d.showModal()}catch{d.setAttribute('open','')}}
 
@@ -90,7 +139,7 @@
   }
   async function handleAuth(u){
     user=u;ready=!!u;$('loggedOutBox').hidden=!!u;$('loggedInBox').hidden=!u;
-    if(u){$('accountEmail').textContent=u.email||'Giriş yapıldı';setStatus('Senkron',true);await startSync();await identifyOneSignal(u);await updatePresence(true);startPresenceHeartbeat();window.dispatchEvent(new CustomEvent('necati:authchange',{detail:{role:roleFromEmail(u.email)}}))}
+    if(u){$('accountEmail').textContent=u.email||'Giriş yapıldı';setStatus('Senkron',true);await startSync();await identifyOneSignal(u);await syncPushState({repair:true});await updatePresence(true);startPresenceHeartbeat();window.dispatchEvent(new CustomEvent('necati:authchange',{detail:{role:roleFromEmail(u.email)}}))}
     else{setStatus(configured()?'Giriş yok':'Yerel');stopSync();window.dispatchEvent(new CustomEvent('necati:authchange',{detail:{role:null}}))}
   }
   function stopSync(){unsubState?.();unsubNotifs?.();clearInterval(pollTimer);clearInterval(presenceTimer);unsubState=unsubNotifs=null;pollTimer=null;presenceTimer=null;ready=false}
@@ -208,12 +257,15 @@
 
   async function enablePush(){
     if(osCfg.appId&&!osCfg.appId.startsWith('BURAYA_')){
-      try{if(!oneSignalReady)await initOneSignal();const O=window.NecatiOneSignal;if(!O)throw new Error('OneSignal yüklenemedi');await O.Notifications.requestPermission();if(!O.Notifications.permission)return safeToast('Bildirim izni verilmedi');await O.User.PushSubscription.optIn();let id=O.User.PushSubscription.id;for(let i=0;i<12&&!id;i++){await new Promise(r=>setTimeout(r,500));id=O.User.PushSubscription.id}if(user)await identifyOneSignal(user);if(id){$('enablePushBtn').textContent='✅ Bildirimler açık';safeToast('Gerçek push aktif 🔔❤️')}else safeToast('İzin verildi ama push token oluşmadı')}catch(e){safeToast('Bildirim açılamadı: '+(e?.message||e))}
+      try{if(!oneSignalReady)await initOneSignal();const O=window.NecatiOneSignal;if(!O)throw new Error('OneSignal yüklenemedi');await O.Notifications.requestPermission();if(!O.Notifications.permission)return safeToast('Bildirim izni verilmedi');await O.User.PushSubscription.optIn();const active=await syncPushState({repair:true});if(active)safeToast('Gerçek push aktif 🔔❤️');else safeToast('İzin verildi ama push aboneliği henüz hazır değil')}catch(e){safeToast('Bildirim açılamadı: '+(e?.message||e))}
     }
   }
   async function showSystemNotification(n,force=false){if(!('Notification'in window)||Notification.permission!=='granted'){if(force)safeToast('Önce bildirim izni ver 🔔');return}try{const reg=await navigator.serviceWorker.ready;await reg.showNotification(n.title||'Necati Cepte ❤️',{body:n.body||'',icon:'./icons/icon-192.png',badge:'./icons/icon-192.png',tag:n.type||'necati',renotify:true,requireInteraction:n.type==='emergency',vibrate:[250,120,250]})}catch{}}
   function showIncoming(n){safeToast(`${n.title||'Necati Cepte'} — ${n.body||''}`);window.dispatchEvent(new CustomEvent('necati:incoming',{detail:n}));showSystemNotification(n)}
 
-  window.NecatiCloud={version:'10.0',scheduleSave,uploadImage,resolveImage,sendActivity,sendEmergency,sendMoodChange,enablePush,isReady:()=>ready,user:()=>user,role:()=>roleFromEmail(user?.email||''),displayName,diagnostics:()=>({ready,role:roleFromEmail(user?.email||''),email:user?.email||null,oneSignalReady,permission:window.NecatiOneSignal?.Notifications?.permission??null,optedIn:window.NecatiOneSignal?.User?.PushSubscription?.optedIn??null,subscriptionId:window.NecatiOneSignal?.User?.PushSubscription?.id||null,oneSignalId:window.NecatiOneSignal?.User?.onesignalId||null})};
-  window.addEventListener('focus',()=>updatePresence(true));document.addEventListener('visibilitychange',()=>{if(!document.hidden)updatePresence(true)});window.addEventListener('DOMContentLoaded',init);
+  window.NecatiCloud={version:'10.8.5',scheduleSave,uploadImage,resolveImage,sendActivity,sendEmergency,sendMoodChange,enablePush,syncPushState,isReady:()=>ready,user:()=>user,role:()=>roleFromEmail(user?.email||''),displayName,diagnostics:()=>({ready,role:roleFromEmail(user?.email||''),email:user?.email||null,oneSignalReady,permission:window.NecatiOneSignal?.Notifications?.permission??null,optedIn:window.NecatiOneSignal?.User?.PushSubscription?.optedIn??null,subscriptionId:window.NecatiOneSignal?.User?.PushSubscription?.id||null,oneSignalId:window.NecatiOneSignal?.User?.onesignalId||null})};
+  window.addEventListener('focus',()=>{updatePresence(true);if(user)syncPushState({repair:true}).catch(console.warn)});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){updatePresence(true);if(user)syncPushState({repair:true}).catch(console.warn)}});
+  window.addEventListener('pageshow',()=>{if(user)syncPushState({repair:true}).catch(console.warn)});
+  window.addEventListener('DOMContentLoaded',init);
 })();
