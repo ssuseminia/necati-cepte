@@ -2,7 +2,7 @@
   const cfg=window.NECATI_FIREBASE;
   const osCfg=window.NECATI_ONESIGNAL||{};
   let auth,db,storage,messaging,user=null,unsubState=null,unsubNotifs=null,saveTimer=null,ready=false,pollTimer=null;
-  let oneSignalReady=false;
+  let oneSignalReady=false,oneSignalInitPromise=null,oneSignalHealTimer=null;
   let presenceTimer=null,lastPresenceWrite=0;
   const imageCache=new Map();
   const $=id=>document.getElementById(id);
@@ -23,22 +23,80 @@
   function saveSeen(s){localStorage.setItem(notifStoreKey(),JSON.stringify([...s].slice(-300)))}
 
   async function initOneSignal(){
+    if(oneSignalReady&&window.NecatiOneSignal)return true;
+    if(oneSignalInitPromise)return oneSignalInitPromise;
     if(!osCfg.appId||osCfg.appId.startsWith('BURAYA_'))return false;
     window.OneSignalDeferred=window.OneSignalDeferred||[];
-    return new Promise(resolve=>{
+    oneSignalInitPromise=new Promise(resolve=>{
+      let finished=false;
+      const done=v=>{if(finished)return;finished=true;resolve(!!v)};
       window.OneSignalDeferred.push(async OneSignal=>{
         try{
-          await OneSignal.init({appId:osCfg.appId,serviceWorkerPath:osCfg.serviceWorkerPath,serviceWorkerParam:{scope:osCfg.serviceWorkerScope}});
-          oneSignalReady=true; window.NecatiOneSignal=OneSignal; resolve(true);
-        }catch(e){console.warn('OneSignal init',e);safeToast('OneSignal başlatılamadı: '+(e?.message||e));resolve(false)}
+          window.NecatiOneSignal=OneSignal;
+          try{
+            await OneSignal.init({appId:osCfg.appId,serviceWorkerPath:osCfg.serviceWorkerPath,serviceWorkerParam:{scope:osCfg.serviceWorkerScope}});
+          }catch(e){
+            // SDK aynı sayfada daha önce başlatıldıysa nesne yine kullanılabilir.
+            if(!/already|initialized|init/i.test(String(e?.message||e)))throw e;
+          }
+          oneSignalReady=true;
+          done(true);
+        }catch(e){
+          console.warn('OneSignal init',e);
+          oneSignalReady=false;
+          safeToast('OneSignal başlatılamadı: '+(e?.message||e));
+          done(false);
+        }
       });
-      setTimeout(()=>resolve(oneSignalReady),8000);
-    });
+      setTimeout(()=>done(oneSignalReady),10000);
+    }).finally(()=>{if(!oneSignalReady)oneSignalInitPromise=null});
+    return oneSignalInitPromise;
   }
-  async function identifyOneSignal(u){
-    if(!u||!oneSignalReady||!window.NecatiOneSignal)return;
-    const role=roleFromEmail(u.email);if(!role)return;
-    try{await window.NecatiOneSignal.login(role);await window.NecatiOneSignal.User.addTag('role',role)}catch(e){console.warn(e)}
+
+  async function identifyOneSignal(u,{repairSubscription=true}={}){
+    if(!u)return false;
+    const role=roleFromEmail(u.email);if(!role)return false;
+    if(!oneSignalReady||!window.NecatiOneSignal){
+      const ok=await initOneSignal();
+      if(!ok||!window.NecatiOneSignal)return false;
+    }
+    const O=window.NecatiOneSignal;
+    try{
+      // External ID'yi her girişte tekrar bağlamak zararsızdır ve eski/bozuk eşleşmeleri onarır.
+      await O.login(role);
+      try{await O.User.addTag('role',role)}catch{}
+      // İzin zaten verilmişse aboneliği sessizce tekrar opt-in et. İzin isteme popup'ı burada açılmaz.
+      if(repairSubscription&&O.Notifications?.permission){
+        try{await O.User.PushSubscription.optIn()}catch(e){console.warn('Push optIn repair',e)}
+      }
+      return true;
+    }catch(e){console.warn('OneSignal identify',e);return false}
+  }
+
+  async function repairOneSignal(reason='auto'){
+    if(!user)return false;
+    const role=roleFromEmail(user.email||'');if(!role)return false;
+    const ok=await identifyOneSignal(user,{repairSubscription:true});
+    if(!ok)return false;
+    const O=window.NecatiOneSignal;
+    let id=O?.User?.PushSubscription?.id||null;
+    if(O?.Notifications?.permission&&!id){
+      for(let i=0;i<8&&!id;i++){
+        await new Promise(r=>setTimeout(r,500));
+        id=O?.User?.PushSubscription?.id||null;
+      }
+    }
+    console.info('[Necati Push Repair]',{reason,role,permission:!!O?.Notifications?.permission,subscriptionId:id});
+    return !!id;
+  }
+
+  function startOneSignalSelfHeal(){
+    clearInterval(oneSignalHealTimer);
+    repairOneSignal('auth').catch(console.warn);
+    oneSignalHealTimer=setInterval(()=>{
+      if(document.hidden||!user)return;
+      repairOneSignal('heartbeat').catch(console.warn);
+    },120000);
   }
   async function unidentifyOneSignal(){try{if(oneSignalReady)await window.NecatiOneSignal?.logout()}catch{}}
   function openAuthDialog(){const d=$('authDialog');if(!d)return; $('authSetupWarning').hidden=configured(); try{d.showModal()}catch{d.setAttribute('open','')}}
@@ -47,7 +105,7 @@
     $('userBtn')?.addEventListener('click',openAuthDialog);window.openNecatiAuth=openAuthDialog;
     $('loginBtn')?.addEventListener('click',login);$('logoutBtn')?.addEventListener('click',async()=>{await unidentifyOneSignal();auth?.signOut()});
     $('enablePushBtn')?.addEventListener('click',enablePush);$('testPushBtn')?.addEventListener('click',()=>showSystemNotification({title:'🧪 Necati Cepte test',body:'Bildirim sistemi çalışıyor ❤️'},true));
-    initOneSignal().catch(console.warn);
+    initOneSignal().then(()=>{if(user)repairOneSignal('sdk-ready').catch(console.warn)}).catch(console.warn);
     if(!configured()){setStatus('Yerel');return}
     try{
       if(!firebase.apps.length)firebase.initializeApp(cfg.config);
@@ -63,8 +121,8 @@
   }
   async function handleAuth(u){
     user=u;ready=!!u;$('loggedOutBox').hidden=!!u;$('loggedInBox').hidden=!u;
-    if(u){$('accountEmail').textContent=u.email||'Giriş yapıldı';setStatus('Senkron',true);await startSync();await identifyOneSignal(u);await updatePresence(true);startPresenceHeartbeat();window.dispatchEvent(new CustomEvent('necati:authchange',{detail:{role:roleFromEmail(u.email)}}))}
-    else{setStatus(configured()?'Giriş yok':'Yerel');stopSync();window.dispatchEvent(new CustomEvent('necati:authchange',{detail:{role:null}}))}
+    if(u){$('accountEmail').textContent=u.email||'Giriş yapıldı';setStatus('Senkron',true);await startSync();await repairOneSignal('auth-state');startOneSignalSelfHeal();await updatePresence(true);startPresenceHeartbeat();window.dispatchEvent(new CustomEvent('necati:authchange',{detail:{role:roleFromEmail(u.email)}}))}
+    else{clearInterval(oneSignalHealTimer);oneSignalHealTimer=null;setStatus(configured()?'Giriş yok':'Yerel');stopSync();window.dispatchEvent(new CustomEvent('necati:authchange',{detail:{role:null}}))}
   }
   function stopSync(){unsubState?.();unsubNotifs?.();clearInterval(pollTimer);clearInterval(presenceTimer);unsubState=unsubNotifs=null;pollTimer=null;presenceTimer=null;ready=false}
   async function startSync(){
@@ -183,12 +241,23 @@
 
   async function enablePush(){
     if(osCfg.appId&&!osCfg.appId.startsWith('BURAYA_')){
-      try{if(!oneSignalReady)await initOneSignal();const O=window.NecatiOneSignal;if(!O)throw new Error('OneSignal yüklenemedi');if(user)await identifyOneSignal(user);await O.Notifications.requestPermission();if(!O.Notifications.permission)return safeToast('Bildirim izni verilmedi');await O.User.PushSubscription.optIn();let id=O.User.PushSubscription.id;for(let i=0;i<10&&!id;i++){await new Promise(r=>setTimeout(r,500));id=O.User.PushSubscription.id}if(id){$('enablePushBtn').textContent='✅ Bildirimler açık';safeToast('Gerçek push aktif 🔔❤️')}else safeToast('İzin verildi ama push token oluşmadı')}catch(e){safeToast('Bildirim açılamadı: '+(e?.message||e))}
+      try{
+        if(!oneSignalReady)await initOneSignal();
+        const O=window.NecatiOneSignal;if(!O)throw new Error('OneSignal yüklenemedi');
+        await O.Notifications.requestPermission();
+        if(!O.Notifications.permission)return safeToast('Bildirim izni verilmedi');
+        if(user)await identifyOneSignal(user,{repairSubscription:false});
+        await O.User.PushSubscription.optIn();
+        let id=O.User.PushSubscription.id;
+        for(let i=0;i<12&&!id;i++){await new Promise(r=>setTimeout(r,500));id=O.User.PushSubscription.id}
+        if(user)await repairOneSignal('manual-enable');
+        if(id){$('enablePushBtn').textContent='✅ Bildirimler açık';safeToast('Gerçek push aktif 🔔❤️')}else safeToast('İzin var ama cihaz aboneliği oluşmadı. Uygulamayı kapatıp tekrar aç ve yeniden dene.');
+      }catch(e){safeToast('Bildirim açılamadı: '+(e?.message||e))}
     }
   }
   async function showSystemNotification(n,force=false){if(!('Notification'in window)||Notification.permission!=='granted'){if(force)safeToast('Önce bildirim izni ver 🔔');return}try{const reg=await navigator.serviceWorker.ready;await reg.showNotification(n.title||'Necati Cepte ❤️',{body:n.body||'',icon:'./icons/icon-192.png',badge:'./icons/icon-192.png',tag:n.type||'necati',renotify:true,requireInteraction:n.type==='emergency',vibrate:[250,120,250]})}catch{}}
   function showIncoming(n){safeToast(`${n.title||'Necati Cepte'} — ${n.body||''}`);window.dispatchEvent(new CustomEvent('necati:incoming',{detail:n}));showSystemNotification(n)}
 
-  window.NecatiCloud={version:'10.8',scheduleSave,uploadImage,resolveImage,sendActivity,sendEmergency,sendMoodChange,enablePush,isReady:()=>ready,user:()=>user,role:()=>roleFromEmail(user?.email||''),displayName,updatePresence,diagnostics:()=>({ready,role:roleFromEmail(user?.email||''),oneSignalReady,subscriptionId:window.NecatiOneSignal?.User?.PushSubscription?.id||null})};
-  window.addEventListener('focus',()=>updatePresence(true));document.addEventListener('visibilitychange',()=>{if(!document.hidden)updatePresence(true)});window.addEventListener('DOMContentLoaded',init);
+  window.NecatiCloud={version:'10.8.2',scheduleSave,uploadImage,resolveImage,sendActivity,sendEmergency,sendMoodChange,enablePush,repairPush:()=>repairOneSignal('manual-repair'),isReady:()=>ready,user:()=>user,role:()=>roleFromEmail(user?.email||''),displayName,updatePresence,diagnostics:()=>({ready,role:roleFromEmail(user?.email||''),oneSignalReady,permission:!!window.NecatiOneSignal?.Notifications?.permission,optedIn:!!window.NecatiOneSignal?.User?.PushSubscription?.optedIn,subscriptionId:window.NecatiOneSignal?.User?.PushSubscription?.id||null,externalId:roleFromEmail(user?.email||'')})};
+  window.addEventListener('focus',()=>{updatePresence(true);repairOneSignal('focus').catch(console.warn)});document.addEventListener('visibilitychange',()=>{if(!document.hidden){updatePresence(true);repairOneSignal('visible').catch(console.warn)}});window.addEventListener('DOMContentLoaded',init);
 })();
