@@ -3,6 +3,7 @@
   const osCfg=window.NECATI_ONESIGNAL||{};
   let auth,db,storage,messaging,user=null,unsubState=null,unsubNotifs=null,saveTimer=null,ready=false,pollTimer=null;
   let oneSignalReady=false;
+  let presenceTimer=null,lastPresenceWrite=0;
   const imageCache=new Map();
   const $=id=>document.getElementById(id);
   const configured=()=>cfg&&cfg.config&&cfg.config.apiKey&&!cfg.config.apiKey.startsWith('BURAYA_')&&cfg.config.projectId;
@@ -62,10 +63,10 @@
   }
   async function handleAuth(u){
     user=u;ready=!!u;$('loggedOutBox').hidden=!!u;$('loggedInBox').hidden=!u;
-    if(u){$('accountEmail').textContent=u.email||'Giriş yapıldı';setStatus('Senkron',true);await startSync();await identifyOneSignal(u);window.dispatchEvent(new CustomEvent('necati:authchange',{detail:{role:roleFromEmail(u.email)}}))}
+    if(u){$('accountEmail').textContent=u.email||'Giriş yapıldı';setStatus('Senkron',true);await startSync();await identifyOneSignal(u);await updatePresence(true);startPresenceHeartbeat();window.dispatchEvent(new CustomEvent('necati:authchange',{detail:{role:roleFromEmail(u.email)}}))}
     else{setStatus(configured()?'Giriş yok':'Yerel');stopSync();window.dispatchEvent(new CustomEvent('necati:authchange',{detail:{role:null}}))}
   }
-  function stopSync(){unsubState?.();unsubNotifs?.();clearInterval(pollTimer);unsubState=unsubNotifs=null;pollTimer=null;ready=false}
+  function stopSync(){unsubState?.();unsubNotifs?.();clearInterval(pollTimer);clearInterval(presenceTimer);unsubState=unsubNotifs=null;pollTimer=null;presenceTimer=null;ready=false}
   async function startSync(){
     const ref=db.collection('couples').doc(cfg.coupleId),snap=await ref.get();
     if(!snap.exists){const local=JSON.parse(localStorage.getItem('necati-cepte-v2')||'null');if(local)await ref.set({data:local,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true})}
@@ -74,6 +75,22 @@
     const process=doc=>{if(seen.has(doc.id))return;const n=doc.data();seen.add(doc.id);if(n.senderUid===user.uid)return;const created=n.createdAt?.toMillis?.()||n.clientCreatedAt||0;if(boot&&created&&Date.now()-created>300000)return;showIncoming(n)};
     unsubNotifs=ref.collection('notifications').orderBy('createdAt','desc').limit(40).onSnapshot(q=>{q.docChanges().forEach(ch=>{if(ch.type==='added')process(ch.doc)});boot=false;saveSeen(seen)});
     pollTimer=setInterval(async()=>{if(document.hidden||!ready)return;try{const q=await ref.collection('notifications').orderBy('createdAt','desc').limit(12).get();q.docs.slice().reverse().forEach(process);saveSeen(seen)}catch{}},20000);
+  }
+  async function updatePresence(force=false){
+    if(!ready||!user||!db)return;
+    if(document.hidden&&!force)return;
+    const now=Date.now();if(!force&&now-lastPresenceWrite<45000)return;
+    const role=roleFromEmail(user.email||'');if(!role)return;
+    lastPresenceWrite=now;
+    try{
+      await db.collection('couples').doc(cfg.coupleId).collection('presence').doc(role).set({
+        role,email:user.email||'',lastSeenAt:firebase.firestore.FieldValue.serverTimestamp(),lastSeenClient:now
+      },{merge:true});
+    }catch(e){console.warn('presence',e)}
+  }
+  function startPresenceHeartbeat(){
+    clearInterval(presenceTimer);
+    presenceTimer=setInterval(()=>updatePresence(false),60000);
   }
   function scheduleSave(state){if(!ready||!user)return;clearTimeout(saveTimer);saveTimer=setTimeout(()=>db.collection('couples').doc(cfg.coupleId).set({data:JSON.parse(JSON.stringify(state)),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(console.error),350)}
 
@@ -172,6 +189,6 @@
   async function showSystemNotification(n,force=false){if(!('Notification'in window)||Notification.permission!=='granted'){if(force)safeToast('Önce bildirim izni ver 🔔');return}try{const reg=await navigator.serviceWorker.ready;await reg.showNotification(n.title||'Necati Cepte ❤️',{body:n.body||'',icon:'./icons/icon-192.png',badge:'./icons/icon-192.png',tag:n.type||'necati',renotify:true,requireInteraction:n.type==='emergency',vibrate:[250,120,250]})}catch{}}
   function showIncoming(n){safeToast(`${n.title||'Necati Cepte'} — ${n.body||''}`);window.dispatchEvent(new CustomEvent('necati:incoming',{detail:n}));showSystemNotification(n)}
 
-  window.NecatiCloud={version:'10.0',scheduleSave,uploadImage,resolveImage,sendActivity,sendEmergency,sendMoodChange,enablePush,isReady:()=>ready,user:()=>user,role:()=>roleFromEmail(user?.email||''),displayName,diagnostics:()=>({ready,role:roleFromEmail(user?.email||''),oneSignalReady,subscriptionId:window.NecatiOneSignal?.User?.PushSubscription?.id||null})};
-  window.addEventListener('DOMContentLoaded',init);
+  window.NecatiCloud={version:'10.8',scheduleSave,uploadImage,resolveImage,sendActivity,sendEmergency,sendMoodChange,enablePush,isReady:()=>ready,user:()=>user,role:()=>roleFromEmail(user?.email||''),displayName,updatePresence,diagnostics:()=>({ready,role:roleFromEmail(user?.email||''),oneSignalReady,subscriptionId:window.NecatiOneSignal?.User?.PushSubscription?.id||null})};
+  window.addEventListener('focus',()=>updatePresence(true));document.addEventListener('visibilitychange',()=>{if(!document.hidden)updatePresence(true)});window.addEventListener('DOMContentLoaded',init);
 })();

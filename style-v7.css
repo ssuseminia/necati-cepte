@@ -955,3 +955,14 @@ input,textarea,select{
 @keyframes startBackdropFloat{from{transform:translate3d(-10px,0,0)}to{transform:translate3d(10px,-8px,0)}}
 body.splash-active{overflow:hidden}
 @media (prefers-reduced-motion:reduce){.startup-backdrop,.startup-card,.startup-glow,.startup-head,.startup-dots span{animation:none!important}.startup-splash{transition:none}}
+
+
+/* ===== v10.8 feature pack ===== */
+.feature-photo-icon,.feature-travel-icon,.feature-poke-icon{font-size:24px!important;background:linear-gradient(145deg,rgba(255,111,193,.28),rgba(112,82,255,.22))!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07),0 8px 22px rgba(240,70,180,.14)}
+.feature-hero.compact{display:flex;align-items:center;gap:12px;margin-bottom:6px}.feature-hero.compact .feature-emoji{font-size:34px}.feature-hero.compact h2{margin:0}.feature-hero.compact small{color:var(--app-muted)}
+.instant-camera-btn{display:flex;align-items:center;justify-content:center;min-height:54px;border-radius:18px;border:1px dashed rgba(255,159,220,.45);background:rgba(255,255,255,.05);font-weight:800;cursor:pointer;margin:12px 0}.instant-camera-btn input{display:none}
+.instant-preview{display:block;width:100%;max-height:420px;object-fit:cover;border-radius:24px;margin:10px 0;border:1px solid var(--app-border)}
+.instant-feed{display:grid;gap:14px;margin-top:14px}.instant-card{padding:10px;border-radius:24px;background:var(--app-card);border:1px solid var(--app-border);overflow:hidden}.instant-feed-photo{display:block;width:100%;max-height:520px;object-fit:cover;border-radius:18px;margin-bottom:10px}.instant-card small{display:block;color:var(--app-muted);font-size:10px;margin-top:3px}.instant-card p{margin:10px 4px 4px}
+.travel-map{min-height:430px}.trip-list{display:grid;gap:10px;margin-top:12px}.trip-card{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:14px;border-radius:20px;background:var(--app-card);border:1px solid var(--app-border)}.trip-card h3{margin:7px 0 2px}.trip-card p{margin:0;color:var(--app-muted);font-size:12px}
+.poke-panel{text-align:center;padding:32px 18px!important}.poke-hand{font-size:86px;line-height:1;filter:drop-shadow(0 14px 24px rgba(255,80,185,.28));animation:pokeWiggle 1.7s ease-in-out infinite}.poke-panel h2{font-size:28px;margin:12px 0 6px}.poke-panel p{max-width:320px;margin:0 auto 18px;color:var(--app-muted)}.poke-big-btn{width:100%;min-height:64px;font-size:20px;border-radius:22px}.poke-panel small{display:block;margin-top:14px;color:var(--app-muted)}
+@keyframes pokeWiggle{0%,100%{transform:translateX(0) rotate(0)}35%{transform:translateX(8px) rotate(8deg)}55%{transform:translateX(-4px) rotate(-5deg)}}

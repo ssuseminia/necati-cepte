@@ -6,7 +6,7 @@ const defaultState={
  jar:['gülüşün en sıradan günümü bile güzelleştiriyor','yanında kendim olabiliyorum','birlikte saçmalamak dünyanın en güzel şeyi','zor günlerimde bile yanımda olduğunu hissediyorum','seninle gelecek düşünmek beni mutlu ediyor','sesini duyunca günüm değişiyor'],
  memories:[],stories:[{id:1,season:1,episode:1,date:'2025-04-12',title:'Biz olduk ❤️',text:'Nisa ve Necati hikâyesinin başladığı gün.',image:''},{id:2,season:2,episode:1,date:'2026-06-28',title:'Nişanımız 💍',text:'Hikâyemizin en özel bölümlerinden biri.',image:''}],
  specialDates:[{id:1,title:'Yıldönümümüz',date:'2027-04-12',repeat:'yearly'},{id:2,title:'Nişan yıldönümümüz',date:'2027-06-28',repeat:'yearly'}],
- nights:[],sky:{date:'',lat:37.0662,lon:37.3833,label:'Gaziantep',lastDaily:''},emergencyLog:[],quickStatus:[],surpriseMode:{accepted:[],lastTask:null}
+ nights:[],sky:{date:'',lat:37.0662,lon:37.3833,label:'Gaziantep',lastDaily:''},emergencyLog:[],quickStatus:[],instantPhotos:[],trips:[],pokeLog:[],surpriseMode:{accepted:[],lastTask:null}
 };
 let state=loadState(),leafletMap=null,pickerMap=null,pickerMarker=null,deferredPrompt,currentModule=null;
 const moodMap={mutlu:{label:'Mutlu',emoji:'🥰'},iyi:{label:'İyi',emoji:'🙂'},yorgun:{label:'Yorgun',emoji:'😴'},uzgun:{label:'Üzgün',emoji:'😔'},gergin:{label:'Gergin',emoji:'😡'}};
@@ -15,7 +15,7 @@ const moodAssets={
  nisa:{mutlu:'assets/moods/nisa-mutlu.png',iyi:'assets/moods/nisa-iyi.png',yorgun:'assets/moods/nisa-yorgun.png',uzgun:'assets/moods/nisa-uzgun.png',gergin:'assets/moods/nisa-gergin.png'},
  necati:{mutlu:'assets/moods/necati-mutlu.png',iyi:'assets/moods/necati-iyi.png',yorgun:'assets/moods/necati-yorgun.png',uzgun:'assets/moods/necati-uzgun.png',gergin:'assets/moods/necati-gergin.png'}
 };
-const moduleNames={mood:'🌸 Nisa Modu',surprise:'🎁 Sürpriz Takvimi',map:'📍 Anı Haritası',story:'🎬 Hikâyemiz',dates:'💍 Özel Günler',night:'🌙 İyi Geceler',emergency:'🚨 Acil Necati'};
+const moduleNames={mood:'🌸 Nisa Modu',surprise:'🎁 Sürpriz Takvimi',dates:'💍 Özel Günler',night:'🌙 İyi Geceler',emergency:'🚨 Acil Necati',instant:'📸 Anlık Foto',travel:'🗺️ Gezi Haritası',poke:'👉 Dürtme'};
 function clone(x){return JSON.parse(JSON.stringify(x))}function merge(base,saved){if(!saved||typeof saved!=='object')return clone(base);const out=clone(base);for(const k of Object.keys(saved)){if(saved[k]&&typeof saved[k]==='object'&&!Array.isArray(saved[k])&&out[k]&&typeof out[k]==='object'&&!Array.isArray(out[k]))out[k]={...out[k],...saved[k]};else out[k]=saved[k]}return out}
 function loadState(){try{const s=merge(defaultState,JSON.parse(localStorage.getItem(STORAGE_KEY)||'null'));const legacy={'🥰':'mutlu','🙂':'iyi','😴':'yorgun','😔':'uzgun','😡':'gergin'};s.mood.today=legacy[s.mood.today]||s.mood.today||'mutlu';s.mood.history=(s.mood.history||[]).map(x=>({...x,mood:legacy[x.mood]||x.mood}));return s}catch{return clone(defaultState)}}
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));window.NecatiCloud?.scheduleSave(state)}
@@ -231,7 +231,7 @@ function renderBot(){
   c.scrollTop=c.scrollHeight;
 }
 
-function renderModule(n){({mood:renderMood,surprise:renderSurprise,map:renderMap,story:renderStory,dates:renderDates,night:renderNight,emergency:renderEmergency}[n]||(()=>{}))()}
+function renderModule(n){({mood:renderMood,surprise:renderSurprise,dates:renderDates,night:renderNight,emergency:renderEmergency,instant:renderInstantPhoto,travel:renderTravelMap,poke:renderPoke}[n]||(()=>{}))()}
 function viewerMoodOwner(){const r=window.NecatiCloud?.role?.();return r==='nisa'?'necati':'nisa'}
 function phaseInfo(){const s=state.settings;if(!s.lastPeriod)return null;const start=new Date(s.lastPeriod+'T12:00:00'),now=new Date(),elapsed=Math.floor((now-start)/86400000),day=((elapsed%s.cycleLength)+s.cycleLength)%s.cycleLength+1;let phase='Foliküler dönem';if(day<=s.periodLength)phase='Regl dönemi';else if(day>=s.cycleLength-13&&day<=s.cycleLength-11)phase='Tahmini yumurtlama dönemi';else if(day>s.cycleLength-11)phase='Luteal dönem';const next=new Date(start);next.setDate(next.getDate()+Math.ceil(Math.max(0,elapsed+1)/s.cycleLength)*s.cycleLength);if(next<=now)next.setDate(next.getDate()+s.cycleLength);return{day,phase,next}}
 function renderMood(){const p=phaseInfo(),set=moodAssets[viewerMoodOwner()];$('moduleContent').innerHTML=`<div class="panel"><h3>Bugün ruh hali nasıl? 🌸</h3><p class="muted">${viewerMoodOwner()==='nisa'?'Necati hesabında Nisa':'Nisa hesabında Necati'} emojileri gösteriliyor.</p><div class="mood-grid mood-image-grid">${Object.entries(moodMap).map(([k,v])=>`<button class="mood-btn mood-image-btn ${state.mood.today===k?'active':''}" data-mood="${k}"><img src="${set[k]}" alt="${v.label}"><span>${v.label}</span></button>`).join('')}</div><div class="hero-tip">${moodTips[state.mood.today]||''}</div></div><div class="panel"><h3>Döngü tahmini</h3>${p?`<div class="stats-grid"><div class="stat-card"><strong>${p.day}. gün</strong><span>Döngü günü</span></div><div class="stat-card"><strong>${p.phase}</strong><span>Tahmini dönem</span></div><div class="stat-card"><strong>${p.next.toLocaleDateString('tr-TR')}</strong><span>Sonraki başlangıç</span></div></div>`:'<div class="empty">Ayarlar bölümünden son regl başlangıcını gir.</div>'}</div><div class="panel"><h3>Son ruh halleri</h3>${state.mood.history.length?state.mood.history.slice(-7).reverse().map(x=>`<div class="surprise-card">${moodMap[x.mood]?.emoji||''} ${moodMap[x.mood]?.label||x.mood} · ${fmtDate(x.date)}</div>`).join(''):'<div class="empty">Henüz kayıt yok.</div>'}</div>`;document.querySelectorAll('[data-mood]').forEach(b=>b.onclick=async()=>{const next=b.dataset.mood,prev=state.mood.today;if(prev===next)return toast('Ruh hali zaten buydu 🌸');state.mood.today=next;state.mood.history.push({date:today(),mood:next});save();renderMood();toast('Ruh hali kaydedildi 🌸');await notify('🌸 Ruh hali değişti',`${actor()} ruh halini ${moodMap[next].label} yaptı ${moodMap[next].emoji}`,'mood','mood')})}
@@ -304,7 +304,7 @@ $('settingsDialog').addEventListener('close',()=>{
 });
 $('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='necati-cepte-v7-yedek.json';a.click();URL.revokeObjectURL(a.href)};$('importInput').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{state=merge(defaultState,JSON.parse(r.result));save();updateIdentity();$('settingsDialog').close();toast('Yedek yüklendi ✅')}catch{toast('Geçersiz yedek')}};r.readAsText(f)};$('randomLoveBtn').onclick=()=>{$('loveDialogText').textContent=`Seni seviyorum çünkü ${dailyJar()}.`;$('loveDialog').showModal()};
 window.addEventListener('necati:authchange',()=>{if(currentModule==='mood')renderMood()});window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBtn').hidden=false});$('installBtn').onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBtn').hidden=true};
-window.NECATI_APP_VERSION='10.7.1';if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{const regs=await navigator.serviceWorker.getRegistrations();for(const r of regs){const u=String(r.active?.scriptURL||r.installing?.scriptURL||r.waiting?.scriptURL||'');if(u&&!u.includes('OneSignalSDK')&&!u.includes('sw-v7.js'))await r.unregister()}const reg=await navigator.serviceWorker.register('./sw-v7.js',{scope:'./',updateViaCache:'none'});await reg.update()}catch(e){console.warn('SW v7',e)}});
+window.NECATI_APP_VERSION='10.8';if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{const regs=await navigator.serviceWorker.getRegistrations();for(const r of regs){const u=String(r.active?.scriptURL||r.installing?.scriptURL||r.waiting?.scriptURL||'');if(u&&!u.includes('OneSignalSDK')&&!u.includes('sw-v7.js'))await r.unregister()}const reg=await navigator.serviceWorker.register('./sw-v7.js',{scope:'./',updateViaCache:'none'});await reg.update()}catch(e){console.warn('SW v7',e)}});
 
 document.addEventListener('DOMContentLoaded',()=>setTimeout(hydratePersonalSettings,50));
 
@@ -1638,8 +1638,125 @@ document.addEventListener('DOMContentLoaded',()=>{
   v107StartupSplash();
   setTimeout(()=>{
     const brand=document.querySelector('.mobile-brand strong');
-    if(brand) brand.innerHTML='Necati Cepte <em>v10.7.1</em>';
+    if(brand) brand.innerHTML='Necati Cepte <em>v10.8</em>';
     const pv=document.querySelector('.profile-version');
-    if(pv) pv.textContent='Necati Cepte • v10.7.1';
+    if(pv) pv.textContent='Necati Cepte • v10.8';
   },80);
 });
+
+
+// ===== v10.8 Yeni çift özellikleri: Anlık Foto, Gezi Haritası, Dürtme =====
+function v108EnsureState(){
+  state.instantPhotos=state.instantPhotos||[];
+  state.trips=state.trips||[];
+  state.pokeLog=state.pokeLog||[];
+}
+
+function v108TimeLabel(ts){
+  try{return new Date(ts).toLocaleString('tr-TR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}catch{return''}
+}
+
+function renderInstantPhoto(){
+  v108EnsureState();
+  const feed=[...state.instantPhotos].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).slice(0,20);
+  $('moduleContent').innerHTML=`
+    <div class="panel instant-photo-panel">
+      <div class="feature-hero compact"><span class="feature-emoji">📸</span><div><small>Şu anı paylaş</small><h2>Anlık Foto</h2></div></div>
+      <p class="muted">Kameradan çek veya galeriden seç. Karşı tarafa anında bildirim gider ❤️</p>
+      <label class="instant-camera-btn">📷 Fotoğraf çek / seç<input id="instantPhotoInput" type="file" accept="image/*" capture="environment"></label>
+      <img id="instantPhotoPreview" class="instant-preview" hidden alt="Anlık fotoğraf önizleme">
+      <label>Mini not <input id="instantPhotoNote" maxlength="80" placeholder="şu an burdayım 😄"></label>
+      <button id="sendInstantPhoto" class="primary-btn">Anlık fotoğrafı gönder 📸</button>
+    </div>
+    <div class="instant-feed">${feed.map(x=>`<article class="instant-card">${imgHtml(x.image,'instant-feed-photo')}<div class="row-between"><div><strong>${escapeHtml(x.sender||'')}</strong><small>${v108TimeLabel(x.createdAt)}</small></div><button class="delete-btn" data-delinstant="${x.id}">Sil</button></div>${x.note?`<p>${escapeHtml(x.note)}</p>`:''}</article>`).join('')||'<div class="empty">Henüz anlık fotoğraf yok 📸</div>'}</div>`;
+  previewInput('instantPhotoInput','instantPhotoPreview');
+  hydrateImages();
+  $('sendInstantPhoto').onclick=async()=>{
+    const file=$('instantPhotoInput')?.files?.[0];
+    if(!file)return toast('Önce fotoğraf çek veya seç 📸');
+    const btn=$('sendInstantPhoto'); btn.disabled=true; btn.textContent='Gönderiliyor…';
+    try{
+      const image=await storeImage(file);
+      const item={id:uid(),image,note:$('instantPhotoNote')?.value.trim()||'',sender:actor(),createdAt:Date.now()};
+      state.instantPhotos.push(item);
+      if(state.instantPhotos.length>30)state.instantPhotos=state.instantPhotos.slice(-30);
+      save();
+      renderInstantPhoto();
+      toast('Anlık fotoğraf gönderildi 📸❤️');
+      notify('📸 Anlık fotoğraf geldi',`${actor()} sana anlık fotoğraf attı ❤️`,'instant-photo','instant').catch(()=>{});
+    }catch(e){btn.disabled=false;btn.textContent='Anlık fotoğrafı gönder 📸';toast('Fotoğraf gönderilemedi: '+(e?.message||e))}
+  };
+  document.querySelectorAll('[data-delinstant]').forEach(b=>b.onclick=()=>{
+    state.instantPhotos=state.instantPhotos.filter(x=>String(x.id)!==String(b.dataset.delinstant));save();renderInstantPhoto();toast('Fotoğraf kaldırıldı');
+  });
+}
+
+let v108TravelMap=null;
+let v108TravelPick=null;
+function v108DestroyTravelMap(){try{v108TravelMap?.remove()}catch{}v108TravelMap=null;v108TravelPick=null}
+function v108InitTravelMap(){
+  const box=$('travelMap');if(!box||typeof L==='undefined')return;
+  v108DestroyTravelMap();
+  v108TravelMap=L.map(box,{zoomControl:true}).setView([39.0,35.0],5.4);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(v108TravelMap);
+  const bounds=[];
+  (state.trips||[]).forEach(t=>{
+    if(!Number.isFinite(+t.lat)||!Number.isFinite(+t.lon))return;
+    const mark=L.marker([+t.lat,+t.lon]).addTo(v108TravelMap);
+    mark.bindPopup(`<b>${escapeHtml(t.city||'Gezilecek şehir')}</b><br>${escapeHtml(t.note||'')}`);
+    bounds.push([+t.lat,+t.lon]);
+  });
+  if(bounds.length>1)v108TravelMap.fitBounds(bounds,{padding:[35,35],maxZoom:7});
+  else if(bounds.length===1)v108TravelMap.setView(bounds[0],7);
+  v108TravelMap.on('click',e=>{
+    $('tripLat').value=e.latlng.lat.toFixed(5);$('tripLon').value=e.latlng.lng.toFixed(5);
+    if(v108TravelPick)v108TravelPick.setLatLng(e.latlng);else v108TravelPick=L.marker(e.latlng,{draggable:true}).addTo(v108TravelMap);
+    v108TravelPick.on('dragend',ev=>{const p=ev.target.getLatLng();$('tripLat').value=p.lat.toFixed(5);$('tripLon').value=p.lng.toFixed(5)});
+  });
+  setTimeout(()=>v108TravelMap.invalidateSize(),120);
+}
+function renderTravelMap(){
+  v108EnsureState();
+  $('moduleContent').innerHTML=`
+    <div class="panel travel-form-card">
+      <div class="feature-hero compact"><span class="feature-emoji">🗺️</span><div><small>Birlikte gideceğimiz yerler</small><h2>Gezi Haritası</h2></div></div>
+      <div class="form-grid two-col"><label>Şehir<input id="tripCity" placeholder="Örn. Antalya"></label><label>Durum<select id="tripStatus"><option value="want">Gitmek istiyoruz</option><option value="planned">Planlandı</option><option value="visited">Gidildi ❤️</option></select></label><label>Enlem<input id="tripLat" type="number" step="any" value="39.0"></label><label>Boylam<input id="tripLon" type="number" step="any" value="35.0"></label></div>
+      <label>Not<input id="tripNote" maxlength="120" placeholder="Burada ne yapmak istiyoruz?"></label>
+      <p class="tiny">Haritada istediğiniz noktaya dokunup şehri işaretleyin.</p>
+      <button id="addTrip" class="primary-btn">Şehri haritaya ekle 📍</button>
+    </div>
+    <div class="panel"><div id="travelMap" class="map-box travel-map"></div></div>
+    <div class="trip-list">${(state.trips||[]).map(t=>`<article class="trip-card"><div><span class="chip">${t.status==='visited'?'Gidildi ❤️':t.status==='planned'?'Planlandı 📅':'Gitmek istiyoruz ✈️'}</span><h3>${escapeHtml(t.city)}</h3><p>${escapeHtml(t.note||'')}</p></div><button class="delete-btn" data-deltrip="${t.id}">Sil</button></article>`).join('')||'<div class="empty">İlk gezilecek şehri ekleyin ✈️</div>'}</div>`;
+  setTimeout(v108InitTravelMap,0);
+  $('addTrip').onclick=async()=>{
+    const city=$('tripCity').value.trim(),lat=+$('tripLat').value,lon=+$('tripLon').value;
+    if(!city)return toast('Şehir adını yaz 🗺️');
+    if(!Number.isFinite(lat)||!Number.isFinite(lon))return toast('Haritada konum seç 📍');
+    state.trips.push({id:uid(),city,lat,lon,status:$('tripStatus').value,note:$('tripNote').value.trim(),createdBy:actor(),createdAt:Date.now()});
+    save();renderTravelMap();toast('Şehir haritaya eklendi 🗺️');
+    notify('🗺️ Gezi listemiz büyüdü',`${actor()} “${city}” şehrini gezi haritasına ekledi`,'travel','travel').catch(()=>{});
+  };
+  document.querySelectorAll('[data-deltrip]').forEach(b=>b.onclick=()=>{state.trips=state.trips.filter(x=>String(x.id)!==String(b.dataset.deltrip));save();renderTravelMap();toast('Şehir kaldırıldı')});
+}
+
+function renderPoke(){
+  v108EnsureState();
+  const last=state.pokeLog[state.pokeLog.length-1];
+  $('moduleContent').innerHTML=`<div class="panel poke-panel"><div class="poke-hand">👉</div><h2>Dürtme Modu</h2><p>Bir kere bas, karşı tarafın telefonuna dürtme bildirimi gitsin 😄❤️</p><button id="pokeNow" class="primary-btn poke-big-btn">DÜRT 👉</button><small>${last?`Son dürtme: ${escapeHtml(last.by)} • ${v108TimeLabel(last.at)}`:'Henüz kimse kimseyi dürtmedi 😄'}</small></div>`;
+  $('pokeNow').onclick=async()=>{
+    const now=Date.now(),lastAt=Number(localStorage.getItem('necati-poke-last')||0);
+    if(now-lastAt<12000)return toast('Biraz bekle, dürtme spam olmasın 😄');
+    localStorage.setItem('necati-poke-last',String(now));
+    const btn=$('pokeNow');btn.disabled=true;btn.textContent='DÜRTÜLÜYOR… 👉';
+    try{
+      state.pokeLog.push({id:uid(),by:actor(),at:now});if(state.pokeLog.length>60)state.pokeLog=state.pokeLog.slice(-60);save();
+      await notify('👉 DÜRTÜLDÜN!',`${actor()} seni dürttü 😄❤️`,'poke','poke');
+      v104Haptic?.('success');toast('Dürttün 😄👉');renderPoke();
+    }catch(e){btn.disabled=false;btn.textContent='DÜRT 👉';toast('Dürtme gönderilemedi')}
+  };
+}
+
+const v108OldShowHome=showHome;
+showHome=function(){v108DestroyTravelMap();return v108OldShowHome()};
+
+document.addEventListener('DOMContentLoaded',()=>v108EnsureState());
