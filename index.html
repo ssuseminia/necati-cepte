@@ -54,13 +54,20 @@
         <div class="brand-mark"><img src="icons/icon-192.png" alt="" decoding="async" /></div>
         <div>
           <small id="mobileGreeting">Bugün de birlikte</small>
-          <strong>Necati Cepte <em>v10.8.7</em></strong>
+          <strong>Necati Cepte <em>v10.8.8</em></strong>
         </div>
       </div>
-      <div class="mobile-actions">
+      <div class="mobile-actions top-action-cluster">
         <span class="sync-dot" id="cloudStatus">●</span>
+        <button class="round-icon top-wallet-btn" id="topExpenseBtn" type="button" aria-label="Ortak Harcamalar" title="Ortak Harcamalar">
+          <span class="round-svg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M7 9H5.5v1.5M17 15h1.5v-1.5"/></svg></span>
+        </button>
+        <button class="round-icon notification-bell-btn" id="notificationCenterBtn" type="button" aria-label="Bildirimler" title="Bildirimler">
+          <span class="round-svg"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"/><path d="M10 20h4"/></svg></span>
+          <b id="notificationBadge" class="notification-badge" hidden>0</b>
+        </button>
         <button class="round-icon" id="userBtn" type="button" aria-label="Hesap"><span class="round-svg"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 20c.5-4 3-6 6.5-6s6 2 6.5 6"/></svg></span></button>
-        <button class="round-icon" id="settingsBtn" type="button" aria-label="Ayarlar"><span class="round-svg"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 13.5v-3l-2-.5-.7-1.6 1.1-1.8-2.1-2.1-1.8 1.1-1.6-.7-.5-2h-3l-.5 2-1.6.7-1.8-1.1-2.1 2.1 1.1 1.8-.7 1.6-2 .5v3l2 .5.7 1.6-1.1 1.8 2.1 2.1 1.8-1.1 1.6.7.5 2h3l.5-2 1.6-.7 1.8 1.1 2.1-2.1-1.1-1.8.7-1.6Z"/></svg></span></button>
+        <button class="round-icon header-settings-btn" id="settingsBtn" type="button" aria-label="Ayarlar"><span class="round-svg"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 13.5v-3l-2-.5-.7-1.6 1.1-1.8-2.1-2.1-1.8 1.1-1.6-.7-.5-2h-3l-.5 2-1.6.7-1.8-1.1-2.1 2.1 1.1 1.8-.7 1.6-2 .5v3l2 .5.7 1.6-1.1 1.8 2.1 2.1 1.8-1.1 1.6.7.5 2h3l.5-2 1.6-.7 1.8 1.1 2.1-2.1-1.1-1.8.7-1.6Z"/></svg></span></button>
       </div>
     </header>
 
@@ -116,31 +123,6 @@
         </div>
       </section>
 
-      <section class="today-panel">
-        <div class="section-mobile-head">
-          <div><small>Bugün</small><h2>Bugün ne var?</h2></div>
-          <span class="today-date" id="todayDateLabel"></span>
-        </div>
-        <div class="today-grid">
-          <button type="button" class="today-card mood-summary" data-module="mood">
-            <span class="today-icon">🌸</span>
-            <div><small>Ruh hali</small><strong id="dashMood">Henüz seçilmedi</strong></div>
-          </button>
-          <button type="button" class="today-card" data-open="plannerDialog">
-            <span class="today-icon">📅</span>
-            <div><small>Sıradaki plan</small><strong id="dashNextPlan">Plan yok</strong></div>
-          </button>
-          <button type="button" class="today-card" data-open="todoDialog">
-            <span class="today-icon">✅</span>
-            <div><small>Açık görev</small><strong id="dashTodoCount">0 görev</strong></div>
-          </button>
-          <button type="button" class="today-card" data-open="expenseDialog">
-            <span class="today-icon">💸</span>
-            <div><small>Bu ay</small><strong id="dashExpense">₺0</strong></div>
-          </button>
-        </div>
-      </section>
-
       <section class="daily-card mobile-note-card">
         <div>
           <span class="soft-pill">Bugünün notu 💌</span>
@@ -152,9 +134,9 @@
 
       <section class="quick-section">
         <div class="section-mobile-head">
-          <div><small>Hızlı erişim</small><h2>Bugün en çok kullanılanlar</h2></div>
+          <div><small>Hızlı erişim</small><h2>Tek dokunuşla aç</h2></div>
         </div>
-        <div class="quick-scroll">
+        <div class="quick-grid">
           <button class="quick-card danger-quick" data-module="emergency"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.8 20h18.4Z"/><path d="M12 9v5M12 17.5h.01"/></svg></span><strong>Acil Necati</strong></button>
           <button class="quick-card" data-module="instant"><span class="quick-line-icon">📸</span><strong>Anlık Foto</strong></button>
           <button class="quick-card" data-module="poke"><span class="quick-line-icon">👉</span><strong>Dürt</strong></button>
@@ -431,6 +413,20 @@
 
       <div id="todoStats" class="mini-stats"></div>
       <div id="todoList" class="stack-list"></div>
+    </div>
+  </dialog>
+
+  <dialog id="notificationCenterDialog" class="app-dialog notification-center-dialog">
+    <div class="dialog-shell notification-shell">
+      <div class="dialog-head notification-head">
+        <div><small>Merkez</small><h2>🔔 Bildirimler</h2><p>Size gelen son bildirimler burada tutulur.</p></div>
+        <button class="close-btn" type="button" id="notificationCenterClose" aria-label="Kapat">✕</button>
+      </div>
+      <div class="notification-toolbar">
+        <span id="notificationCenterSummary">Henüz bildirim yok</span>
+        <button type="button" class="ghost-mini" id="notificationClearBtn">Tümünü temizle</button>
+      </div>
+      <div id="notificationCenterList" class="notification-center-list"></div>
     </div>
   </dialog>
 

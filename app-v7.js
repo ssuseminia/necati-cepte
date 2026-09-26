@@ -304,7 +304,7 @@ $('settingsDialog').addEventListener('close',()=>{
 });
 $('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='necati-cepte-v7-yedek.json';a.click();URL.revokeObjectURL(a.href)};$('importInput').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{state=merge(defaultState,JSON.parse(r.result));save();updateIdentity();$('settingsDialog').close();toast('Yedek yüklendi ✅')}catch{toast('Geçersiz yedek')}};r.readAsText(f)};$('randomLoveBtn').onclick=()=>{$('loveDialogText').textContent=`Seni seviyorum çünkü ${dailyJar()}.`;$('loveDialog').showModal()};
 window.addEventListener('necati:authchange',()=>{if(currentModule==='mood')renderMood()});window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBtn').hidden=false});$('installBtn').onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBtn').hidden=true};
-window.NECATI_APP_VERSION='10.8.7';if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{
+window.NECATI_APP_VERSION='10.8.8';if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{
   const regs=await navigator.serviceWorker.getRegistrations();
   for(const r of regs){
     const u=String(r.active?.scriptURL||r.installing?.scriptURL||r.waiting?.scriptURL||'');
@@ -1771,3 +1771,66 @@ const v108OldShowHome=showHome;
 showHome=function(){v108DestroyTravelMap();return v108OldShowHome()};
 
 document.addEventListener('DOMContentLoaded',()=>v108EnsureState());
+
+
+// ===== v10.8.8 Safe UI: top expenses shortcut + local notification center =====
+(()=>{
+  const V1088_KEY='necati-notification-center-v1';
+  const V1088_MAX=60;
+  const $id=id=>document.getElementById(id);
+  const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+
+  function readItems(){
+    try{const x=JSON.parse(localStorage.getItem(V1088_KEY)||'[]');return Array.isArray(x)?x:[]}catch{return[]}
+  }
+  function writeItems(items){try{localStorage.setItem(V1088_KEY,JSON.stringify(items.slice(0,V1088_MAX)))}catch{}}
+  function iconFor(type=''){
+    const t=String(type).toLowerCase();
+    if(t.includes('poke'))return'👉'; if(t.includes('photo')||t.includes('instant'))return'📸';
+    if(t.includes('night'))return'🌙'; if(t.includes('mood'))return'🌸'; if(t.includes('expense'))return'💸';
+    if(t.includes('todo'))return'✅'; if(t.includes('plan')||t.includes('calendar'))return'📅';
+    if(t.includes('emergency'))return'🚨'; if(t.includes('date'))return'💍'; if(t.includes('status'))return'🏠';
+    return'🔔';
+  }
+  function timeLabel(ts){
+    const d=new Date(Number(ts)||Date.now()),now=new Date();
+    const same=d.toDateString()===now.toDateString();
+    return same?d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}):d.toLocaleDateString('tr-TR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+  }
+  function render(){
+    const list=$id('notificationCenterList'),badge=$id('notificationBadge'),summary=$id('notificationCenterSummary');
+    const items=readItems(), unread=items.filter(x=>!x.read).length;
+    if(badge){badge.textContent=String(Math.min(99,unread));badge.hidden=!unread}
+    if(summary)summary.textContent=items.length?`${items.length} bildirim • ${unread} okunmamış`:'Henüz bildirim yok';
+    if(!list)return;
+    if(!items.length){list.innerHTML='<div class="notification-empty">Yeni bildirimler burada görünecek 🔔❤️</div>';return}
+    list.innerHTML=items.map(x=>`<article class="notification-item ${x.read?'':'unread'}"><span class="notification-item-icon">${iconFor(x.type)}</span><div class="notification-item-copy"><strong>${esc(x.title||'Necati Cepte')}</strong><p>${esc(x.body||'')}</p><small>${esc(timeLabel(x.at))}</small></div></article>`).join('');
+  }
+  function addIncoming(n={}){
+    const items=readItems();
+    const fingerprint=[n.title||'',n.body||'',n.type||'',n.clientCreatedAt||''].join('|');
+    if(items[0]?.fingerprint===fingerprint)return;
+    items.unshift({fingerprint,title:n.title||'Necati Cepte',body:n.body||'',type:n.type||'activity',at:Number(n.clientCreatedAt)||Date.now(),read:false});
+    writeItems(items);render();
+  }
+  function openCenter(){
+    const d=$id('notificationCenterDialog');if(!d)return;
+    try{d.showModal()}catch{d.setAttribute('open','')}
+    const items=readItems().map(x=>({...x,read:true}));writeItems(items);render();
+  }
+  function closeCenter(){const d=$id('notificationCenterDialog');if(!d)return;try{d.close()}catch{d.removeAttribute('open')}}
+
+  window.addEventListener('necati:incoming',e=>addIncoming(e.detail||{}));
+  document.addEventListener('DOMContentLoaded',()=>{
+    render();
+    $id('notificationCenterBtn')?.addEventListener('click',openCenter);
+    $id('notificationCenterClose')?.addEventListener('click',closeCenter);
+    $id('notificationClearBtn')?.addEventListener('click',()=>{writeItems([]);render()});
+    $id('topExpenseBtn')?.addEventListener('click',()=>{
+      const d=$id('expenseDialog');
+      if(!d)return;
+      // Reuse the app's existing expense dialog setup without touching notification/push code.
+      const proxy=document.createElement('button');proxy.dataset.open='expenseDialog';proxy.hidden=true;document.body.appendChild(proxy);proxy.click();proxy.remove();
+    });
+  });
+})();
