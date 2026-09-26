@@ -46,15 +46,41 @@ async function sendScheduledPush(env,targetRole,title,body){
 }
 async function checkInactivity(env){
   const token=await googleAccessToken(env);if(!token)return;
-  const coupleId=env.FIREBASE_COUPLE_ID||'nisa-necati',now=Date.now(),threshold=20*60*1000;
+  const coupleId=env.FIREBASE_COUPLE_ID||'nisa-necati';
+  const now=Date.now();
+  const threshold=20*60*1000;
+  const repeatEvery=20*60*1000;
+
   for(const role of ['nisa','necati']){
-    const presence=await fsGet(env,token,`couples/${coupleId}/presence/${role}`);if(!presence)continue;
-    const seen=Number(presence.lastSeenClient||presence.lastSeenAt||0);if(!seen||now-seen<threshold)continue;
-    const markerPath=`couples/${coupleId}/system/inactivity-${role}`,marker=await fsGet(env,token,markerPath);
-    if(Number(marker?.lastSeenAlerted||0)===seen)continue;
+    const presence=await fsGet(env,token,`couples/${coupleId}/presence/${role}`);
+    if(!presence)continue;
+
+    const seen=Number(presence.lastSeenClient||0);
+    if(!seen||now-seen<threshold)continue;
+
+    const markerPath=`couples/${coupleId}/system/inactivity-${role}`;
+    const marker=await fsGet(env,token,markerPath);
+    const lastSeenAlerted=Number(marker?.lastSeenAlerted||0);
+    const lastAlertAt=Number(marker?.lastAlertAt||marker?.alertedAt||0);
+
+    // Yeni bir uygulama ziyareti olduysa ilk 20 dk sonunda tekrar bildirim gönder.
+    // Kullanıcı hâlâ girmediyse, son uyarıdan itibaren her 20 dakikada bir yeniden gönder.
+    const sameAwaySession=lastSeenAlerted===seen;
+    if(sameAwaySession && lastAlertAt && now-lastAlertAt<repeatEvery)continue;
+
     const other=role==='nisa'?'Necati':'Nisa';
-    await sendScheduledPush(env,role,'🥺 Özledim seni',`${other} seni özledi ❤️ Uygulamaya bi uğrasana`);
-    await fsPatch(env,token,markerPath,{lastSeenAlerted:seen,alertedAt:now});
+    const messages=[
+      ['🥺 Özlemedin mi beni?',`${other} seni özledi ❤️ Uygulamaya bi uğrasana`],
+      ['💗 Hâlâ yoksun',`${other} burada seni bekliyor 😄❤️`],
+      ['👀 Nerdesin sen?',`20 dakikadır görünmüyorsun, ${other} seni merak etti ❤️`]
+    ];
+    const pick=messages[Math.floor((now/repeatEvery)%messages.length)];
+    await sendScheduledPush(env,role,pick[0],pick[1]);
+    await fsPatch(env,token,markerPath,{
+      lastSeenAlerted:seen,
+      lastAlertAt:now,
+      alertedAt:now
+    });
   }
 }
 

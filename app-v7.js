@@ -234,7 +234,52 @@ function renderBot(){
 function renderModule(n){({mood:renderMood,surprise:renderSurprise,dates:renderDates,night:renderNight,emergency:renderEmergency,instant:renderInstantPhoto,travel:renderTravelMap,poke:renderPoke}[n]||(()=>{}))()}
 function viewerMoodOwner(){const r=window.NecatiCloud?.role?.();return r==='nisa'?'necati':'nisa'}
 function phaseInfo(){const s=state.settings;if(!s.lastPeriod)return null;const start=new Date(s.lastPeriod+'T12:00:00'),now=new Date(),elapsed=Math.floor((now-start)/86400000),day=((elapsed%s.cycleLength)+s.cycleLength)%s.cycleLength+1;let phase='Foliküler dönem';if(day<=s.periodLength)phase='Regl dönemi';else if(day>=s.cycleLength-13&&day<=s.cycleLength-11)phase='Tahmini yumurtlama dönemi';else if(day>s.cycleLength-11)phase='Luteal dönem';const next=new Date(start);next.setDate(next.getDate()+Math.ceil(Math.max(0,elapsed+1)/s.cycleLength)*s.cycleLength);if(next<=now)next.setDate(next.getDate()+s.cycleLength);return{day,phase,next}}
-function renderMood(){const p=phaseInfo(),set=moodAssets[viewerMoodOwner()];$('moduleContent').innerHTML=`<div class="panel"><h3>Bugün ruh hali nasıl? 🌸</h3><p class="muted">${viewerMoodOwner()==='nisa'?'Necati hesabında Nisa':'Nisa hesabında Necati'} emojileri gösteriliyor.</p><div class="mood-grid mood-image-grid">${Object.entries(moodMap).map(([k,v])=>`<button class="mood-btn mood-image-btn ${state.mood.today===k?'active':''}" data-mood="${k}"><img src="${set[k]}" alt="${v.label}"><span>${v.label}</span></button>`).join('')}</div><div class="hero-tip">${moodTips[state.mood.today]||''}</div></div><div class="panel"><h3>Döngü tahmini</h3>${p?`<div class="stats-grid"><div class="stat-card"><strong>${p.day}. gün</strong><span>Döngü günü</span></div><div class="stat-card"><strong>${p.phase}</strong><span>Tahmini dönem</span></div><div class="stat-card"><strong>${p.next.toLocaleDateString('tr-TR')}</strong><span>Sonraki başlangıç</span></div></div>`:'<div class="empty">Ayarlar bölümünden son regl başlangıcını gir.</div>'}</div><div class="panel"><h3>Son ruh halleri</h3>${state.mood.history.length?state.mood.history.slice(-7).reverse().map(x=>`<div class="surprise-card">${moodMap[x.mood]?.emoji||''} ${moodMap[x.mood]?.label||x.mood} · ${fmtDate(x.date)}</div>`).join(''):'<div class="empty">Henüz kayıt yok.</div>'}</div>`;document.querySelectorAll('[data-mood]').forEach(b=>b.onclick=async()=>{const next=b.dataset.mood,prev=state.mood.today;if(prev===next)return toast('Ruh hali zaten buydu 🌸');state.mood.today=next;state.mood.history.push({date:today(),mood:next});save();renderMood();toast('Ruh hali kaydedildi 🌸');await notify('🌸 Ruh hali değişti',`${actor()} ruh halini ${moodMap[next].label} yaptı ${moodMap[next].emoji}`,'mood','mood')})}
+function renderMood(){
+  const p=phaseInfo(),set=moodAssets[viewerMoodOwner()],role=window.NecatiCloud?.role?.();
+  $('moduleContent').innerHTML=`
+    <div class="panel">
+      <h3>Bugün ruh hali nasıl? 🌸</h3>
+      <p class="muted">${viewerMoodOwner()==='nisa'?'Necati hesabında Nisa':'Nisa hesabında Necati'} emojileri gösteriliyor.</p>
+      <div class="mood-grid mood-image-grid">${Object.entries(moodMap).map(([k,v])=>`<button class="mood-btn mood-image-btn ${state.mood.today===k?'active':''}" data-mood="${k}"><img src="${set[k]}" alt="${v.label}"><span>${v.label}</span></button>`).join('')}</div>
+      <div class="hero-tip">${moodTips[state.mood.today]||''}</div>
+    </div>
+    <div class="panel">
+      <h3>Döngü tahmini</h3>
+      ${p?`<div class="stats-grid"><div class="stat-card"><strong>${p.day}. gün</strong><span>Döngü günü</span></div><div class="stat-card"><strong>${p.phase}</strong><span>Tahmini dönem</span></div><div class="stat-card"><strong>${p.next.toLocaleDateString('tr-TR')}</strong><span>Sonraki başlangıç</span></div></div>`:'<div class="empty">Ayarlar bölümünden son regl başlangıcını gir.</div>'}
+      ${role==='nisa'?`<div class="period-emergency-box"><div><small>Hızlı uyarı</small><strong>Regl başladı mı?</strong><p>Tek dokunuşla Necati'ye acil bildirim gönder.</p></div><button id="periodStartedBtn" class="period-emergency-btn" type="button">🌸 Regl başladı</button></div>`:''}
+    </div>
+    <div class="panel"><h3>Son ruh halleri</h3>${state.mood.history.length?state.mood.history.slice(-7).reverse().map(x=>`<div class="surprise-card">${moodMap[x.mood]?.emoji||''} ${moodMap[x.mood]?.label||x.mood} · ${fmtDate(x.date)}</div>`).join(''):'<div class="empty">Henüz kayıt yok.</div>'}</div>`;
+
+  document.querySelectorAll('[data-mood]').forEach(b=>b.onclick=async()=>{
+    const next=b.dataset.mood,prev=state.mood.today;
+    if(prev===next)return toast('Ruh hali zaten buydu 🌸');
+    state.mood.today=next;
+    state.mood.history.push({date:today(),mood:next});
+    save();
+    renderMood();
+    toast('Ruh hali kaydedildi 🌸');
+    await notify('🌸 Ruh hali değişti',`${actor()} ruh halini ${moodMap[next].label} yaptı ${moodMap[next].emoji}`,'mood','mood');
+  });
+
+  const periodBtn=$('periodStartedBtn');
+  if(periodBtn)periodBtn.onclick=async()=>{
+    periodBtn.disabled=true;
+    periodBtn.textContent='Gönderiliyor…';
+    const d=today();
+    state.settings.lastPeriod=d;
+    state.settings.periodStartDate=d;
+    state.settings.lastPeriodDate=d;
+    save();
+    toast('Regl başlangıcı kaydedildi 🌸');
+    try{
+      await notify('🚨 Acil durum: Regl başladı','Nisa regl başladığını bildirdi 🌸 Yanında ol ❤️','emergency','mood');
+      toast('Necati’ye acil regl bildirimi gönderildi 🚨🌸');
+    }catch(e){
+      toast('Bildirim gönderilemedi');
+    }
+    renderMood();
+  };
+}
 
 function renderSurprise(){$('moduleContent').innerHTML=`<div class="panel"><h3>Yeni sürpriz ekle</h3><div class="form-grid"><label>Tarih<input id="spDate" type="date" value="${today()}"></label><label>Tür<select id="spType"><option>Mesaj</option><option>Görev</option><option>Sürpriz</option><option>Buluşma</option></select></label></div><label>Başlık<input id="spTitle"></label><label>İçerik<textarea id="spMessage"></textarea></label><div class="actions"><button class="primary-btn" id="addSurprise">Takvime ekle 🎁</button></div></div><div class="cards-list">${state.surprises.map(x=>`<div class="surprise-card ${x.date>today()?'locked':''}"><div class="row-between"><div><span class="chip">${fmtDate(x.date)} · ${escapeHtml(x.type)}</span><h3>${escapeHtml(x.title)}</h3></div><button class="delete-btn" data-delsp="${x.id}">Sil</button></div><p>${x.date>today()?'🔒 Zamanı gelince açılacak':escapeHtml(x.message)}</p></div>`).join('')}</div>`;$('addSurprise').onclick=async()=>{const date=$('spDate').value,title=$('spTitle').value.trim(),message=$('spMessage').value.trim();if(!date||!title||!message)return toast('Tarih, başlık ve içerik gerekli');state.surprises.push({id:uid(),date,title,message,type:$('spType').value});save();renderSurprise();toast('Sürpriz eklendi 🎁');await notify('🎁 Yeni sürpriz',`${actor()} “${title}” sürprizini ekledi`,'surprise','surprise')};document.querySelectorAll('[data-delsp]').forEach(b=>b.onclick=async()=>{const x=state.surprises.find(x=>x.id==b.dataset.delsp);state.surprises=state.surprises.filter(x=>x.id!=b.dataset.delsp);save();renderSurprise();await notify('🗑️ Sürpriz silindi',`${actor()} “${x?.title||'bir sürpriz'}” kaydını sildi`,'surprise','surprise')})}
 function dailyJar(){if(!state.jar.length)return'Kavanoz boş 💗';const d=new Date(),key=Number(`${d.getFullYear()}${d.getMonth()+1}${d.getDate()}`);return state.jar[key%state.jar.length]}

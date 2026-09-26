@@ -1044,3 +1044,12 @@ body.splash-active{overflow:hidden}
 .status-history-item>div{display:grid;gap:3px}
 .status-history-item strong{font-size:13px}
 .status-history-item small{font-size:10.5px;opacity:.62}
+
+/* v10.9.2 regl emergency */
+.period-emergency-box{margin-top:14px;padding:14px;border-radius:18px;background:rgba(255,97,138,.09);border:1px solid rgba(255,128,164,.18);display:grid;gap:10px}
+.period-emergency-box>div{display:grid;gap:3px}
+.period-emergency-box small{font-size:10px;letter-spacing:.08em;opacity:.6;text-transform:uppercase}
+.period-emergency-box strong{font-size:15px}
+.period-emergency-box p{margin:0;font-size:12px;opacity:.7}
+.period-emergency-btn{width:100%;min-height:46px;border:0;border-radius:15px;font-weight:800;font-size:14px;background:linear-gradient(135deg,#ff6b98,#e96eff);color:#fff;box-shadow:0 8px 22px rgba(233,110,255,.18)}
+.period-emergency-btn:disabled{opacity:.65}
