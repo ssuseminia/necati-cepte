@@ -1013,3 +1013,6 @@ body.splash-active{overflow:hidden}
   .quick-grid .quick-card{min-height:86px;padding:10px 8px}
   .quick-grid .quick-card strong{font-size:9px}
 }
+
+/* v10.8.9 bottom nav */
+.tab-poke-icon{font-size:23px;line-height:1;display:grid;place-items:center}

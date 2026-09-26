@@ -823,12 +823,12 @@ document.querySelectorAll('.tab-item').forEach(btn=>{
       if(!$('moduleView').hidden) $('backBtn')?.click();
       window.scrollTo({top:0,behavior:'smooth'});
     }
-    if(tab==='calendar') document.querySelector('[data-open="plannerDialog"]')?.click();
+    if(tab==='emergency') document.querySelector('[data-module="emergency"]')?.click();
     if(tab==='love'){
       if(!$('moduleView').hidden) $('backBtn')?.click();
       document.querySelector('.modules-title')?.scrollIntoView({behavior:'smooth',block:'start'});
     }
-    if(tab==='tasks') document.querySelector('[data-open="todoDialog"]')?.click();
+    if(tab==='poke') document.querySelector('[data-module="poke"]')?.click();
     if(tab==='profile') $('settingsBtn')?.click();
   });
 });
@@ -1773,7 +1773,7 @@ showHome=function(){v108DestroyTravelMap();return v108OldShowHome()};
 document.addEventListener('DOMContentLoaded',()=>v108EnsureState());
 
 
-// ===== v10.8.8 Safe UI: top expenses shortcut + local notification center =====
+// ===== v10.8.9 Safe UI: top expenses shortcut + local notification center =====
 (()=>{
   const V1088_KEY='necati-notification-center-v1';
   const V1088_MAX=60;
