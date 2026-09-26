@@ -1742,6 +1742,7 @@ function renderInstantPhoto(){
     save();
     renderInstantPhoto();
     toast('Yorum eklendi 💬❤️');
+    notify('💬 Fotoğrafa yorum geldi',`${actor()} anlık fotoğrafa yorum yaptı: ${text}`,'instant-comment','instant').catch(()=>{});
   });
 }
 
