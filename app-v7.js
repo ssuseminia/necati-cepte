@@ -1071,9 +1071,12 @@ function v103SpinWheel(){
 }
 
 function v103RenderLastStatus(){
-  const box=$('lastStatusBox');if(!box)return;
-  const last=(state.quickStatus||[]).slice(-1)[0];
-  box.innerHTML=last?`<span>${last.icon||'❤️'}</span><div><small>Son gönderilen</small><strong>${escapeHtml(last.text)}</strong><em>${new Date(last.at).toLocaleString('tr-TR')}</em></div>`:'Henüz durum gönderilmedi.';
+  const box=$('lastStatusBox');
+  const history=$('statusHistoryList');
+  const list=[...(state.quickStatus||[])].sort((a,b)=>(b.at||0)-(a.at||0));
+  const last=list[0];
+  if(box)box.innerHTML=last?`<span>${last.icon||'❤️'}</span><div><small>Son gönderilen</small><strong>${escapeHtml(last.text)}</strong><em>${new Date(last.at).toLocaleString('tr-TR')}</em></div>`:'Henüz durum gönderilmedi.';
+  if(history)history.innerHTML=list.length?list.slice(0,20).map(x=>`<div class="status-history-item"><span>${x.icon||'❤️'}</span><div><strong>${escapeHtml(x.text||'')}</strong><small>${escapeHtml(x.by||'')} · ${new Date(x.at).toLocaleString('tr-TR')}</small></div></div>`).join(''):'<div class="empty">Henüz geçmiş yok.</div>';
 }
 async function v103SendStatus(text,icon){
   const who=actor();
@@ -1679,26 +1682,66 @@ function renderInstantPhoto(){
       <label>Mini not <input id="instantPhotoNote" maxlength="80" placeholder="şu an burdayım 😄"></label>
       <button id="sendInstantPhoto" class="primary-btn">Anlık fotoğrafı gönder 📸</button>
     </div>
-    <div class="instant-feed">${feed.map(x=>`<article class="instant-card">${imgHtml(x.image,'instant-feed-photo')}<div class="row-between"><div><strong>${escapeHtml(x.sender||'')}</strong><small>${v108TimeLabel(x.createdAt)}</small></div><button class="delete-btn" data-delinstant="${x.id}">Sil</button></div>${x.note?`<p>${escapeHtml(x.note)}</p>`:''}</article>`).join('')||'<div class="empty">Henüz anlık fotoğraf yok 📸</div>'}</div>`;
+    <div class="instant-feed">${feed.map(x=>{
+      const comments=Array.isArray(x.comments)?x.comments:[];
+      return `<article class="instant-card">
+        ${imgHtml(x.image,'instant-feed-photo')}
+        <div class="row-between">
+          <div><strong>${escapeHtml(x.sender||'')}</strong><small>${v108TimeLabel(x.createdAt)}</small></div>
+          <span class="instant-memory-chip">❤️ Anı</span>
+        </div>
+        ${x.note?`<p>${escapeHtml(x.note)}</p>`:''}
+        <div class="instant-comments">
+          <div class="instant-comments-title"><span>💬 Yorumlar</span><small>${comments.length}</small></div>
+          <div class="instant-comment-list">
+            ${comments.length?comments.map(c=>`<div class="instant-comment"><div><strong>${escapeHtml(c.by||'')}</strong><small>${v108TimeLabel(c.at)}</small></div><p>${escapeHtml(c.text||'')}</p></div>`).join(''):'<div class="instant-comment-empty">İlk yorumu sen bırak ❤️</div>'}
+          </div>
+          <div class="instant-comment-form">
+            <input data-comment-input="${x.id}" maxlength="120" placeholder="Bir yorum yaz…">
+            <button type="button" class="mini-action" data-comment-send="${x.id}" aria-label="Yorumu gönder">➤</button>
+          </div>
+        </div>
+      </article>`;
+    }).join('')||'<div class="empty">Henüz anlık fotoğraf yok 📸</div>'}</div>`;
+
   previewInput('instantPhotoInput','instantPhotoPreview');
   hydrateImages();
+
   $('sendInstantPhoto').onclick=async()=>{
     const file=$('instantPhotoInput')?.files?.[0];
     if(!file)return toast('Önce fotoğraf çek veya seç 📸');
-    const btn=$('sendInstantPhoto'); btn.disabled=true; btn.textContent='Gönderiliyor…';
+    const btn=$('sendInstantPhoto');
+    btn.disabled=true;
+    btn.textContent='Gönderiliyor…';
     try{
       const image=await storeImage(file);
-      const item={id:uid(),image,note:$('instantPhotoNote')?.value.trim()||'',sender:actor(),createdAt:Date.now()};
+      const item={id:uid(),image,note:$('instantPhotoNote')?.value.trim()||'',sender:actor(),createdAt:Date.now(),comments:[]};
       state.instantPhotos.push(item);
       if(state.instantPhotos.length>30)state.instantPhotos=state.instantPhotos.slice(-30);
       save();
       renderInstantPhoto();
       toast('Anlık fotoğraf gönderildi 📸❤️');
       notify('📸 Anlık fotoğraf geldi',`${actor()} sana anlık fotoğraf attı ❤️`,'instant-photo','instant').catch(()=>{});
-    }catch(e){btn.disabled=false;btn.textContent='Anlık fotoğrafı gönder 📸';toast('Fotoğraf gönderilemedi: '+(e?.message||e))}
+    }catch(e){
+      btn.disabled=false;
+      btn.textContent='Anlık fotoğrafı gönder 📸';
+      toast('Fotoğraf gönderilemedi: '+(e?.message||e));
+    }
   };
-  document.querySelectorAll('[data-delinstant]').forEach(b=>b.onclick=()=>{
-    state.instantPhotos=state.instantPhotos.filter(x=>String(x.id)!==String(b.dataset.delinstant));save();renderInstantPhoto();toast('Fotoğraf kaldırıldı');
+
+  document.querySelectorAll('[data-comment-send]').forEach(btn=>btn.onclick=()=>{
+    const id=String(btn.dataset.commentSend||'');
+    const input=document.querySelector(`[data-comment-input="${id}"]`);
+    const text=(input?.value||'').trim();
+    if(!text)return toast('Yorumunu yaz 💬');
+    const photo=state.instantPhotos.find(x=>String(x.id)===id);
+    if(!photo)return toast('Fotoğraf bulunamadı');
+    photo.comments=Array.isArray(photo.comments)?photo.comments:[];
+    photo.comments.push({id:uid(),text,by:actor(),at:Date.now()});
+    photo.comments=photo.comments.slice(-40);
+    save();
+    renderInstantPhoto();
+    toast('Yorum eklendi 💬❤️');
   });
 }
 

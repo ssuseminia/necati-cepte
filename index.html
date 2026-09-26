@@ -106,7 +106,6 @@
                 <small>Yaklaşanlar</small>
                 <h3>Bugünün akışı</h3>
               </div>
-              <button type="button" class="ghost-mini" data-open="plannerDialog">Takvimi aç</button>
             </div>
             <div id="todayAgendaList" class="agenda-list"></div>
           </article>
@@ -142,7 +141,6 @@
           <button class="quick-card" data-module="poke"><span class="quick-line-icon">👉</span><strong>Dürt</strong></button>
           <button class="quick-card" data-module="night"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 15.5A8 8 0 0 1 8.5 5 8 8 0 1 0 19 15.5Z"/></svg></span><strong>İyi Geceler</strong></button>
           <button class="quick-card" data-module="dates"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="14" r="6"/><path d="m9 6 3-3 3 3-3 3Z"/></svg></span><strong>Özel Günler</strong></button>
-          <button class="quick-card" data-open="plannerDialog"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M7 3.5v4M17 3.5v4M3.5 9.5h17"/></svg></span><strong>Plan Ekle</strong></button>
           <button class="quick-card" data-open="todoDialog"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.2 4.2L19 7"/></svg></span><strong>Görevler</strong></button>
           <button class="quick-card" data-open="statusDialog"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M9.5 20v-6h5v6"/></svg></span><strong>Eve Geldim</strong></button>
           <button class="quick-card" data-open="dateWheelDialog"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 8h.01M16 8h.01M12 12h.01M8 16h.01M16 16h.01"/></svg></span><strong>Date Çarkı</strong></button>
@@ -162,7 +160,6 @@
         <button class="mobile-module" data-module="dates"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="14" r="6"/><path d="m9 6 3-3 3 3-3 3Z"/></svg></span><div><strong>Özel Günler</strong><small>Geri sayımlar</small></div></button>
         <button class="mobile-module" data-module="night"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 15.5A8 8 0 0 1 8.5 5 8 8 0 1 0 19 15.5Z"/></svg></span><div><strong>İyi Geceler</strong><small>Fotoğraflı mesaj</small></div></button>
         <button class="mobile-module danger-mobile" data-module="emergency"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.8 20h18.4Z"/><path d="M12 9v5M12 17.5h.01"/></svg></span><div><strong>Acil Necati</strong><small>Hemen haber ver</small></div></button>
-        <button class="mobile-module" data-open="plannerDialog"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M7 3.5v4M17 3.5v4M3.5 9.5h17"/></svg></span><div><strong>Ortak Takvim</strong><small>Planlar</small></div></button>
         <button class="mobile-module" data-open="todoDialog"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.2 4.2L19 7"/></svg></span><div><strong>Yapılacaklar</strong><small>Görevler</small></div></button>
         <button class="mobile-module" data-open="expenseDialog"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M7 9H5.5v1.5M17 15h1.5v-1.5"/></svg></span><div><strong>Harcamalar</strong><small>Ortak bütçe</small></div></button>
         <button class="mobile-module" data-open="necatiBotDialog"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 7V4M9 12h.01M15 12h.01M9 16h6"/></svg></span><div><strong>Necati Bot</strong><small>Konuş & sor</small></div></button>
@@ -522,7 +519,7 @@
       </div>
       <div id="dateWheelResult" class="wheel-result">Hazırsanız çarkı döndürün 🎡</div>
       <button type="button" id="spinDateWheelBtn" aria-busy="false" class="primary-btn big-feature-btn">Çarkı Döndür 🎲</button>
-      <div id="dateWheelAutoInfo" class="wheel-auto-info">Çıkan sonuç otomatik olarak ortak takvime eklenecek ve karşı tarafa bildirilecek ❤️</div>
+      <div id="dateWheelAutoInfo" class="wheel-auto-info">Çıkan sonuç kaydedilecek ve karşı tarafa bildirilecek ❤️</div>
     </div>
   </dialog>
 
@@ -541,6 +538,10 @@
         <button type="button" class="status-action" data-status="Müsait olunca seni arayacağım 📞" data-status-icon="📞"><span>📞</span><strong>Seni arayacağım</strong><small>Müsait olunca</small></button>
       </div>
       <div id="lastStatusBox" class="last-status-box">Henüz durum gönderilmedi.</div>
+      <div class="status-history-panel">
+        <div class="status-history-head"><div><small>GEÇMİŞ</small><strong>Son durumlar</strong></div><span>🕘</span></div>
+        <div id="statusHistoryList" class="status-history-list"><div class="empty">Henüz geçmiş yok.</div></div>
+      </div>
     </div>
   </dialog>
 
@@ -603,10 +604,9 @@
       <section class="profile-menu-card">
         <button type="button" id="profileSettingsBtn"><span class="menu-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 13.5v-3l-2-.5-.7-1.6 1.1-1.8-2.1-2.1-1.8 1.1-1.6-.7-.5-2h-3l-.5 2-1.6.7-1.8-1.1-2.1 2.1 1.1 1.8-.7 1.6-2 .5v3l2 .5.7 1.6-1.1 1.8 2.1 2.1 1.8-1.1 1.6.7.5 2h3l.5-2 1.6-.7 1.8 1.1 2.1-2.1-1.1-1.8.7-1.6Z"/></svg></span><span><strong>Ayarlar</strong><small>Tema, tarihler ve bildirimler</small></span><b>›</b></button>
         <button type="button" id="profileAccountBtn"><span class="menu-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 20c.5-4 3-6 6.5-6s6 2 6.5 6"/></svg></span><span><strong>Hesap & Bulut</strong><small id="profileAccountText">Firebase hesabı</small></span><b>›</b></button>
-        <button type="button" id="profileCalendarBtn"><span class="menu-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M7 3.5v4M17 3.5v4M3.5 9.5h17"/></svg></span><span><strong>Ortak Takvim</strong><small>Planlarınızı aç</small></span><b>›</b></button>
       </section>
 
-      <div class="profile-version">Necati Cepte • v10.8.7</div>
+      <div class="profile-version">Necati Cepte • v10.9.0</div>
     </div>
   </dialog>
 

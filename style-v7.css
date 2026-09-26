@@ -1016,3 +1016,31 @@ body.splash-active{overflow:hidden}
 
 /* v10.8.9 bottom nav */
 .tab-poke-icon{font-size:23px;line-height:1;display:grid;place-items:center}
+
+/* v10.9.0 Social Safe */
+.instant-memory-chip{
+  font-size:11px;padding:6px 9px;border-radius:999px;
+  background:rgba(255,255,255,.07);opacity:.8;white-space:nowrap
+}
+.instant-comments{margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)}
+.instant-comments-title{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:13px;margin-bottom:9px}
+.instant-comments-title small{opacity:.6}
+.instant-comment-list{display:grid;gap:8px}
+.instant-comment{padding:9px 11px;border-radius:14px;background:rgba(255,255,255,.055)}
+.instant-comment>div{display:flex;justify-content:space-between;gap:10px}
+.instant-comment strong{font-size:12px}.instant-comment small{font-size:10px;opacity:.62}
+.instant-comment p{margin:5px 0 0;font-size:13px;line-height:1.35}
+.instant-comment-empty{font-size:12px;opacity:.58;padding:4px 2px 8px}
+.instant-comment-form{display:grid;grid-template-columns:minmax(0,1fr) 42px;gap:8px;margin-top:10px}
+.instant-comment-form .mini-action{width:42px;height:42px;border-radius:13px}
+.status-history-panel{margin-top:14px;padding:14px;border-radius:20px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07)}
+.status-history-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.status-history-head>div{display:grid;gap:2px}
+.status-history-head small{font-size:10px;opacity:.55;letter-spacing:.08em}
+.status-history-head strong{font-size:15px}
+.status-history-list{display:grid;gap:8px;max-height:310px;overflow:auto}
+.status-history-item{display:grid;grid-template-columns:40px minmax(0,1fr);gap:10px;align-items:center;padding:10px;border-radius:15px;background:rgba(255,255,255,.055)}
+.status-history-item>span{font-size:23px;text-align:center}
+.status-history-item>div{display:grid;gap:3px}
+.status-history-item strong{font-size:13px}
+.status-history-item small{font-size:10.5px;opacity:.62}
