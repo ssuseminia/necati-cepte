@@ -1265,3 +1265,7 @@ html.dialog-open .chat-bot-launcher{visibility:hidden}
 
 .home-connection-actions .home-emergency-action{grid-column:1/-1;justify-content:center;min-height:58px;background:linear-gradient(135deg,#a82145,#74253f);color:#fff;border-color:rgba(255,120,150,.45)}
 .home-emergency-action small{color:#ffe3e9}
+
+#dailySummaryView[hidden]{display:none!important}
+.daily-summary-view{padding:0 14px 100px}
+.daily-summary-view .mobile-hero-card{margin-top:12px}

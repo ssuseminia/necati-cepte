@@ -68,6 +68,7 @@ document.querySelectorAll('[data-module]').forEach(b=>b.addEventListener('click'
 if($('backBtn')) $('backBtn').onclick=showHome;
 if($('homeBtn')) $('homeBtn').onclick=showHome;
 function showHome(){
+  if($('dailySummaryView'))$('dailySummaryView').hidden=true;
   currentModule=null;
   if(leafletMap){leafletMap.remove();leafletMap=null}
   if(pickerMap){pickerMap.remove();pickerMap=null}
@@ -77,6 +78,7 @@ function showHome(){
   scrollTo({top:0,behavior:'smooth'});
 }
 function openModule(name){
+  if($('dailySummaryView'))$('dailySummaryView').hidden=true;
   currentModule=name;
   if($('homeView')) $('homeView').hidden=true;
   if($('moduleView')) $('moduleView').hidden=false;
@@ -989,15 +991,15 @@ document.querySelectorAll('.tab-item').forEach(btn=>{
     const tab=btn.dataset.tab;
     v10ActivateTab(tab);
     if(tab==='home'){
-      if(!$('moduleView').hidden) $('backBtn')?.click();
+      showHome();
       window.scrollTo({top:0,behavior:'smooth'});
     }
     if(tab==='emergency') document.querySelector('[data-module="emergency"]')?.click();
     if(tab==='love'){
-      if(!$('moduleView').hidden) $('backBtn')?.click();
-      document.querySelector('.modules-title')?.scrollIntoView({behavior:'smooth',block:'start'});
+      showHome();
+      document.querySelector('.quick-section')?.scrollIntoView({behavior:'smooth',block:'start'});
     }
-    if(tab==='poke'){showHome();$('thinkingOfYouBtn')?.focus();$('thinkingOfYouBtn')?.scrollIntoView({block:'center',behavior:'smooth'});}
+    if(tab==='today'){showHome();$('homeView').hidden=true;$('dailySummaryView').hidden=false;v105RefreshPersonalUI();v10RefreshDashboard();v10ActivateTab('today');}
     if(tab==='profile') $('settingsBtn')?.click();
   });
 });
@@ -2408,3 +2410,5 @@ function renderWishlist(){
   });
   $('moduleContent').querySelectorAll('[data-delete-wish]').forEach(button=>button.onclick=()=>{deleteWithUndo('wishes',button.dataset.deleteWish);save();renderWishlist();});
 }
+
+$('summaryBackBtn')?.addEventListener('click',()=>{showHome();v10ActivateTab('home');});
