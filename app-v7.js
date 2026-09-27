@@ -15,7 +15,7 @@ const moodAssets={
  nisa:{mutlu:'assets/moods/nisa-mutlu.png',iyi:'assets/moods/nisa-iyi.png',yorgun:'assets/moods/nisa-yorgun.png',uzgun:'assets/moods/nisa-uzgun.png',gergin:'assets/moods/nisa-gergin.png'},
  necati:{mutlu:'assets/moods/necati-mutlu.png',iyi:'assets/moods/necati-iyi.png',yorgun:'assets/moods/necati-yorgun.png',uzgun:'assets/moods/necati-uzgun.png',gergin:'assets/moods/necati-gergin.png'}
 };
-const moduleNames={mood:'🌸 Nisa Modu',surprise:'💝 Özel Günler & Sürprizler',dates:'💝 Özel Günler & Sürprizler',curiosity:'👀 Birbirimizi Merak Ettik',night:'🌙 İyi Geceler',emergency:'🚨 Acil Necati',instant:'📸 Anlık Foto',travel:'🗺️ Gezi Haritası',poke:'👉 Dürtme'};
+const moduleNames={mood:'🌸 Nisa Modu',surprise:'💝 Özel Günler & Sürprizler',dates:'💝 Özel Günler & Sürprizler',curiosity:'👀 Birbirimizi Merak Ettik',todayus:'❤️ Bugün Biz',night:'🌙 İyi Geceler',emergency:'🚨 Acil Necati',instant:'📸 Anlık Foto',travel:'🗺️ Gezi Haritası',poke:'👉 Dürtme'};
 function clone(x){return JSON.parse(JSON.stringify(x))}function merge(base,saved){if(!saved||typeof saved!=='object')return clone(base);const out=clone(base);for(const k of Object.keys(saved)){if(saved[k]&&typeof saved[k]==='object'&&!Array.isArray(saved[k])&&out[k]&&typeof out[k]==='object'&&!Array.isArray(out[k]))out[k]={...out[k],...saved[k]};else out[k]=saved[k]}return out}
 function loadState(){try{const s=merge(defaultState,JSON.parse(localStorage.getItem(STORAGE_KEY)||'null'));const legacy={'🥰':'mutlu','🙂':'iyi','😴':'yorgun','😔':'uzgun','😡':'gergin'};s.mood.today=legacy[s.mood.today]||s.mood.today||'mutlu';s.mood.history=(s.mood.history||[]).map(x=>({...x,mood:legacy[x.mood]||x.mood}));return s}catch{return clone(defaultState)}}
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));window.NecatiCloud?.scheduleSave(state)}
@@ -231,7 +231,7 @@ function renderBot(){
   c.scrollTop=c.scrollHeight;
 }
 
-function renderModule(n){({mood:renderMood,surprise:renderDates,dates:renderDates,curiosity:renderCuriosity,night:renderNight,emergency:renderEmergency,instant:renderInstantPhoto,travel:renderTravelMap,poke:renderPoke}[n]||(()=>{}))()}
+function renderModule(n){({mood:renderMood,surprise:renderDates,dates:renderDates,curiosity:renderCuriosity,todayus:renderTodayUs,night:renderNight,emergency:renderEmergency,instant:renderInstantPhoto,travel:renderTravelMap,poke:renderPoke}[n]||(()=>{}))()}
 function viewerMoodOwner(){const r=window.NecatiCloud?.role?.();return r==='nisa'?'necati':'nisa'}
 function phaseInfo(){const s=state.settings;if(!s.lastPeriod)return null;const start=new Date(s.lastPeriod+'T12:00:00'),now=new Date(),elapsed=Math.floor((now-start)/86400000),day=((elapsed%s.cycleLength)+s.cycleLength)%s.cycleLength+1;let phase='Foliküler dönem';if(day<=s.periodLength)phase='Regl dönemi';else if(day>=s.cycleLength-13&&day<=s.cycleLength-11)phase='Tahmini yumurtlama dönemi';else if(day>s.cycleLength-11)phase='Luteal dönem';const next=new Date(start);next.setDate(next.getDate()+Math.ceil(Math.max(0,elapsed+1)/s.cycleLength)*s.cycleLength);if(next<=now)next.setDate(next.getDate()+s.cycleLength);return{day,phase,next}}
 function renderMood(){
@@ -1790,6 +1790,10 @@ function v108EnsureState(){
   state.trips=state.trips||[];
   state.pokeLog=state.pokeLog||[];
   state.periodHistory=state.periodHistory||[];
+  state.todayUs=state.todayUs||{meeting:{},signals:[],surprises:[]};
+  state.todayUs.meeting=state.todayUs.meeting||{};
+  state.todayUs.signals=state.todayUs.signals||[];
+  state.todayUs.surprises=state.todayUs.surprises||[];
 }
 
 function v108TimeLabel(ts){
@@ -2023,6 +2027,135 @@ function renderCuriosity(){
   hydrateImages();
   v1095LoadPresence();
   $('curiosityRefresh')?.addEventListener('click',()=>{v1095LoadPresence();toast('Son hareketler yenilendi 👀')});
+}
+
+
+function v1096RoleName(role){return role==='nisa'?'Nisa':role==='necati'?'Necati':'Biri'}
+function v1096OtherRole(){const r=window.NecatiCloud?.role?.();return r==='nisa'?'necati':'nisa'}
+function v1096TodayMeeting(){
+  v108EnsureState();
+  const d=today();
+  if(!state.todayUs.meeting[d])state.todayUs.meeting[d]={};
+  return state.todayUs.meeting[d];
+}
+function v1096MeetingLabel(v){
+  return ({yes:'Evet ❤️',maybe:'Belki 🤔',hard:'Bugün zor 🥺'})[v]||'Henüz seçmedi';
+}
+function v1096SignalLabel(type){
+  const map={
+    miss:{emoji:'🥺',text:'Seni özledim'},
+    hurt:{emoji:'💔',text:'Kırıldım'},
+    talk:{emoji:'💬',text:'Konuşmak istiyorum'},
+    hug:{emoji:'🤗',text:'Sarılmaya ihtiyacım var'},
+    proud:{emoji:'🥹',text:'Seninle gurur duydum'}
+  };
+  return map[type]||{emoji:'❤️',text:'Sana bir şey söylemek istiyorum'};
+}
+
+function renderTodayUs(){
+  v108EnsureState();
+  const role=window.NecatiCloud?.role?.()||'necati';
+  const other=v1096OtherRole();
+  const meeting=v1096TodayMeeting();
+  const signals=[...(state.todayUs.signals||[])].sort((a,b)=>(b.at||0)-(a.at||0)).slice(0,8);
+  const surprises=[...(state.todayUs.surprises||[])].sort((a,b)=>(b.at||0)-(a.at||0)).slice(0,12);
+
+  $('moduleContent').innerHTML=`
+    <div class="todayus-hero panel">
+      <span class="todayus-heart">❤️</span>
+      <div><small>BUGÜN BİZ</small><h2>Üç şey, tek ekran</h2><p>Buluşma planı, kısa duygular ve gizli sürprizler.</p></div>
+    </div>
+
+    <section class="panel todayus-section">
+      <div class="todayus-title"><span>📍</span><div><small>BUGÜN BULUŞUYOR MUYUZ?</small><h3>Bugünkü planımız</h3></div></div>
+      <div class="meeting-answers">
+        <button type="button" data-meeting="yes" class="${meeting[role]==='yes'?'selected':''}">❤️ Evet</button>
+        <button type="button" data-meeting="maybe" class="${meeting[role]==='maybe'?'selected':''}">🤔 Belki</button>
+        <button type="button" data-meeting="hard" class="${meeting[role]==='hard'?'selected':''}">🥺 Bugün zor</button>
+      </div>
+      <div class="meeting-status-grid">
+        <div><span>${role==='nisa'?'👩🏻':'👨🏻'}</span><small>Sen</small><strong>${v1096MeetingLabel(meeting[role])}</strong></div>
+        <div><span>${other==='nisa'?'👩🏻':'👨🏻'}</span><small>${v1096RoleName(other)}</small><strong>${v1096MeetingLabel(meeting[other])}</strong></div>
+      </div>
+    </section>
+
+    <section class="panel todayus-section">
+      <div class="todayus-title"><span>💌</span><div><small>BİR ŞEY SÖYLEMEK İSTİYORUM</small><h3>Tek dokunuşla hissettir</h3></div></div>
+      <div class="signal-grid">
+        <button type="button" data-signal="miss">🥺<strong>Özledim</strong></button>
+        <button type="button" data-signal="hurt">💔<strong>Kırıldım</strong></button>
+        <button type="button" data-signal="talk">💬<strong>Konuşalım</strong></button>
+        <button type="button" data-signal="hug">🤗<strong>Sarıl bana</strong></button>
+        <button type="button" data-signal="proud">🥹<strong>Gurur duydum</strong></button>
+      </div>
+      <div class="todayus-history">
+        ${signals.length?signals.map(x=>{const s=v1096SignalLabel(x.type);return `<div class="todayus-history-item"><span>${s.emoji}</span><div><strong>${escapeHtml(x.by||'Biri')}: ${s.text}</strong><small>${v108TimeLabel(x.at)}</small></div></div>`}).join(''):'<div class="empty">Bugün henüz bir sinyal yok ❤️</div>'}
+      </div>
+    </section>
+
+    <section class="panel todayus-section">
+      <div class="todayus-title"><span>🎁</span><div><small>BENİ ŞAŞIRT</small><h3>Gizli sürpriz bırak</h3></div></div>
+      <label>Sürprizin<input id="secretSurpriseText" maxlength="180" placeholder="Mesela akşam seni bir yere götürüyorum 😄"></label>
+      <button type="button" id="sendSecretSurprise" class="primary-btn">Gizli sürprizi gönder 🎁</button>
+
+      <div class="secret-surprise-list">
+        ${surprises.length?surprises.map(x=>{
+          const mine=x.byRole===role;
+          const accepted=!!x.acceptedAt;
+          const canReveal=mine||accepted;
+          const who=mine?'Sen gönderdin':`${escapeHtml(x.by||v1096RoleName(x.byRole))} sana gönderdi`;
+          return `<article class="secret-surprise-card ${accepted?'accepted':''}">
+            <div class="row-between"><div><small>${who}</small><strong>${accepted?'Sürpriz kabul edildi ❤️':'Gizli sürpriz 🎁'}</strong></div><span>${v108TimeLabel(x.at)}</span></div>
+            ${canReveal?`<p>${escapeHtml(x.text||'')}</p>`:`<div class="secret-locked">🔒 İçerik kabul edince açılacak</div>`}
+            ${!mine&&!accepted?`<button type="button" class="primary-btn compact-btn" data-accept-secret="${x.id}">Kabul et & aç ❤️</button>`:''}
+          </article>`;
+        }).join(''):'<div class="empty">Henüz gizli sürpriz yok 🎁</div>'}
+      </div>
+    </section>`;
+
+  document.querySelectorAll('[data-meeting]').forEach(btn=>btn.onclick=async()=>{
+    const choice=btn.dataset.meeting;
+    const m=v1096TodayMeeting();
+    m[role]=choice;
+    save();
+    renderTodayUs();
+    toast('Bugünkü cevabın kaydedildi ❤️');
+    await notify('📍 Bugün buluşuyor muyuz?',`${v1096RoleName(role)}: ${v1096MeetingLabel(choice)}`,'meeting','todayus').catch(()=>{});
+  });
+
+  document.querySelectorAll('[data-signal]').forEach(btn=>btn.onclick=async()=>{
+    const type=btn.dataset.signal,s=v1096SignalLabel(type);
+    state.todayUs.signals.push({id:uid(),type,by:v1096RoleName(role),byRole:role,at:Date.now()});
+    state.todayUs.signals=state.todayUs.signals.slice(-40);
+    save();
+    renderTodayUs();
+    toast(`${s.text} gönderildi ${s.emoji}`);
+    await notify(`${s.emoji} ${v1096RoleName(role)}'dan bir şey var`,s.text,'signal','todayus').catch(()=>{});
+  });
+
+  $('sendSecretSurprise')?.addEventListener('click',async()=>{
+    const text=($('secretSurpriseText')?.value||'').trim();
+    if(!text)return toast('Önce sürprizi yaz 🎁');
+    state.todayUs.surprises.push({
+      id:uid(),text,by:v1096RoleName(role),byRole:role,toRole:other,at:Date.now(),acceptedAt:null,acceptedBy:null
+    });
+    state.todayUs.surprises=state.todayUs.surprises.slice(-30);
+    save();
+    renderTodayUs();
+    toast('Gizli sürpriz gönderildi 🎁');
+    await notify('🎁 Sana gizli bir sürpriz var',`${v1096RoleName(role)} sana bir sürpriz bıraktı. Kabul edince açılacak ❤️`,'secret-surprise','todayus').catch(()=>{});
+  });
+
+  document.querySelectorAll('[data-accept-secret]').forEach(btn=>btn.onclick=async()=>{
+    const item=state.todayUs.surprises.find(x=>String(x.id)===String(btn.dataset.acceptSecret));
+    if(!item)return;
+    item.acceptedAt=Date.now();
+    item.acceptedBy=v1096RoleName(role);
+    save();
+    renderTodayUs();
+    toast('Sürpriz açıldı 🎁❤️');
+    await notify('❤️ Sürpriz kabul edildi',`${v1096RoleName(role)} gizli sürprizini kabul etti`,'secret-surprise','todayus').catch(()=>{});
+  });
 }
 
 
