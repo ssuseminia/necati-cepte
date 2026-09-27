@@ -1402,3 +1402,5 @@ html.reduce-app-motion .startup-names{display:none}
 @keyframes startupStickerFloat{0%{transform:translate(0,110dvh) rotate(15deg);opacity:0}10%,85%{opacity:.8}50%{transform:translate(-12px,45dvh) rotate(-14deg)}100%{transform:translate(8px,-150px) rotate(12deg);opacity:0}}
 
 #themeToggleBtn{font-size:23px;color:var(--app-accent)!important;flex-shrink:0}
+
+.expense-chart-card>summary{cursor:pointer;font-weight:700;color:var(--app-text);padding:6px 0}.expense-chart-card[open]>summary{margin-bottom:14px}.expense-pagination{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:14px}.expense-pagination[hidden]{display:none}.expense-pagination span{font-size:12px;color:var(--app-muted)}.expense-pagination button:disabled{opacity:.4;cursor:default}

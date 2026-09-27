@@ -12,7 +12,7 @@
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
   <link rel="icon" type="image/png" href="icons/icon-192.png" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <link rel="stylesheet" href="style-v7.css?v=1097-warm5" />
+  <link rel="stylesheet" href="style-v7.css?v=1097-warm6" />
   <title>Necati Cepte</title>
 </head>
 <body>
@@ -454,7 +454,7 @@
 
       <div id="expenseStats" class="expense-stats"></div>
 
-      <section class="expense-chart-card card-panel">
+      <details id="expenseChartDetails" class="expense-chart-card card-panel"><summary>📊 Harcama grafiğini aç / kapat</summary>
         <div class="mini-head">
           <div>
             <small>Aylık dağılım</small>
@@ -464,7 +464,7 @@
         </div>
         <canvas id="expenseChart" width="760" height="340" aria-label="Harcama kategori grafiği"></canvas>
         <div id="expenseChartLegend" class="chart-legend"></div>
-      </section>
+      </details>
 
 
       <section class="card-panel">
@@ -498,7 +498,7 @@
         <button type="button" id="addExpenseBtn" aria-busy="false" class="primary-btn">Harcama ekle 💸</button>
       </section>
 
-      <div id="expenseList" class="stack-list"></div>
+      <h3 id="expenseHistoryHeading">Harcama geçmişi</h3><div id="expenseList" class="stack-list"></div><nav id="expensePagination" class="expense-pagination" aria-label="Harcama geçmişi sayfaları"><button type="button" id="expensePrev" class="ghost-btn">Önceki</button><span id="expensePageInfo" aria-live="polite"></span><button type="button" id="expenseNext" class="ghost-btn">Sonraki</button></nav>
     </div>
   </dialog>
 
@@ -637,6 +637,6 @@
       <script src="onesignal-config.js"></script>
       <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
       <script src="cloud-v7.js"></script>
-      <script src="app-v7.js?v=1097-warm5"></script>
+      <script src="app-v7.js?v=1097-warm6"></script>
 </body>
 </html>

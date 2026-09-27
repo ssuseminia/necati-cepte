@@ -798,10 +798,18 @@ function v9RenderExpenses(){
   const month=v9ExpenseMonth();
   const items=(state.expenses||[]).filter(x=>(x.date||'').startsWith(month)).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   const total=items.reduce((s,x)=>s+Number(x.amount||0),0), n=items.filter(x=>x.payer==='necati').reduce((s,x)=>s+Number(x.amount||0),0), ni=items.filter(x=>x.payer==='nisa').reduce((s,x)=>s+Number(x.amount||0),0);
-  v102ExpenseChart(items);
+  if($('expenseChartDetails')?.open)v102ExpenseChart(items);
+  if(v9RenderExpenses.month!==month){v9RenderExpenses.page=0;v9RenderExpenses.month=month;}
+  const pages=Math.max(1,Math.ceil(items.length/5));
+  const page=Math.min(v9RenderExpenses.page||0,pages-1);
+  v9RenderExpenses.page=page;
+  $('expensePagination').hidden=items.length<=5;
+  $('expensePrev').disabled=page===0;
+  $('expenseNext').disabled=page===pages-1;
+  $('expensePageInfo').textContent=`${page+1} / ${pages} · ${items.length} kayıt`;
   if(stats)stats.innerHTML=`<div><small>Bu ay</small><strong>${v9Money(total)}</strong></div><div><small>Necati</small><strong>${v9Money(n)}</strong></div><div><small>Nisa</small><strong>${v9Money(ni)}</strong></div>`;
   list.innerHTML='';if(!items.length){list.innerHTML='<p class="muted">Bu ay kayıtlı harcama yok.</p>';return}
-  items.forEach(x=>{
+  items.slice(page*5,page*5+5).forEach(x=>{
     const row=document.createElement('div');row.className='list-card';
     row.innerHTML=`<div><strong>${v9Esc(x.title)} • ${v9Money(x.amount)}</strong><small>${v9Date(x.date)} • ${v9OwnerLabel(x.payer)} • ${v9Esc(x.category)}</small>${x.note?`<p>${v9Esc(x.note)}</p>`:''}</div><button type="button" class="danger-btn">Sil</button>`;
     row.querySelector('button').onclick=()=>{deleteWithUndo('expenses',x.id);save();v9RenderExpenses();v9RenderCalendar();v9Notify('💸 Harcama silindi',`${actor?.()||'Biri'} ${x.title} harcamasını sildi`,'expense','expense').catch(()=>{})};
@@ -2431,3 +2439,7 @@ $('themeToggleBtn')?.addEventListener('click',()=>{
   save();
   toast(state.settings.uiTheme==='midnight'?'Karanlık mod açıldı 🌙':'Açık mod açıldı ☀️');
 });
+$('expenseChartDetails')?.addEventListener('toggle',()=>{if($('expenseChartDetails').open)v9RenderExpenses();});
+for(const [id,delta] of [['expensePrev',-1],['expenseNext',1]]){
+  $(id)?.addEventListener('click',()=>{v9RenderExpenses.page=Math.max(0,(v9RenderExpenses.page||0)+delta);v9RenderExpenses();$('expenseHistoryHeading').scrollIntoView({block:'start'});});
+}
