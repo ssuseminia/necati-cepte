@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
   <link rel="icon" type="image/png" href="icons/icon-192.png" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <link rel="stylesheet" href="style-v7.css?v=1097-ux3" />
+  <link rel="stylesheet" href="style-v7.css?v=1097-ux4" />
   <title>Necati Cepte</title>
 </head>
 <body>
@@ -76,13 +76,12 @@
     <main id="homeView" class="mobile-home" aria-label="Ana sayfa">
       <section class="home-connection-actions" aria-label="Birbirimize zaman ayıralım">
         <button id="thinkingOfYouBtn" type="button" class="connection-action"><span aria-hidden="true">💌</span><span><strong>Seni düşünüyorum</strong><small>Bir kalp gönder</small></span></button>
-        <button id="homeBotBtn" type="button" class="connection-action" data-open="necatiBotDialog"><span aria-hidden="true">💬</span><span><strong>Necati Bot</strong><small>Sohbeti aç</small></span></button>
       </section>
       <section class="mobile-hero-card">
         <div class="personal-home-head">
-          <div class="couple-avatars">
-            <img id="homeAvatarNisa" src="assets/moods/nisa-iyi.png" alt="Nisa" loading="lazy" decoding="async">
-            <img id="homeAvatarNecati" src="assets/moods/necati-iyi.png" alt="Necati" loading="lazy" decoding="async">
+          <div class="home-mood-pair" aria-label="Güncel ruh halleri">
+            <div class="home-person-mood"><img id="homeAvatarNisa" src="assets/moods/nisa-iyi.png" alt="Nisa"><strong id="homeNisaName">Nisa</strong><span id="homeNisaMood">Henüz paylaşılmadı</span></div>
+            <div class="home-person-mood"><img id="homeAvatarNecati" src="assets/moods/necati-iyi.png" alt="Necati"><strong id="homeNecatiName">Necati</strong><span id="homeNecatiMood">Henüz paylaşılmadı</span></div>
           </div>
           <div class="hero-copy">
             <span class="soft-pill" id="homeCoupleNames">Nisa ❤️ Necati</span>
@@ -90,8 +89,8 @@
             <p id="homePersonalSubtitle">Planlar, anılar ve birbirimize bıraktığımız küçük şeyler.</p>
           </div>
         </div>
+        <button type="button" class="ghost-btn home-mood-edit" data-module="mood">Ruh halimi güncelle</button>
         <div class="home-mini-facts">
-          <span><b id="homeTogetherDays">0</b><small>gündür birlikte</small></span>
           <span><b id="homeMemoryCount">0</b><small>anı</small></span>
           <span><b id="homeNightCount">0</b><small>iyi geceler</small></span>
         </div>
@@ -148,7 +147,7 @@
         <div><small>Bizim dünyamız</small><h2>Tüm modüller</h2></div>
       </section>
       <section class="mobile-module-grid" id="allModulesGrid">
-        <button class="mobile-module" data-module="mood"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 10h.01M15.5 10h.01M8.8 14.2c1.8 2 4.6 2 6.4 0"/></svg></span><div><strong>Nisa Modu</strong><small>Ruh hali</small></div></button>
+        <button class="mobile-module" data-module="mood"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 10h.01M15.5 10h.01M8.8 14.2c1.8 2 4.6 2 6.4 0"/></svg></span><div><strong>Ruh Halleri</strong><small>Bugün nasıl hissediyoruz?</small></div></button>
         
         <button class="mobile-module" data-module="instant"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6.5" width="17" height="12" rx="2.5"/><path d="M8 6.5 9.5 4h5L16 6.5"/><circle cx="12" cy="12.5" r="3.2"/></svg></span><div><strong>Anlık Foto</strong><small>Şimdi ne yapıyorsun?</small></div></button>
         <button class="mobile-module" data-module="travel"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/></svg></span><div><strong>Gezi Haritası</strong><small>Gezilecek şehirler</small></div></button>
@@ -173,6 +172,7 @@
     
 
 
+    <button id="chatBotLauncher" type="button" class="chat-bot-launcher" data-open="necatiBotDialog" aria-label="Necati Bot sohbetini aç"><span aria-hidden="true">💬</span><strong>Necati Bot</strong></button>
     <nav class="mobile-tabbar" aria-label="Ana menü">
       <button type="button" class="tab-item active" data-tab="home" aria-label="Ana Sayfa"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M9.5 20v-6h5v6"/></svg></span><small>Ana Sayfa</small></button>
       <button type="button" class="tab-item" data-tab="emergency" aria-label="Acil Necati"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.8 20h18.4Z"/><path d="M12 9v5M12 17.5h.01"/></svg></span><small>Acil Necati</small></button>
@@ -599,7 +599,7 @@
         <div class="profile-person">
           <img id="profileNecatiAvatar" src="assets/moods/necati-iyi.png" alt="Necati" loading="lazy" decoding="async">
           <strong id="profileNecatiName">Necati</strong>
-          <small>Birlikte ❤️</small>
+          <small id="profileNecatiMood">Henüz paylaşılmadı</small>
         </div>
       </section>
 
@@ -639,6 +639,6 @@
       <script src="onesignal-config.js"></script>
       <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
       <script src="cloud-v7.js"></script>
-      <script src="app-v7.js?v=1097-ux3"></script>
+      <script src="app-v7.js?v=1097-ux4"></script>
 </body>
 </html>

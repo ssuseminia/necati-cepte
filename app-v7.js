@@ -15,7 +15,7 @@ const moodAssets={
  nisa:{mutlu:'assets/moods/nisa-mutlu.png',iyi:'assets/moods/nisa-iyi.png',yorgun:'assets/moods/nisa-yorgun.png',uzgun:'assets/moods/nisa-uzgun.png',gergin:'assets/moods/nisa-gergin.png'},
  necati:{mutlu:'assets/moods/necati-mutlu.png',iyi:'assets/moods/necati-iyi.png',yorgun:'assets/moods/necati-yorgun.png',uzgun:'assets/moods/necati-uzgun.png',gergin:'assets/moods/necati-gergin.png'}
 };
-const moduleNames={mood:'🌸 Nisa Modu',surprise:'💝 Özel Günler & Sürprizler',dates:'💝 Özel Günler & Sürprizler',curiosity:'👀 Birbirimizi Merak Ettik',todayus:'❤️ Bugün Biz',night:'🌙 İyi Geceler',emergency:'🚨 Acil Necati',instant:'📸 Anlık Foto',travel:'🗺️ Gezi Haritası',poke:'👉 Dürtme'};
+const moduleNames={mood:'🌸 Ruh Halleri',surprise:'💝 Özel Günler & Sürprizler',dates:'💝 Özel Günler & Sürprizler',curiosity:'👀 Birbirimizi Merak Ettik',todayus:'❤️ Bugün Biz',night:'🌙 İyi Geceler',emergency:'🚨 Acil Necati',instant:'📸 Anlık Foto',travel:'🗺️ Gezi Haritası',poke:'👉 Dürtme'};
 function clone(x){return JSON.parse(JSON.stringify(x))}function merge(base,saved){if(!saved||typeof saved!=='object')return clone(base);const out=clone(base);for(const k of Object.keys(saved)){if(saved[k]&&typeof saved[k]==='object'&&!Array.isArray(saved[k])&&out[k]&&typeof out[k]==='object'&&!Array.isArray(out[k]))out[k]={...out[k],...saved[k]};else out[k]=saved[k]}return out}
 function loadState(){try{const s=merge(defaultState,JSON.parse(localStorage.getItem(STORAGE_KEY)||'null'));const legacy={'🥰':'mutlu','🙂':'iyi','😴':'yorgun','😔':'uzgun','😡':'gergin'};s.mood.today=legacy[s.mood.today]||s.mood.today||'mutlu';s.mood.history=(s.mood.history||[]).map(x=>({...x,mood:legacy[x.mood]||x.mood}));return s}catch{return clone(defaultState)}}
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));window.NecatiCloud?.scheduleSave(state)}
@@ -264,17 +264,37 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
 });
 
+function personMood(role){
+  const value=state.personMoods?.[role]?.mood;
+  if(moodMap[value])return value;
+  // Existing shared mood records predate separate accounts; retain them for Nisa only.
+  if(role==='nisa' && state.mood?.history?.some(entry=>!entry.role||entry.role==='nisa') && moodMap[state.mood.today])return state.mood.today;
+  return null;
+}
+function refreshPersonMoods(){
+  for(const role of ['nisa','necati']){
+    const suffix=role==='nisa'?'Nisa':'Necati',mood=personMood(role);
+    const name=state.settings?.[role==='nisa'?'partnerName':'ownerName']||suffix;
+    const label=mood?moodMap[mood].emoji+' '+moodMap[mood].label:'Henüz paylaşılmadı';
+    for(const prefix of ['home','profile']){
+      const avatar=$(prefix==='home'?'homeAvatar'+suffix:'profile'+suffix+'Avatar');
+      if(avatar){avatar.src=moodAssets[role][mood||'iyi'];avatar.alt=name+' — '+label;}
+      const status=$(prefix+suffix+'Mood');if(status)status.textContent=label;
+    }
+    const title=$('home'+suffix+'Name');if(title)title.textContent=name;
+  }
+}
 function renderMood(){
   v108EnsureState();
-  const p=phaseInfo(),set=moodAssets[viewerMoodOwner()],role=window.NecatiCloud?.role?.();
+  const role=window.NecatiCloud?.role?.(),p=phaseInfo(),set=moodAssets[role]||moodAssets.nisa,currentMood=personMood(role);
   const periodHistory=[...(state.periodHistory||[])].sort((a,b)=>(b.at||0)-(a.at||0)).slice(0,12);
 
   $('moduleContent').innerHTML=`
     <div class="panel">
       <h3>Bugün ruh hali nasıl? 🌸</h3>
-      <p class="muted">${viewerMoodOwner()==='nisa'?'Necati hesabında Nisa':'Nisa hesabında Necati'} emojileri gösteriliyor.</p>
-      <div class="mood-grid mood-image-grid">${Object.entries(moodMap).map(([k,v])=>`<button class="mood-btn mood-image-btn ${state.mood.today===k?'active':''}" data-mood="${k}"><img src="${set[k]}" alt="${v.label}"><span>${v.label}</span></button>`).join('')}</div>
-      <div class="hero-tip">${moodTips[state.mood.today]||''}</div>
+      <p class="muted">Kendi ruh halini seç; ana sayfada ikinizin son paylaştığı ruh hali görünsün.</p>
+      <div class="mood-grid mood-image-grid">${Object.entries(moodMap).map(([k,v])=>`<button class="mood-btn mood-image-btn ${currentMood===k?'active':''}" data-mood="${k}"><img src="${set[k]}" alt="${v.label}"><span>${v.label}</span></button>`).join('')}</div>
+      <div class="hero-tip">${moodTips[currentMood]||'Bugün nasıl hissediyorsun?'}</div>
     </div>
 
     <div class="panel">
@@ -288,14 +308,17 @@ function renderMood(){
       <div class="period-history-list">${periodHistory.length?periodHistory.map(x=>`<div class="period-history-item"><span>🌸</span><div><strong>${fmtDate(x.date)}</strong><small>${escapeHtml(x.by||'Nisa')} tarafından kaydedildi</small></div></div>`).join(''):'<div class="empty">Henüz regl başlangıç kaydı yok.</div>'}</div>
     </div>
 
-    <div class="panel"><h3>Son ruh halleri</h3>${state.mood.history.length?state.mood.history.slice(-7).reverse().map(x=>`<div class="surprise-card">${moodMap[x.mood]?.emoji||''} ${moodMap[x.mood]?.label||x.mood} · ${fmtDate(x.date)}</div>`).join(''):'<div class="empty">Henüz kayıt yok.</div>'}</div>`;
+    <div class="panel"><h3>Son ruh halleri</h3>${state.mood.history.length?state.mood.history.slice(-7).reverse().map(x=>`<div class="surprise-card">${moodMap[x.mood]?.emoji||''} ${moodMap[x.mood]?.label||x.mood} · ${escapeHtml(x.role==='necati'?(state.settings.ownerName||'Necati'):(state.settings.partnerName||'Nisa'))} · ${fmtDate(x.date)}</div>`).join(''):'<div class="empty">Henüz kayıt yok.</div>'}</div>`;
 
   document.querySelectorAll('[data-mood]').forEach(b=>b.onclick=async()=>{
-    const next=b.dataset.mood,prev=state.mood.today;
+    if(!['nisa','necati'].includes(role))return toast('Ruh halini paylaşmak için giriş yap ❤️');
+    const next=b.dataset.mood,prev=personMood(role);
     if(prev===next)return toast('Ruh hali zaten buydu 🌸');
-    state.mood.today=next;
-    state.mood.history.push({date:today(),mood:next});
-    save();renderMood();toast('Ruh hali kaydedildi 🌸');
+    state.personMoods=state.personMoods||{};
+    state.personMoods[role]={mood:next,at:Date.now()};
+    if(role==='nisa')state.mood.today=next;
+    state.mood.history.push({date:today(),mood:next,role});
+    save();renderMood();v105RefreshPersonalUI();toast('Ruh hali kaydedildi 🌸');
     await notify('🌸 Ruh hali değişti',`${actor()} ruh halini ${moodMap[next].label} yaptı ${moodMap[next].emoji}`,'mood','mood');
   });
 
@@ -1430,7 +1453,7 @@ function v105RefreshPersonalUI(){
   const mood=state.mood?.today||'iyi';
 
   if($('homeCoupleNames'))$('homeCoupleNames').textContent=`${nisa} ❤️ ${necati}`;
-  if($('homeTogetherDays'))$('homeTogetherDays').textContent=days.toLocaleString('tr-TR');
+
   if($('homeMemoryCount'))$('homeMemoryCount').textContent=(state.memories||[]).length;
   if($('homeNightCount'))$('homeNightCount').textContent=(state.nights||[]).length;
 
@@ -1465,6 +1488,7 @@ function v105RefreshPersonalUI(){
 
   const email=window.NecatiCloud?.user?.()?.email;
   if($('profileAccountText'))$('profileAccountText').textContent=email||'Giriş yap / hesabı yönet';
+  refreshPersonMoods();
 }
 
 function v105AnimatePage(el,direction='in'){

@@ -1225,3 +1225,17 @@ html.reduce-app-motion .thinking-heart-overlay>span{animation:none}
 .profile-relationship-counter>span{text-align:center}
 .profile-relationship-counter>div{padding:8px 4px}
 .profile-relationship-counter strong{font-size:17px}
+
+/* Visible chat launcher and independent couple moods. */
+.home-connection-actions{grid-template-columns:minmax(0,1fr)}
+.home-mini-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+.personal-home-head{flex-direction:column;align-items:stretch}
+.home-mood-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.home-person-mood{display:grid;justify-items:center;gap:5px;padding:12px 6px;border-radius:18px;background:var(--app-card)}
+.home-person-mood img{width:64px;height:64px;border-radius:20px;object-fit:cover}
+.home-person-mood strong{font-size:13px}.home-person-mood span{font-size:11px;color:var(--app-muted);text-align:center}
+.home-mood-edit{margin-top:10px;width:100%}
+.chat-bot-launcher{position:fixed;right:max(16px,calc((100vw - 430px)/2 + 16px));bottom:calc(88px + env(safe-area-inset-bottom));z-index:80;display:flex;align-items:center;gap:8px;min-height:52px;padding:10px 15px;border:1px solid rgba(255,255,255,.3);border-radius:26px;background:linear-gradient(135deg,#a82b65,#6c3fac);color:white;box-shadow:0 8px 26px rgba(0,0,0,.3);cursor:pointer}
+.chat-bot-launcher span{font-size:23px}.chat-bot-launcher strong{font-size:12px}
+html.dialog-open .chat-bot-launcher{visibility:hidden}
+.mobile-home{padding-bottom:80px}
