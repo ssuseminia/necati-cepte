@@ -443,7 +443,7 @@ $('settingsDialog').addEventListener('close',()=>{
   };
   save();updateIdentity();updateCounter();v104ApplyAppearance?.();v105RefreshPersonalUI?.();toast('Ayarlar kaydedildi ❤️');
 });
-$('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='necati-cepte-v7-yedek.json';a.click();URL.revokeObjectURL(a.href)};$('importInput').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{state=merge(defaultState,JSON.parse(r.result));save();updateIdentity();$('settingsDialog').close();toast('Yedek yüklendi ✅')}catch{toast('Geçersiz yedek')}};r.readAsText(f)};$('randomLoveBtn').onclick=()=>{$('loveDialogText').textContent=`Seni seviyorum çünkü ${dailyJar()}.`;$('loveDialog').showModal()};
+$('exportBtn').onclick=exportAppBackup;$('importInput').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{state=merge(defaultState,JSON.parse(r.result));save();updateIdentity();$('settingsDialog').close();toast('Yedek yüklendi ✅')}catch{toast('Geçersiz yedek')}};r.readAsText(f)};$('randomLoveBtn').onclick=()=>{$('loveDialogText').textContent=`Seni seviyorum çünkü ${dailyJar()}.`;$('loveDialog').showModal()};
 window.addEventListener('necati:authchange',()=>{if(currentModule==='mood')renderMood()});window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBtn').hidden=false});$('installBtn').onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBtn').hidden=true};
 window.NECATI_APP_VERSION='10.8.8';if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{
   const regs=await navigator.serviceWorker.getRegistrations();
@@ -496,7 +496,7 @@ document.addEventListener('click',e=>{
   if(id==='todoDialog'){
     renderTodos();
     openAppDialog(id);
-    setTimeout(()=>{v103DrawWheel();const r=$('dateWheelResult');if(r&&!v103WheelBusy)r.innerHTML='<strong>Hazırsanız döndürün 🎲</strong><small>Sonuç otomatik olarak yapılacaklara eklenecek.</small>';},80);
+
     return;
   }
 
@@ -542,13 +542,7 @@ $('legacyBotSendBtn')?.addEventListener('click',()=>{
 });
 $('botInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('legacyBotSendBtn')?.click()}});
 
-document.addEventListener('click',e=>{
-  if(e.target.closest?.('#floatingBotBtn')){
-    e.preventDefault();
-    renderBot();
-    openAppDialog('necatiBotDialog');
-  }
-});
+
 
 document.addEventListener('DOMContentLoaded',()=>{
   hydrateV8Settings();
@@ -899,7 +893,9 @@ document.addEventListener('click',e=>{
       if(id==='todoDialog'){v9ResetTodoForm();v9RenderTodos()}
       if(id==='expenseDialog'){if($('expenseMonth'))$('expenseMonth').value=new Date().toISOString().slice(0,7);if($('expenseDate'))$('expenseDate').value=new Date().toISOString().slice(0,10);v9RenderExpenses()}
       if(id==='necatiBotDialog')v9RenderBot();
-      v9Open(id);return;
+      v9Open(id);
+      if(id==='necatiBotDialog')requestAnimationFrame(()=>{const chat=$('botChat');if(chat)chat.scrollTop=chat.scrollHeight;});
+      return;
     }
   }
   const close=e.target.closest?.('[data-close]');if(close){e.preventDefault();v9Close(close.dataset.close)}
@@ -2256,3 +2252,52 @@ document.addEventListener('DOMContentLoaded',()=>v108EnsureState());
     });
   });
 })();
+
+// Home communication shortcuts and portable state backup.
+function exportAppBackup(){
+  let url;
+  try{
+    const snapshot=JSON.stringify(state,null,2);
+    const blob=new Blob([snapshot],{type:'application/json;charset=utf-8'});
+    url=URL.createObjectURL(blob);
+    const link=document.createElement('a');
+    link.href=url;
+    link.download='necati-cepte-yedek-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';
+    document.body.appendChild(link);link.click();link.remove();
+    toast('Yedek indirme başlatıldı. Bulut fotoğrafları bağlantı olarak saklanır.');
+  }catch(error){toast('Yedek hazırlanamadı. Lütfen tekrar dene.');}
+  finally{if(url)setTimeout(()=>URL.revokeObjectURL(url),10000);}
+}
+$('profileExportBtn')?.addEventListener('click',exportAppBackup);
+$('todoWheelDetails')?.addEventListener('toggle',()=>{
+  if($('todoWheelDetails').open)requestAnimationFrame(()=>v103DrawWheel());
+});
+
+function showThinkingHeart(message){
+  document.querySelectorAll('.thinking-heart-overlay').forEach(el=>el.remove());
+  const overlay=document.createElement('div');
+  overlay.className='thinking-heart-overlay';overlay.setAttribute('role','status');
+  const heart=document.createElement('span');heart.textContent='❤️';heart.setAttribute('aria-hidden','true');
+  const label=document.createElement('strong');label.textContent=message;
+  overlay.append(heart,label);
+  (document.querySelector('dialog[open]')||document.body).appendChild(overlay);
+  setTimeout(()=>overlay.remove(),3000);
+}
+let thinkingHeartBusy=false;
+let thinkingHeartLastSent=0;
+$('thinkingOfYouBtn')?.addEventListener('click',async()=>{
+  const cloud=window.NecatiCloud,role=cloud?.role?.();
+  if(!cloud?.isReady?.()||!['nisa','necati'].includes(role))return toast('Kalp göndermek için hesabına giriş yap ❤️');
+  if(navigator.onLine===false)return toast('Kalp göndermek için internet bağlantısı gerekli.');
+  if(thinkingHeartBusy||Date.now()-thinkingHeartLastSent<10000)return toast('Yeni bir kalp için biraz bekle ❤️');
+  const button=$('thinkingOfYouBtn');
+  thinkingHeartBusy=true;button.disabled=true;button.setAttribute('aria-busy','true');
+  try{
+    await cloud.sendActivity('❤️ Seni düşünüyorum',actor()+' sana bir kalp gönderdi.','thinking-heart','home');
+    thinkingHeartLastSent=Date.now();showThinkingHeart('Kalbin gönderildi');
+  }catch(error){toast('Gönderim doğrulanamadı. Bildirim geçmişini kontrol et.');}
+  finally{thinkingHeartBusy=false;button.disabled=false;button.setAttribute('aria-busy','false');}
+});
+window.addEventListener('necati:incoming',event=>{
+  if(event.detail?.type==='thinking-heart')showThinkingHeart(event.detail.body||'Sana bir kalp geldi');
+});

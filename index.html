@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
   <link rel="icon" type="image/png" href="icons/icon-192.png" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <link rel="stylesheet" href="style-v7.css?v=1097" />
+  <link rel="stylesheet" href="style-v7.css?v=1097-ux2" />
   <title>Necati Cepte</title>
 </head>
 <body>
@@ -121,7 +121,11 @@
           </article>
         </div>
       </section>
-<section id="homePeriodQuick" class="home-period-quick" hidden>
+<section class="home-connection-actions" aria-label="Birbirimize zaman ayıralım">
+        <button id="thinkingOfYouBtn" type="button" class="connection-action"><span aria-hidden="true">💌</span><span><strong>Seni düşünüyorum</strong><small>Bir kalp gönder</small></span></button>
+        <button id="homeBotBtn" type="button" class="connection-action" data-open="necatiBotDialog"><span aria-hidden="true">💬</span><span><strong>Necati Bot</strong><small>Sohbeti aç</small></span></button>
+      </section>
+      <section id="homePeriodQuick" class="home-period-quick" hidden>
         <div>
           <span class="home-period-icon">🌸</span>
           <div><small>NİSA İÇİN HIZLI UYARI</small><strong>Regl başladı mı?</strong><p>Tek dokunuşla Necati’ye haber ver ve tarihi kaydet.</p></div>
@@ -173,10 +177,7 @@
     </section>
 
     
-    <button id="floatingBotBtn" type="button" class="floating-bot-btn" aria-label="Necati Bot'u aç">
-      <span class="floating-bot-face">🤖</span>
-      <span class="floating-bot-text"><strong>Necati Bot</strong><small>Bir şey sor</small></span>
-    </button>
+
 
     <nav class="mobile-tabbar" aria-label="Ana menü">
       <button type="button" class="tab-item active" data-tab="home" aria-label="Ana Sayfa"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M9.5 20v-6h5v6"/></svg></span><small>Ana Sayfa</small></button>
@@ -251,7 +252,7 @@
         </div>
       </section>
 
-      <div class="dialog-actions"><button type="button" id="exportBtn" class="ghost-btn">Yedekle</button><label class="ghost-btn file-label">Yedeği yükle<input id="importInput" type="file" accept="application/json" hidden /></label><button class="primary-btn" value="save">Kaydet ❤️</button></div>
+      <p class="muted">Yedek, bu cihazdaki kayıtları içerir. Buluttaki fotoğraflar bağlantı olarak saklanır; görsel dosyaları ayrıca indirilmez.</p><div class="dialog-actions"><button type="button" id="exportBtn" class="ghost-btn">Verileri dışa aktar</button><label class="ghost-btn file-label">Yedeği yükle<input id="importInput" type="file" accept="application/json" hidden /></label><button class="primary-btn" value="save">Kaydet ❤️</button></div>
       <p class="tiny">Veriler bu cihazda saklanır. GitHub reponuza otomatik olarak gönderilmez.</p>
     </form>
   </dialog>
@@ -410,7 +411,8 @@
         </div>
       </section>
 
-      <section class="card-panel todo-wheel-panel">
+      <details id="todoWheelDetails" class="card-panel todo-wheel-panel">
+        <summary>🎡 Fikir bul <span>Birlikte ne yapalım?</span></summary>
         <div class="todo-wheel-head">
           <div><small>🎡 DATE ÇARKI</small><h3>Bugün ne yapalım?</h3><p>Çarkın seçtiği şey otomatik olarak yapılacaklara eklenir.</p></div>
         </div>
@@ -425,7 +427,7 @@
             <small class="todo-wheel-note">Çıkan sonuç ortak göreve eklenir ve karşı tarafa bildirim gider ❤️</small>
           </div>
         </div>
-      </section>
+      </details>
 
       <div id="todoStats" class="mini-stats"></div>
       <div id="todoList" class="stack-list"></div>
@@ -517,9 +519,9 @@
         <button type="button" data-bot-q="Yapılacak işler neler?">Görevler</button>
         <button type="button" data-bot-q="Bu ay ne kadar harcadık?">Bu ay harcama</button>
       </div>
-      <div id="botChat" class="bot-chat"></div>
+      <div id="botChat" class="bot-chat" role="log" aria-live="polite" aria-label="Sohbet mesajları"></div>
       <div class="bot-compose">
-        <input id="botInput" placeholder="Necati Bot’a yaz...">
+        <input id="botInput" aria-label="Necati Bot’a mesaj" placeholder="Necati Bot’a yaz...">
         <button type="button" id="botSendBtn" aria-busy="false" class="primary-btn">Gönder</button>
       </div>
     </div>
@@ -616,6 +618,7 @@
 
       <section class="profile-menu-card">
         <button type="button" id="profileSettingsBtn"><span class="menu-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 13.5v-3l-2-.5-.7-1.6 1.1-1.8-2.1-2.1-1.8 1.1-1.6-.7-.5-2h-3l-.5 2-1.6.7-1.8-1.1-2.1 2.1 1.1 1.8-.7 1.6-2 .5v3l2 .5.7 1.6-1.1 1.8 2.1 2.1 1.8-1.1 1.6.7.5 2h3l.5-2 1.6-.7 1.8 1.1 2.1-2.1-1.1-1.8.7-1.6Z"/></svg></span><span><strong>Ayarlar</strong><small>Tema, tarihler ve bildirimler</small></span><b>›</b></button>
+        <button type="button" id="profileExportBtn"><span class="menu-line-icon" aria-hidden="true">↓</span><span><strong>Verileri dışa aktar</strong><small>Planlar, anılar ve kayıtlar · JSON yedeği</small></span><b>›</b></button>
         <button type="button" id="profileAccountBtn"><span class="menu-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 20c.5-4 3-6 6.5-6s6 2 6.5 6"/></svg></span><span><strong>Hesap & Bulut</strong><small id="profileAccountText">Firebase hesabı</small></span><b>›</b></button>
       </section>
 
@@ -633,6 +636,6 @@
       <script src="onesignal-config.js"></script>
       <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
       <script src="cloud-v7.js"></script>
-      <script src="app-v7.js?v=1097"></script>
+      <script src="app-v7.js?v=1097-ux2"></script>
 </body>
 </html>

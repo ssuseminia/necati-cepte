@@ -1187,3 +1187,32 @@ body.splash-active{overflow:hidden}
   .home-period-quick{align-items:stretch}
   .home-period-quick button{padding:8px 10px}
 }
+
+/* Home shortcuts, collapsible ideas and chat */
+.home-connection-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.connection-action{display:flex;align-items:center;gap:9px;min-height:76px;padding:12px;border:1px solid var(--app-border);border-radius:20px;background:var(--app-card-strong);color:var(--app-text);text-align:left;cursor:pointer}
+.connection-action>span:first-child{font-size:27px}.connection-action>span:last-child{display:grid;gap:5px;min-width:0}
+.connection-action strong{font-size:12px}.connection-action small{font-size:10px;color:var(--app-muted)}
+.connection-action:disabled{opacity:.6;cursor:wait}
+.todo-wheel-panel>summary{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:44px;cursor:pointer;font-weight:800;font-size:14px}
+.todo-wheel-panel>summary span{font-size:10px;color:var(--app-muted);font-weight:400}
+.todo-wheel-panel[open]>summary{margin-bottom:14px}
+#necatiBotDialog .bot-shell{display:flex;flex-direction:column;height:100%;min-height:0}
+#necatiBotDialog .bot-chat{flex:1;min-height:100px;height:auto;overscroll-behavior:contain}
+#necatiBotDialog .bot-compose{flex-shrink:0;padding-bottom:env(safe-area-inset-bottom)}
+#necatiBotDialog .bot-compose input{min-width:0}
+.thinking-heart-overlay{position:fixed;inset:0;z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;pointer-events:none;background:rgba(28,12,35,.7);color:white;text-align:center;padding:24px}
+.thinking-heart-overlay>span{font-size:86px;animation:thinking-heart-pulse .8s ease-in-out 3}
+.thinking-heart-overlay>strong{font-size:18px;max-width:300px}
+@keyframes thinking-heart-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+@media(prefers-reduced-motion:reduce){.thinking-heart-overlay>span{animation:none}}
+html.reduce-app-motion .thinking-heart-overlay>span{animation:none}
+
+.todo-wheel-panel .todo-wheel-layout{grid-template-columns:minmax(0,1fr)}
+.todo-wheel-panel .todo-wheel-wrap{width:100%;max-width:230px;min-width:0}
+.todo-wheel-panel .todo-wheel-side{min-width:0}
+.todo-wheel-panel canvas{display:block;max-width:100%}
+#todoDialog .dialog-shell{width:100%;max-width:100%;box-sizing:border-box}
+#todoDialog .dialog-title-row{flex-wrap:wrap}
+#todoDialog .compact-select{max-width:100%}
+#todoDialog .form-grid{grid-template-columns:minmax(0,1fr)}
