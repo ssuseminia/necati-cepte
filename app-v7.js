@@ -68,6 +68,7 @@ document.querySelectorAll('[data-module]').forEach(b=>b.addEventListener('click'
 if($('backBtn')) $('backBtn').onclick=showHome;
 if($('homeBtn')) $('homeBtn').onclick=showHome;
 function showHome(){
+  closeCategoryPage();
   if($('dailySummaryView'))$('dailySummaryView').hidden=true;
   currentModule=null;
   if(leafletMap){leafletMap.remove();leafletMap=null}
@@ -78,6 +79,7 @@ function showHome(){
   scrollTo({top:0,behavior:'smooth'});
 }
 function openModule(name){
+  closeCategoryPage();
   if($('dailySummaryView'))$('dailySummaryView').hidden=true;
   currentModule=name;
   if($('homeView')) $('homeView').hidden=true;
@@ -147,6 +149,7 @@ function hydrateV8Settings(){
 
 
 function openAppDialog(id){
+  if(openCategoryPage(id))return;
   const d=$(id);
   if(!d){ toast('Bu bölüm bulunamadı'); return; }
   try{
@@ -586,6 +589,7 @@ let v9CalendarCursor = new Date();
 let v9SelectedDate = new Date().toISOString().slice(0,10);
 
 function v9Open(id){
+  if(openCategoryPage(id))return;
   const d=$(id);if(!d)return;
   try{if(!d.open&&d.showModal)d.showModal();else d.setAttribute('open','')}
   catch{d.setAttribute('open','');d.style.display='block'}
@@ -594,6 +598,7 @@ function v9Open(id){
   document.documentElement.classList.add('dialog-open');
 }
 function v9Close(id){
+  if($(id)?.classList.contains("category-page")){showHome();return;}
   const d=$(id);if(!d)return;
   d.classList.add('closing');
   setTimeout(()=>{
@@ -2442,4 +2447,30 @@ $('themeToggleBtn')?.addEventListener('click',()=>{
 $('expenseChartDetails')?.addEventListener('toggle',()=>{if($('expenseChartDetails').open)v9RenderExpenses();});
 for(const [id,delta] of [['expensePrev',-1],['expenseNext',1]]){
   $(id)?.addEventListener('click',()=>{v9RenderExpenses.page=Math.max(0,(v9RenderExpenses.page||0)+delta);v9RenderExpenses();$('expenseHistoryHeading').scrollIntoView({block:'start'});});
+}
+function closeCategoryPage(){
+  document.querySelectorAll('dialog.category-page').forEach(d=>{d.classList.remove('category-page');d.close();});
+}
+function openCategoryPage(id){
+  if(!['todoDialog','plannerDialog','expenseDialog','statusDialog'].includes(id))return false;
+  const d=$(id);if(!d)return false;
+  closeCategoryPage();
+  if(d.open)d.close();
+  for(const view of ['homeView','moduleView','dailySummaryView'])if($(view))$(view).hidden=true;
+  document.querySelector('.app-shell').appendChild(d);
+  d.classList.add('category-page');
+  d.classList.remove('closing','opened');
+  document.documentElement.classList.remove('dialog-open');
+  const back=d.querySelector('.close-btn');
+  if(back){back.textContent='←';back.setAttribute('aria-label','Ana sayfaya dön');}
+  d.show();
+  window.scrollTo({top:0,behavior:'instant'});
+  back?.focus({preventScroll:true});
+  return true;
+}
+document.addEventListener('click',e=>{
+  if(e.target.closest?.('.mobile-tabbar button')&&document.querySelector('dialog.category-page'))showHome();
+},true);
+for(const id of ['todoDialog','plannerDialog','expenseDialog','statusDialog']){
+  $(id)?.addEventListener('close',()=>{if($(id).classList.contains('category-page')){ $(id).classList.remove('category-page');showHome(); }});
 }
