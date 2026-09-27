@@ -1762,9 +1762,9 @@ window.addEventListener('orientationchange',()=>setTimeout(()=>{v104RefreshSafeU
       applyPremiumIcons();
       applyAccountPersonalization();
       const pv=document.querySelector('.profile-version');
-      if(pv) pv.textContent='Necati Cepte • v10.7';
+      if(pv) pv.textContent='Necati Cepte • v10.9.7';
       const brand=document.querySelector('.mobile-brand strong');
-      if(brand) brand.innerHTML='Necati Cepte <em>v10.7</em>';
+      if(brand) brand.innerHTML='Necati Cepte <em>v10.9.7</em>';
     };
   }
 
@@ -1803,9 +1803,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   v107StartupSplash();
   setTimeout(()=>{
     const brand=document.querySelector('.mobile-brand strong');
-    if(brand) brand.innerHTML='Necati Cepte <em>v10.8.7</em>';
+    if(brand) brand.innerHTML='Necati Cepte <em>v10.9.7</em>';
     const pv=document.querySelector('.profile-version');
-    if(pv) pv.textContent='Necati Cepte • v10.8.7';
+    if(pv) pv.textContent='Necati Cepte • v10.9.7';
   },80);
 });
 

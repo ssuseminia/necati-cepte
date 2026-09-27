@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
   <link rel="icon" type="image/png" href="icons/icon-192.png" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <link rel="stylesheet" href="style-v7.css?v=1097-ux2" />
+  <link rel="stylesheet" href="style-v7.css?v=1097-ux3" />
   <title>Necati Cepte</title>
 </head>
 <body>
@@ -54,7 +54,7 @@
         <div class="brand-mark"><img src="icons/icon-192.png" alt="" decoding="async" /></div>
         <div>
           <small id="mobileGreeting">Bugün de birlikte</small>
-          <strong>Necati Cepte <em>v10.8.9</em></strong>
+          <strong>Necati Cepte <em>v10.9.7</em></strong>
         </div>
       </div>
       <div class="mobile-actions top-action-cluster">
@@ -74,6 +74,10 @@
 
     
     <main id="homeView" class="mobile-home" aria-label="Ana sayfa">
+      <section class="home-connection-actions" aria-label="Birbirimize zaman ayıralım">
+        <button id="thinkingOfYouBtn" type="button" class="connection-action"><span aria-hidden="true">💌</span><span><strong>Seni düşünüyorum</strong><small>Bir kalp gönder</small></span></button>
+        <button id="homeBotBtn" type="button" class="connection-action" data-open="necatiBotDialog"><span aria-hidden="true">💬</span><span><strong>Necati Bot</strong><small>Sohbeti aç</small></span></button>
+      </section>
       <section class="mobile-hero-card">
         <div class="personal-home-head">
           <div class="couple-avatars">
@@ -91,14 +95,7 @@
           <span><b id="homeMemoryCount">0</b><small>anı</small></span>
           <span><b id="homeNightCount">0</b><small>iyi geceler</small></span>
         </div>
-        <div class="relationship-mini" aria-label="İlişki sayacı">
-          <span id="counterSince">12.04.2025'ten beri</span>
-          <div><strong id="days">0</strong><small>gün</small></div>
-          <div><strong id="hours">0</strong><small>saat</small></div>
-          <div><strong id="minutes">0</strong><small>dk</small></div>
-          <div><strong id="seconds">0</strong><small>sn</small></div>
 
-        </div>
         <div class="today-rich-board">
           <article class="agenda-card glass-card">
             <div class="mini-head">
@@ -121,10 +118,7 @@
           </article>
         </div>
       </section>
-<section class="home-connection-actions" aria-label="Birbirimize zaman ayıralım">
-        <button id="thinkingOfYouBtn" type="button" class="connection-action"><span aria-hidden="true">💌</span><span><strong>Seni düşünüyorum</strong><small>Bir kalp gönder</small></span></button>
-        <button id="homeBotBtn" type="button" class="connection-action" data-open="necatiBotDialog"><span aria-hidden="true">💬</span><span><strong>Necati Bot</strong><small>Sohbeti aç</small></span></button>
-      </section>
+
       <section id="homePeriodQuick" class="home-period-quick" hidden>
         <div>
           <span class="home-period-icon">🌸</span>
@@ -609,6 +603,15 @@
         </div>
       </section>
 
+        <div class="relationship-mini profile-relationship-counter" aria-label="İlişki sayacı">
+          <span id="counterSince">12.04.2025'ten beri</span>
+          <div><strong id="days">0</strong><small>gün</small></div>
+          <div><strong id="hours">0</strong><small>saat</small></div>
+          <div><strong id="minutes">0</strong><small>dk</small></div>
+          <div><strong id="seconds">0</strong><small>sn</small></div>
+
+        </div>
+
       <section class="profile-stats-grid">
         <div><strong id="profileDays">0</strong><span>Birlikte gün</span></div>
         <div><strong id="profilePlanCount">0</strong><span>Plan</span></div>
@@ -636,6 +639,6 @@
       <script src="onesignal-config.js"></script>
       <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
       <script src="cloud-v7.js"></script>
-      <script src="app-v7.js?v=1097-ux2"></script>
+      <script src="app-v7.js?v=1097-ux3"></script>
 </body>
 </html>

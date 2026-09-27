@@ -1216,3 +1216,12 @@ html.reduce-app-motion .thinking-heart-overlay>span{animation:none}
 #todoDialog .dialog-title-row{flex-wrap:wrap}
 #todoDialog .compact-select{max-width:100%}
 #todoDialog .form-grid{grid-template-columns:minmax(0,1fr)}
+
+/* Keep the heart shortcut above the home summary. */
+#homeView>.home-connection-actions{margin:0 0 12px;content-visibility:visible}
+#thinkingOfYouBtn{background:linear-gradient(135deg,#a82b65,#6c3fac);color:#fff;border-color:rgba(255,255,255,.25)}
+#thinkingOfYouBtn small{color:#fff;opacity:.9}
+.profile-relationship-counter{margin:0;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.profile-relationship-counter>span{text-align:center}
+.profile-relationship-counter>div{padding:8px 4px}
+.profile-relationship-counter strong{font-size:17px}
