@@ -1379,6 +1379,8 @@ function v104ApplyTheme(theme){
   state.settings=state.settings||{};
   state.settings.uiTheme=selected;
   state.settings.uiThemeRevision=2;
+  const toggle=$('themeToggleBtn');
+  if(toggle){const dark=selected==='midnight';toggle.textContent=dark?'☀':'☾';toggle.setAttribute('aria-pressed',String(dark));toggle.setAttribute('aria-label',dark?'Açık modu aç':'Karanlık modu aç');toggle.title=toggle.getAttribute('aria-label');}
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content',selected==='midnight'?'#222125':selected==='soft'?'#f4f0f7':'#f8f5f1');
   document.querySelectorAll('[data-theme-choice]').forEach(b=>b.classList.toggle('selected',b.dataset.themeChoice===selected));
 }
@@ -2423,3 +2425,9 @@ function warmLineIcon(key){
   };
   return '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+(paths[key]||paths.heart)+'</svg>';
 }
+
+$('themeToggleBtn')?.addEventListener('click',()=>{
+  v104ApplyTheme(state.settings.uiTheme==='midnight'?'warm':'midnight');
+  save();
+  toast(state.settings.uiTheme==='midnight'?'Karanlık mod açıldı 🌙':'Açık mod açıldı ☀️');
+});

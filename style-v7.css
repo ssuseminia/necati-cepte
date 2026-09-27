@@ -1400,3 +1400,5 @@ html.reduce-app-motion .startup-names{display:none}
 .startup-names img{position:absolute;top:0;left:var(--x);width:clamp(52px,16vw,100px);height:auto;border-radius:18px;box-shadow:0 4px 12px #6c35451a;opacity:0;animation:startupStickerFloat 10s linear infinite;animation-delay:var(--delay)}
 @keyframes startupNameParty{0%{transform:translate(-10px,105dvh) rotate(-16deg);opacity:0}10%,88%{opacity:.48}50%{transform:translate(18px,48dvh) rotate(12deg)}100%{transform:translate(-8px,-70px) rotate(-10deg);opacity:0}}
 @keyframes startupStickerFloat{0%{transform:translate(0,110dvh) rotate(15deg);opacity:0}10%,85%{opacity:.8}50%{transform:translate(-12px,45dvh) rotate(-14deg)}100%{transform:translate(8px,-150px) rotate(12deg);opacity:0}}
+
+#themeToggleBtn{font-size:23px;color:var(--app-accent)!important;flex-shrink:0}

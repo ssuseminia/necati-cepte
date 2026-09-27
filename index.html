@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#f8f5f1" />
+  <script>try{const s=JSON.parse(localStorage.getItem("necati-cepte-v2")||"{}").settings;if(s?.uiThemeRevision===2&&["warm","midnight","soft"].includes(s.uiTheme)){document.documentElement.dataset.appTheme=s.uiTheme;document.querySelector('meta[name="theme-color"]').content=s.uiTheme==="midnight"?"#222125":s.uiTheme==="soft"?"#f4f0f7":"#f8f5f1"}}catch{}</script>
   <meta name="description" content="Nisa ve Necati için özel ilişki uygulaması." />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -11,7 +12,7 @@
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
   <link rel="icon" type="image/png" href="icons/icon-192.png" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <link rel="stylesheet" href="style-v7.css?v=1097-warm4" />
+  <link rel="stylesheet" href="style-v7.css?v=1097-warm5" />
   <title>Necati Cepte</title>
 </head>
 <body>
@@ -59,7 +60,7 @@
         </div>
       </div>
       <div class="mobile-actions top-action-cluster">
-        <span class="sync-dot" id="cloudStatus">●</span>
+        <span class="sync-dot" id="cloudStatus">●</span><button class="round-icon" id="themeToggleBtn" type="button" aria-label="Karanlık modu aç" aria-pressed="false" title="Karanlık modu aç">☾</button>
         <button class="round-icon top-wallet-btn" id="topExpenseBtn" type="button" aria-label="Ortak Harcamalar" title="Ortak Harcamalar">
           <span class="round-svg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M7 9H5.5v1.5M17 15h1.5v-1.5"/></svg></span>
         </button>
@@ -212,7 +213,7 @@
           </button>
           <button type="button" class="theme-option" data-theme-choice="midnight">
             <span class="theme-preview midnight-preview"><i></i><i></i><i></i></span>
-            <strong>Gece</strong><small>Kömür • gül kurusu</small>
+            <strong>Karanlık mod</strong><small>Kömür • gül kurusu</small>
           </button>
           <button type="button" class="theme-option" data-theme-choice="soft">
             <span class="theme-preview soft-preview"><i></i><i></i><i></i></span>
@@ -636,6 +637,6 @@
       <script src="onesignal-config.js"></script>
       <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
       <script src="cloud-v7.js"></script>
-      <script src="app-v7.js?v=1097-warm4"></script>
+      <script src="app-v7.js?v=1097-warm5"></script>
 </body>
 </html>
