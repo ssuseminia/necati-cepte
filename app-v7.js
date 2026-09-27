@@ -1481,7 +1481,7 @@ function v105RefreshPersonalUI(){
   if($('profileNisaMood'))$('profileNisaMood').textContent=moodMap[mood]?`${moodMap[mood].emoji} ${moodMap[mood].label}`:'Ruh hali';
   if($('profileNisaAvatar'))$('profileNisaAvatar').src=moodAssets.nisa?.[mood]||'assets/moods/nisa-iyi.png';
   if($('profileNecatiAvatar'))$('profileNecatiAvatar').src=moodAssets.necati?.iyi||'assets/moods/necati-iyi.png';
-  if($('profileDays'))$('profileDays').textContent=days.toLocaleString('tr-TR');
+
   if($('profilePlanCount'))$('profilePlanCount').textContent=(state.plans||[]).length;
   if($('profileMemoryCount'))$('profileMemoryCount').textContent=(state.memories||[]).length;
   if($('profileNightCount'))$('profileNightCount').textContent=(state.nights||[]).length;

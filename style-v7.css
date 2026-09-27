@@ -1239,3 +1239,10 @@ html.reduce-app-motion .thinking-heart-overlay>span{animation:none}
 .chat-bot-launcher span{font-size:23px}.chat-bot-launcher strong{font-size:12px}
 html.dialog-open .chat-bot-launcher{visibility:hidden}
 .mobile-home{padding-bottom:80px}
+
+/* Keep live moods separate from the home summary. */
+.home-live-moods{margin:0 0 14px;padding:14px;border-radius:22px;background:var(--app-card);border:1px solid var(--app-border)}
+.home-live-moods h2{font-size:15px;margin:0 0 12px}
+.home-live-moods .home-mood-pair{width:100%}
+.chat-bot-launcher{width:54px;height:54px;min-height:54px;border-radius:50%;padding:0;justify-content:center}
+.profile-stats-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
