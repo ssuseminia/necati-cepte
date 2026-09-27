@@ -79,21 +79,6 @@ JavaScript sözdizimini kontrol etmek için:
 node --check app-v7.js
 ```
 
-## Yapılandırma ve bakım
-
-Firebase istemci ayarları `firebase-config-v7.js` içinde, veri erişim kuralları `firestore.rules` ve `storage.rules` dosyalarında yönetilir. Sunucu tarafındaki gizli anahtarlar servislerin secret yapılandırmasında tutulmalıdır.
-
-Bildirim altyapısındaki service worker yolları ve push scope değerleri mevcut dağıtımla birlikte değerlendirilmelidir. Arayüz güncellemeleri bu altyapıdan bağımsız tutulur.
-
-Kurulum ve geçmiş kararlar için depo içindeki belgeler kullanılabilir:
-
-- [Firebase kurulumu](FIREBASE-KURULUM.md)
-- [OneSignal kurulumu](ONESIGNAL-KURULUM.md)
-- [Push kurulumu](PUSH-KURULUM.md)
-- [Akıllı bildirimler](AKILLI-BILDIRIMLER.md)
-
-Bu belgelerin bir kısmı önceki sürümlere aittir; dosya adları ve yapılandırma adımları uygulanmadan önce güncel kaynaklarla karşılaştırılmalıdır.
-
 ## v10.9.7 yenilikleri
 
 - Nisa hesabının ana sayfasına regl başlangıcını kaydeden hızlı işlem eklendi.
