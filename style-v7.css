@@ -1262,3 +1262,6 @@ html.dialog-open .chat-bot-launcher{visibility:hidden}
 
 #homeView[hidden],#moduleView[hidden]{display:none!important}
 #plannerDialog .dialog-shell,#expenseDialog .dialog-shell{width:100%;max-width:100%;box-sizing:border-box}
+
+.home-connection-actions .home-emergency-action{grid-column:1/-1;justify-content:center;min-height:58px;background:linear-gradient(135deg,#a82145,#74253f);color:#fff;border-color:rgba(255,120,150,.45)}
+.home-emergency-action small{color:#ffe3e9}
