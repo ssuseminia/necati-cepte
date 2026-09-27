@@ -468,7 +468,7 @@ $('settingsDialog').addEventListener('close',()=>{
   };
   save();updateIdentity();updateCounter();v104ApplyAppearance?.();v105RefreshPersonalUI?.();toast('Ayarlar kaydedildi ❤️');
 });
-$('exportBtn').onclick=exportAppBackup;$('importInput').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{state=merge(defaultState,JSON.parse(r.result));save();updateIdentity();$('settingsDialog').close();toast('Yedek yüklendi ✅')}catch{toast('Geçersiz yedek')}};r.readAsText(f)};$('randomLoveBtn').onclick=()=>{$('loveDialogText').textContent=`Seni seviyorum çünkü ${dailyJar()}.`;$('loveDialog').showModal()};
+$('importInput').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{state=merge(defaultState,JSON.parse(r.result));save();updateIdentity();$('settingsDialog').close();toast('Yedek yüklendi ✅')}catch{toast('Geçersiz yedek')}};r.readAsText(f)};$('randomLoveBtn').onclick=()=>{$('loveDialogText').textContent=`Seni seviyorum çünkü ${dailyJar()}.`;$('loveDialog').showModal()};
 window.addEventListener('necati:authchange',()=>{if(currentModule==='mood')renderMood()});window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBtn').hidden=false});$('installBtn').onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBtn').hidden=true};
 window.NECATI_APP_VERSION='10.8.8';if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{
   const regs=await navigator.serviceWorker.getRegistrations();
@@ -2267,21 +2267,7 @@ document.addEventListener('DOMContentLoaded',()=>v108EnsureState());
   });
 })();
 
-// Home communication shortcuts and portable state backup.
-function exportAppBackup(){
-  let url;
-  try{
-    const snapshot=JSON.stringify(state,null,2);
-    const blob=new Blob([snapshot],{type:'application/json;charset=utf-8'});
-    url=URL.createObjectURL(blob);
-    const link=document.createElement('a');
-    link.href=url;
-    link.download='necati-cepte-yedek-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';
-    document.body.appendChild(link);link.click();link.remove();
-    toast('Yedek indirme başlatıldı. Bulut fotoğrafları bağlantı olarak saklanır.');
-  }catch(error){toast('Yedek hazırlanamadı. Lütfen tekrar dene.');}
-  finally{if(url)setTimeout(()=>URL.revokeObjectURL(url),10000);}
-}
+// Home communication shortcuts.
 $('todoWheelDetails')?.addEventListener('toggle',()=>{
   if($('todoWheelDetails').open)requestAnimationFrame(()=>v103DrawWheel());
 });
