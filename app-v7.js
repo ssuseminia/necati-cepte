@@ -365,23 +365,20 @@ function renderDates(){
   const dates=[...(state.specialDates||[])].sort((a,b)=>String(a.date).localeCompare(String(b.date)));
   const surprises=[...(state.surprises||[])].sort((a,b)=>String(a.date).localeCompare(String(b.date)));
   $('moduleContent').innerHTML=`
-    <div class="combined-love-head">
-      <div><small>Tek ekranda</small><h2>💝 Özel Günler & Sürprizler</h2><p>Tarihleri ve gizli sürprizleri artık ayrı ayrı aramak yok.</p></div>
-    </div>
 
     <div class="love-combo-grid">
-      <section class="panel love-combo-panel">
-        <div class="combo-title"><span>💍</span><div><small>Önemli tarihler</small><h3>Özel Gün Ekle</h3></div></div>
+      <details class="panel love-combo-panel simple-date-form">
+        <summary>＋ Özel gün ekle</summary>
         <div class="form-grid">
           <label>Adı<input id="dateTitle" placeholder="Yıldönümü"></label>
           <label>Tarih<input id="dateValue" type="date"></label>
           <label>Tekrar<select id="dateRepeat"><option value="yearly">Her yıl</option><option value="none">Tek sefer</option></select></label>
         </div>
         <button id="addDate" class="primary-btn">Özel günü ekle 💍</button>
-      </section>
+      </details>
 
-      <section class="panel love-combo-panel">
-        <div class="combo-title"><span>🎁</span><div><small>Gizli planlar</small><h3>Sürpriz Ekle</h3></div></div>
+      <details class="panel love-combo-panel simple-date-form">
+        <summary>＋ Sürpriz ekle</summary>
         <div class="form-grid">
           <label>Tarih<input id="spDate" type="date" value="${today()}"></label>
           <label>Tür<select id="spType"><option>Mesaj</option><option>Görev</option><option>Sürpriz</option><option>Buluşma</option></select></label>
@@ -389,7 +386,7 @@ function renderDates(){
         <label>Başlık<input id="spTitle" placeholder="Küçük sürpriz"></label>
         <label>İçerik<textarea id="spMessage" placeholder="Zamanı gelince görünecek…"></textarea></label>
         <button id="addSurprise" class="primary-btn">Sürprizi ekle 🎁</button>
-      </section>
+      </details>
     </div>
 
     <section class="combo-archive">
@@ -1415,7 +1412,7 @@ function v104UpdateClock(){
   el.textContent=new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
 }
 function v104LockForDialogs(){
-  const any=[...document.querySelectorAll('dialog')].some(d=>d.open);
+  const any=[...document.querySelectorAll('dialog')].some(d=>d.open&&!d.classList.contains('category-page'));
   document.documentElement.classList.toggle('dialog-open',any);
 }
 function v104RefreshSafeUI(){

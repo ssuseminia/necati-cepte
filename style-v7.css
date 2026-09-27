@@ -1413,3 +1413,15 @@ dialog.category-page .close-btn{position:absolute!important;top:4px!important;le
 .module-screenbar{position:relative!important;top:auto!important;left:auto!important;transform:none!important;width:100%!important;z-index:auto!important;padding:8px 0!important;margin-bottom:14px}
 #todoDialog.category-page,#plannerDialog.category-page,#expenseDialog.category-page,#statusDialog.category-page{width:100%!important;max-width:100%!important;min-width:0!important;height:auto!important;max-height:none!important;position:relative!important;inset:auto!important}
 .category-page .dialog-title-row{flex-wrap:wrap}.category-page .dialog-title-row>*{min-width:0;max-width:100%}.category-page .compact-select{width:auto;max-width:100%}
+
+/* Main-page categories must scroll with the document, on every viewport. */
+.app-shell{max-height:none!important;overflow:visible!important}
+.module-view{width:100%!important;max-width:100%!important;transform:none!important;height:auto!important;max-height:none!important}
+.simple-date-form>summary{cursor:pointer;font-weight:700;color:var(--app-text)}
+.simple-date-form[open]>summary{margin-bottom:16px}
+.love-combo-grid{grid-template-columns:1fr!important;gap:8px!important}
+.simple-date-form{margin:0!important;padding:16px!important}
+.combo-archive .date-grid{grid-template-columns:1fr!important;gap:8px}
+.combo-archive .date-card{padding:14px!important;border-radius:14px!important;box-shadow:none!important}
+.combo-archive .date-card h3{font-size:16px;margin:8px 0}
+.combo-archive .date-card>strong{font-size:13px;color:var(--app-muted)}
