@@ -1269,3 +1269,102 @@ html.dialog-open .chat-bot-launcher{visibility:hidden}
 #dailySummaryView[hidden]{display:none!important}
 .daily-summary-view{padding:0 14px 100px}
 .daily-summary-view .mobile-hero-card{margin-top:12px}
+
+/* Warm, quiet design system — existing personal illustrations are retained. */
+:root,html[data-app-theme="warm"]{
+ --app-bg:#f8f5f1;--app-bg-2:#f8f5f1;--app-card:#fff;--app-card-strong:#fff;
+ --app-border:#e8e2dd;--app-text:#29272d;--app-muted:#716a70;--app-accent:#a53f5d;--app-accent-2:#b85c78;
+ --app-success:#347356;--app-danger:#a62e4a;--app-shadow:0 3px 14px rgba(60,40,40,.035);
+ --app-radius-xl:22px;--app-radius-lg:18px;--app-radius-md:14px;--warm-tint:#f9edf0;
+}
+html[data-app-theme="midnight"]{
+ --app-bg:#222125;--app-bg-2:#222125;--app-card:#2e2c31;--app-card-strong:#38353b;--app-border:#49434b;
+ --app-text:#f9f4f2;--app-muted:#c1b6bc;--app-accent:#efa1b7;--app-accent-2:#d88ba3;--app-danger:#f5a1ac;--app-success:#9cd1b1;--warm-tint:#41303a;
+}
+html[data-app-theme="soft"]{
+ --app-bg:#f4f0f7;--app-bg-2:#f4f0f7;--app-card:#fff;--app-card-strong:#fff;--app-border:#e4dce9;
+ --app-text:#312a38;--app-muted:#75697e;--app-accent:#81537c;--app-accent-2:#a17797;--app-danger:#a62e4a;--app-success:#347356;--warm-tint:#f1e9f2;
+}
+html{
+ color-scheme:light;--bg:var(--app-bg);--card:var(--app-card);--card2:var(--app-card-strong);--text:var(--app-text);--muted:var(--app-muted);--line:var(--app-border);--pink:var(--app-accent);--purple:var(--app-accent-2);--danger:var(--app-danger);--ok:var(--app-success);--shadow:var(--app-shadow);
+ --mobile-bg:var(--app-bg);--mobile-surface:var(--app-card);--mobile-text:var(--app-text);--mobile-muted:var(--app-muted);--mobile-line:var(--app-border);
+ background:var(--app-bg)!important;
+}
+html[data-app-theme="midnight"]{color-scheme:dark}
+body,.app-shell,.mobile-home,.module-view{background:var(--app-bg)!important;color:var(--app-text)!important}
+body{font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.45}
+h1,h2,h3{background:none!important;color:var(--app-text)!important;-webkit-text-fill-color:var(--app-text);text-shadow:none!important;letter-spacing:-.025em}
+button{touch-action:manipulation}
+.mobile-appbar,.module-screenbar{background:var(--app-bg)!important;border-color:var(--app-border)!important;box-shadow:none!important;backdrop-filter:none!important}
+.mobile-brand{gap:8px}.mobile-brand strong{font-size:19px;letter-spacing:-.04em}.mobile-brand small{font-size:11px;font-weight:500}.mobile-brand em{display:none}
+.brand-mark{display:none!important}.mobile-actions{gap:6px}.round-icon{box-shadow:none!important;width:36px;height:36px}
+.account-avatar-mini{object-fit:contain!important}.sync-dot{color:var(--app-success);font-size:10px}
+.mobile-home{gap:20px!important}
+.mobile-hero-card,.panel,.card-panel,.glass-card,.list-card,.account-card,.profile-cover,.profile-couple-card,.profile-menu-card,.profile-stats-grid>div,.home-person-mood,.quick-card,.mobile-module,.home-mini-facts span,.relationship-mini>div,.surprise-card,.date-card,.story-card,.memory-card,.stat-card,.last-status-box,.surprise-streak{
+ background:var(--app-card)!important;color:var(--app-text)!important;border:1px solid var(--app-border)!important;box-shadow:var(--app-shadow)!important;backdrop-filter:none!important;border-radius:18px!important;
+}
+.mobile-hero-card::after{display:none}
+.soft-pill,.chip{background:var(--warm-tint)!important;color:var(--app-accent)!important;border-color:var(--app-border)!important}
+.primary-btn,.home-period-quick button{background:var(--app-accent)!important;color:#fff!important;box-shadow:none!important;border-radius:13px!important;font-weight:700}
+html[data-app-theme="midnight"] .primary-btn,html[data-app-theme="midnight"] .home-period-quick button{color:#2a1820!important}
+.ghost-btn,.ghost-mini,.danger-btn,.close-btn{background:var(--app-card)!important;color:var(--app-text)!important;border:1px solid var(--app-border)!important;box-shadow:none!important}
+.delete-btn,.danger-btn{color:var(--app-danger)!important}
+input,textarea,select{background:var(--app-card)!important;color:var(--app-text)!important;border:1px solid var(--app-border)!important;box-shadow:none!important;border-radius:12px!important}
+input::placeholder,textarea::placeholder{color:var(--app-muted);opacity:.85}
+label,.card-meta,.hero-copy p{color:var(--app-muted)!important}
+#homeView>.home-connection-actions{padding:0;border:0;background:none;gap:10px;margin:0}
+.home-connection-actions h2,.home-live-moods h2,.section-mobile-head h2{font-size:18px!important;font-weight:750;margin:0 0 12px!important;letter-spacing:-.035em}
+.connection-action,#thinkingOfYouBtn{background:var(--app-card)!important;color:var(--app-text)!important;border:1px solid var(--app-border)!important;box-shadow:var(--app-shadow);border-radius:16px;padding:13px 10px;min-height:68px;justify-content:center}
+.connection-action strong{font-size:13px;font-weight:650}.connection-action small{font-size:10px;color:var(--app-muted)!important;opacity:1!important}
+.connection-action>span:first-child{color:var(--app-accent);width:28px;flex-shrink:0}.connection-action svg{display:block;width:28px;height:28px}
+.home-connection-actions .home-emergency-action{background:var(--warm-tint)!important;color:var(--app-danger)!important;border-color:color-mix(in srgb,var(--app-danger) 22%,var(--app-border))!important;min-height:52px}
+.home-emergency-action small{display:none}.home-emergency-action strong{font-size:14px}
+.home-live-moods{padding:0;background:none;border:0;margin:0}
+.home-mood-pair{gap:12px}.home-person-mood{padding:16px 8px;gap:5px}
+.home-person-mood img{width:88px;height:88px;object-fit:contain;background:var(--app-bg);border-radius:50%;border:0;box-shadow:none}
+.home-person-mood strong{font-size:17px}.home-person-mood span{font-size:12px;line-height:1.6;max-width:150px}
+.home-mood-edit{color:var(--app-accent)!important;background:none!important;border:0!important;box-shadow:none!important;font-size:13px;min-height:44px;margin:4px 0 0}
+.quick-section .section-mobile-head small{display:none}.quick-section .section-mobile-head{margin-bottom:8px}
+.quick-grid{gap:10px!important}.quick-card{display:flex!important;flex-direction:row!important;align-items:center!important;gap:12px!important;min-height:76px!important;padding:14px!important;text-align:left!important;content-visibility:visible;contain-intrinsic-size:auto}
+.quick-card strong{font-size:13px!important;font-weight:650;line-height:1.4}
+.quick-line-icon,.quick-card .quick-line-icon,.mobile-module .module-bubble{display:grid!important;place-items:center!important;width:28px!important;height:30px!important;flex:0 0 28px;background:none!important;border:0!important;box-shadow:none!important;color:var(--app-accent)!important}
+.quick-line-icon svg,.module-bubble svg{width:27px!important;height:27px!important;stroke:currentColor!important;fill:none!important}
+.danger-quick{color:var(--app-danger)!important}.quick-card:hover{border-color:var(--app-accent)!important;transform:none!important}
+.mobile-tabbar{background:var(--app-card)!important;border-top:1px solid var(--app-border)!important;box-shadow:none!important;backdrop-filter:none!important}
+.tab-item{color:var(--app-muted)!important;gap:5px!important}.tab-item.active{color:var(--app-accent)!important}
+.tab-item small{font-size:10px!important;white-space:nowrap;font-weight:600}.tab-icon svg{width:23px;height:23px}
+.tab-heart span{margin:0!important;width:auto!important;height:auto!important;border-radius:0!important;background:none!important;box-shadow:none!important;color:inherit!important}
+.chat-bot-launcher{background:var(--app-accent)!important;color:white!important;border:0!important;box-shadow:0 5px 18px #6e334326!important}
+.chat-bot-launcher svg{width:25px;height:25px;display:block}
+.home-period-quick{background:var(--warm-tint)!important;border-color:var(--app-border)!important}
+.profile-cover h2{font-size:23px}.profile-person img{object-fit:contain!important;box-shadow:none!important;border-color:var(--app-border)!important}
+.profile-current-avatar,.profile-account-active{background:var(--warm-tint)!important;color:var(--app-text)!important;box-shadow:none!important;border-color:var(--app-border)!important}
+.profile-menu-card button{color:var(--app-text)!important}.profile-menu-card small{color:var(--app-muted)!important}.profile-menu-card .menu-line-icon{color:var(--app-accent)!important}
+.profile-advanced,.all-modules-disclosure{background:var(--app-card);border-color:var(--app-border)}
+dialog.app-dialog,dialog:not(#loveDialog){background:var(--app-bg)!important;color:var(--app-text)!important;box-shadow:none!important}
+dialog::backdrop{background:rgba(35,29,33,.35)!important;backdrop-filter:blur(3px)!important}
+.dialog-shell,.dialog-card{color:var(--app-text)!important}.dialog-shell .muted{font-size:13px}
+.bot-chat{background:var(--app-bg)!important}.bubble.bot{background:var(--app-card)!important;color:var(--app-text)!important;border:1px solid var(--app-border)}
+.bubble.me{background:var(--warm-tint)!important;color:var(--app-accent)!important}.bot-quick button{background:var(--warm-tint)!important;color:var(--app-accent)!important}
+.status-action,.meeting-answers button,.signal-grid button,.emergency-btn,.mood-btn{background:var(--app-card)!important;color:var(--app-text)!important;border-color:var(--app-border)!important;box-shadow:none!important}
+.mood-btn.active{outline-color:var(--app-accent)!important}.hero-tip,.wheel-result{background:var(--warm-tint)!important;color:var(--app-text)!important}
+.toast{background:var(--app-card)!important;color:var(--app-text)!important;box-shadow:0 4px 20px #30203018!important}
+.undo-action{background:var(--app-card);color:var(--app-text);border-color:var(--app-accent)}.undo-action button{background:var(--warm-tint);color:var(--app-accent)}
+.theme-option{color:var(--app-text)!important;background:var(--app-card)!important;border-color:var(--app-border)!important}.theme-option.selected{outline:2px solid var(--app-accent)}
+.theme-preview.romantic{background:linear-gradient(135deg,#f8f5f1,#b85c78)!important}
+.theme-preview.midnight{background:linear-gradient(135deg,#222125,#efa1b7)!important}
+.startup-splash{background:var(--app-bg)!important}.startup-backdrop,.startup-glow{display:none!important}.startup-card{background:var(--app-card)!important;border:1px solid var(--app-border)!important;box-shadow:var(--app-shadow)!important}.startup-copy{color:var(--app-text)!important}
+@media(min-width:700px){
+ body{background:#eeeae5!important}.app-shell{box-shadow:0 10px 45px #48303812!important;border-radius:26px!important}
+ .native-status-strip{display:none!important}.app-shell{padding-top:86px!important}.mobile-appbar{top:19px!important;height:70px!important}
+ .mobile-home{height:calc(100dvh - 178px)}.module-view,dialog.app-dialog,dialog:not(#loveDialog){border-radius:26px!important}
+}
+@media(max-width:380px){.connection-action{gap:6px;padding:10px 6px}.connection-action strong{font-size:12px}.mobile-brand strong{font-size:17px}.quick-card{gap:8px!important;padding:11px!important}.home-person-mood img{width:72px;height:72px}.mobile-actions{gap:4px}}
+
+.theme-preview.romantic-preview{background:linear-gradient(135deg,#f8f5f1,#b85c78)!important}
+.theme-preview.midnight-preview{background:linear-gradient(135deg,#222125,#efa1b7)!important}
+
+.tab-heart .tab-icon{width:24px!important;height:24px!important;padding:0!important;background:none!important;box-shadow:none!important}
+
+.relationship-mini>span,.relationship-mini small{color:var(--app-muted)!important}
+#settingsDialog .settings-card{background:var(--app-bg)!important;backdrop-filter:none!important;opacity:1!important}

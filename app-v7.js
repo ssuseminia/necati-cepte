@@ -1,7 +1,7 @@
 const $=id=>document.getElementById(id);
 const STORAGE_KEY='necati-cepte-v2';
 const defaultState={
- settings:{nisaBirthday:'',necatiBirthday:'',periodStartDate:'',periodLength:5,periodCycle:28,partnerName:'Nisa',ownerName:'Necati',relationshipDate:'2025-04-12T00:00',birthDate:'',lastPeriod:'',cycleLength:28,periodLength:5,notifyTodoHour:'09:00',notifySpecialHour:'09:30',notifyBirthdayHour:'10:00',notifyPeriodHour:'10:30',notifyExpenseHour:'20:00',notifyQuietStart:'23:00',notifyQuietEnd:'08:00',uiTheme:'romantic',uiAnimations:true,uiHaptics:true},
+ settings:{nisaBirthday:'',necatiBirthday:'',periodStartDate:'',periodLength:5,periodCycle:28,partnerName:'Nisa',ownerName:'Necati',relationshipDate:'2025-04-12T00:00',birthDate:'',lastPeriod:'',cycleLength:28,periodLength:5,notifyTodoHour:'09:00',notifySpecialHour:'09:30',notifyBirthdayHour:'10:00',notifyPeriodHour:'10:30',notifyExpenseHour:'20:00',notifyQuietStart:'23:00',notifyQuietEnd:'08:00',uiTheme:'warm',uiAnimations:true,uiHaptics:true},
  mood:{today:'mutlu',history:[]},surprises:[{id:1,date:new Date().toISOString().slice(0,10),title:'Bugünün küçük sürprizi',message:'Bir adet uzun sarılma kazandın ❤️',type:'Mesaj'}],
  jar:['gülüşün en sıradan günümü bile güzelleştiriyor','yanında kendim olabiliyorum','birlikte saçmalamak dünyanın en güzel şeyi','zor günlerimde bile yanımda olduğunu hissediyorum','seninle gelecek düşünmek beni mutlu ediyor','sesini duyunca günüm değişiyor'],
  memories:[],stories:[{id:1,season:1,episode:1,date:'2025-04-12',title:'Biz olduk ❤️',text:'Nisa ve Necati hikâyesinin başladığı gün.',image:''},{id:2,season:2,episode:1,date:'2026-06-28',title:'Nişanımız 💍',text:'Hikâyemizin en özel bölümlerinden biri.',image:''}],
@@ -1373,16 +1373,18 @@ document.addEventListener('click',e=>{
 
 // ===== v10.4 Native mobile polish =====
 function v104ApplyTheme(theme){
-  const allowed=['romantic','midnight','soft'];
-  const selected=allowed.includes(theme)?theme:'romantic';
+  const allowed=['warm','midnight','soft'];
+  const selected=state.settings?.uiThemeRevision===2&&allowed.includes(theme)?theme:'warm';
   document.documentElement.dataset.appTheme=selected;
   state.settings=state.settings||{};
   state.settings.uiTheme=selected;
+  state.settings.uiThemeRevision=2;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',selected==='midnight'?'#222125':selected==='soft'?'#f4f0f7':'#f8f5f1');
   document.querySelectorAll('[data-theme-choice]').forEach(b=>b.classList.toggle('selected',b.dataset.themeChoice===selected));
 }
 function v104ApplyAppearance(){
   const s=state.settings||{};
-  v104ApplyTheme(s.uiTheme||'romantic');
+  v104ApplyTheme(s.uiTheme||'warm');
   document.documentElement.classList.toggle('reduce-app-motion',s.uiAnimations===false);
   if($('uiAnimations')) $('uiAnimations').checked=s.uiAnimations!==false;
   if($('uiHaptics')) $('uiHaptics').checked=s.uiHaptics!==false;
@@ -1728,12 +1730,13 @@ window.addEventListener('orientationchange',()=>setTimeout(()=>{v104RefreshSafeU
   function applyPremiumIcons(){
     document.querySelectorAll('.mobile-module,.quick-card,.today-card').forEach(btn=>{
       const key=btn.dataset.module || btn.dataset.open;
-      const path=iconMap[key];
-      if(!path)return;
       const holder=btn.querySelector('.module-bubble,.quick-line-icon,.today-icon');
-      setIllustrationIcon(holder,path);
+      if(holder){holder.classList.remove('has-illustration-icon');holder.innerHTML=warmLineIcon(key);}
     });
 
+    for(const [selector,key] of [['#thinkingOfYouBtn>span:first-child','heart'],['#homePokeBtn>span:first-child','poke'],['#homeEmergencyBtn>span:first-child','emergency'],['#chatBotLauncher>span','chat'],['[data-tab="today"] .tab-icon','plannerDialog']]){
+      const holder=document.querySelector(selector);if(holder)holder.innerHTML=warmLineIcon(key);
+    }
     const profileCalendarIcon=document.querySelector('#profileCalendarBtn .menu-line-icon');
     setIllustrationIcon(profileCalendarIcon,iconMap.plannerDialog);
     const profileSettingsIcon=document.querySelector('#profileSettingsBtn .menu-line-icon');
@@ -2398,3 +2401,25 @@ function renderWishlist(){
 }
 
 $('summaryBackBtn')?.addEventListener('click',()=>{showHome();v10ActivateTab('home');});
+
+function warmLineIcon(key){
+  const paths={
+    heart:'<path d="M20.5 5.5a5 5 0 0 0-7 0L12 7l-1.5-1.5a5 5 0 0 0-7 7L12 21l8.5-8.5a5 5 0 0 0 0-7Z"/>',
+    instant:'<rect x="3" y="6" width="18" height="15" rx="3"/><path d="m8 6 1.5-3h5L16 6"/><circle cx="12" cy="13" r="4"/>',
+    todoDialog:'<rect x="4" y="3" width="16" height="18" rx="3"/><path d="m8 12 3 3 6-7"/>',
+    todayus:'<circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2 21v-3a6 6 0 0 1 12 0v3m2-7a5 5 0 0 1 6 5v2"/>',
+    wishlist:'<path d="m12 2 3 6.5 7 1-5 5 1 7-6-3.5-6 3.5 1-7-5-5 7-1Z"/>',
+    plannerDialog:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 2v6m10-6v6M3 11h18"/>',
+    mood:'<circle cx="12" cy="12" r="9"/><path d="M8 9h.01M16 9h.01M8 14a4 4 0 0 0 8 0"/>',
+    travel:'<path d="M19 10c0 5-7 12-7 12S5 15 5 10a7 7 0 0 1 14 0Z"/><circle cx="12" cy="10" r="2.5"/>',
+    dates:'<rect x="3" y="9" width="18" height="12" rx="2"/><path d="M12 9v12M2 9h20M12 9c-9 0-9-8-4-6 3 1 4 6 4 6Zm0 0c9 0 9-8 4-6-3 1-4 6-4 6Z"/>',
+    curiosity:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+    night:'<path d="M20 15A9 9 0 0 1 9 4a9 9 0 1 0 11 11Z"/>',
+    emergency:'<path d="M6 18v-7a6 6 0 0 1 12 0v7M4 21h16M12 1v2M2 6l2 1m16 0 2-1M12 9v4m0 3h.01"/>',
+    expenseDialog:'<rect x="3" y="5" width="18" height="15" rx="3"/><path d="M21 10h-6v5h6M6 5V3h12"/>',
+    statusDialog:'<path d="m13 2-9 12h7l-1 8 10-13h-8Z"/>',
+    poke:'<path d="M8 12V5a2 2 0 0 1 4 0v6-2a2 2 0 0 1 4 0v2a2 2 0 0 1 4 0v4c0 4-3 7-7 7-3 0-5-2-7-5l-3-4a2 2 0 0 1 3-2l2 2Z"/>',
+    chat:'<path d="M21 11a9 9 0 0 1-9 9H5l-4 3 2-7a9 9 0 1 1 18-5Z"/>'
+  };
+  return '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+(paths[key]||paths.heart)+'</svg>';
+}
