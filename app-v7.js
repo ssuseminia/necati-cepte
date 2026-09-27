@@ -2280,7 +2280,6 @@ function exportAppBackup(){
   }catch(error){toast('Yedek hazırlanamadı. Lütfen tekrar dene.');}
   finally{if(url)setTimeout(()=>URL.revokeObjectURL(url),10000);}
 }
-$('profileExportBtn')?.addEventListener('click',exportAppBackup);
 $('todoWheelDetails')?.addEventListener('toggle',()=>{
   if($('todoWheelDetails').open)requestAnimationFrame(()=>v103DrawWheel());
 });
