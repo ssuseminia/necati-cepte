@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
   <link rel="icon" type="image/png" href="icons/icon-192.png" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <link rel="stylesheet" href="style-v7.css?v=1096" />
+  <link rel="stylesheet" href="style-v7.css?v=1097" />
   <title>Necati Cepte</title>
 </head>
 <body>
@@ -121,7 +121,15 @@
           </article>
         </div>
       </section>
-<section class="quick-section">
+<section id="homePeriodQuick" class="home-period-quick" hidden>
+        <div>
+          <span class="home-period-icon">🌸</span>
+          <div><small>NİSA İÇİN HIZLI UYARI</small><strong>Regl başladı mı?</strong><p>Tek dokunuşla Necati’ye haber ver ve tarihi kaydet.</p></div>
+        </div>
+        <button id="homePeriodStartedBtn" type="button">Regl başladı</button>
+      </section>
+
+      <section class="quick-section">
         <div class="section-mobile-head">
           <div><small>Hızlı erişim</small><h2>Tek dokunuşla aç</h2></div>
         </div>
@@ -135,7 +143,6 @@
           <button class="quick-card" data-module="todayus"><span class="quick-line-icon">❤️</span><strong>Bugün Biz</strong></button>
           <button class="quick-card" data-open="todoDialog"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.2 4.2L19 7"/></svg></span><strong>Görevler</strong></button>
           <button class="quick-card" data-open="statusDialog"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M9.5 20v-6h5v6"/></svg></span><strong>Eve Geldim</strong></button>
-          <button class="quick-card" data-open="dateWheelDialog"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 8h.01M16 8h.01M12 12h.01M8 16h.01M16 16h.01"/></svg></span><strong>Date Çarkı</strong></button>
         </div>
       </section>
 
@@ -145,18 +152,16 @@
       <section class="mobile-module-grid" id="allModulesGrid">
         <button class="mobile-module" data-module="mood"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 10h.01M15.5 10h.01M8.8 14.2c1.8 2 4.6 2 6.4 0"/></svg></span><div><strong>Nisa Modu</strong><small>Ruh hali</small></div></button>
         
-        <button class="mobile-module" data-module="instant"><span class="module-bubble feature-photo-icon">📸</span><div><strong>Anlık Foto</strong><small>Şimdi ne yapıyorsun?</small></div></button>
-        <button class="mobile-module" data-module="travel"><span class="module-bubble feature-travel-icon">🗺️</span><div><strong>Gezi Haritası</strong><small>Gezilecek şehirler</small></div></button>
-        <button class="mobile-module" data-module="poke"><span class="module-bubble feature-poke-icon">👉</span><div><strong>Dürtme</strong><small>Tek dokunuş bildirim</small></div></button>
-        <button class="mobile-module" data-module="dates"><span class="module-bubble">💝</span><div><strong>Özel Günler & Sürprizler</strong><small>Tek ekranda</small></div></button>
-        <button class="mobile-module" data-module="curiosity"><span class="module-bubble">👀</span><div><strong>Birbirimizi Merak Ettik</strong><small>Son hareketler</small></div></button>
-        <button class="mobile-module" data-module="todayus"><span class="module-bubble">❤️</span><div><strong>Bugün Biz</strong><small>Buluşma • duygu • sürpriz</small></div></button>
+        <button class="mobile-module" data-module="instant"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6.5" width="17" height="12" rx="2.5"/><path d="M8 6.5 9.5 4h5L16 6.5"/><circle cx="12" cy="12.5" r="3.2"/></svg></span><div><strong>Anlık Foto</strong><small>Şimdi ne yapıyorsun?</small></div></button>
+        <button class="mobile-module" data-module="travel"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/></svg></span><div><strong>Gezi Haritası</strong><small>Gezilecek şehirler</small></div></button>
+        <button class="mobile-module" data-module="poke"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12V5.5a1.5 1.5 0 0 1 3 0V11"/><path d="M11 10V4.5a1.5 1.5 0 0 1 3 0V11"/><path d="M14 10V6a1.5 1.5 0 0 1 3 0v6"/><path d="M17 10.5a1.5 1.5 0 0 1 3 0V15c0 4-2.8 6-6.5 6H12c-2.5 0-4-1.3-5.3-3.4L4.5 14a1.5 1.5 0 0 1 2.4-1.8L8 13.5Z"/></svg></span><div><strong>Dürtme</strong><small>Tek dokunuş bildirim</small></div></button>
+        <button class="mobile-module" data-module="dates"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21 4.5 13.8A5.3 5.3 0 0 1 12 6.3a5.3 5.3 0 0 1 7.5 7.5Z"/><path d="M12 6.3V21"/></svg></span><div><strong>Özel Günler & Sürprizler</strong><small>Tek ekranda</small></div></button>
+        <button class="mobile-module" data-module="curiosity"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></svg></span><div><strong>Birbirimizi Merak Ettik</strong><small>Son hareketler</small></div></button>
+        <button class="mobile-module" data-module="todayus"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.8c-2.2-2.2-5.7-2.2-7.9 0L12 5.7l-.9-.9a5.6 5.6 0 0 0-7.9 7.9L12 21l8.8-8.3a5.6 5.6 0 0 0 0-7.9Z"/></svg></span><div><strong>Bugün Biz</strong><small>Buluşma • duygu • sürpriz</small></div></button>
         <button class="mobile-module" data-module="night"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 15.5A8 8 0 0 1 8.5 5 8 8 0 1 0 19 15.5Z"/></svg></span><div><strong>İyi Geceler</strong><small>Fotoğraflı mesaj</small></div></button>
         <button class="mobile-module danger-mobile" data-module="emergency"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.8 20h18.4Z"/><path d="M12 9v5M12 17.5h.01"/></svg></span><div><strong>Acil Necati</strong><small>Hemen haber ver</small></div></button>
         <button class="mobile-module" data-open="todoDialog"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.2 4.2L19 7"/></svg></span><div><strong>Yapılacaklar</strong><small>Görevler</small></div></button>
         <button class="mobile-module" data-open="expenseDialog"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M7 9H5.5v1.5M17 15h1.5v-1.5"/></svg></span><div><strong>Harcamalar</strong><small>Ortak bütçe</small></div></button>
-        <button class="mobile-module" data-open="necatiBotDialog"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 7V4M9 12h.01M15 12h.01M9 16h6"/></svg></span><div><strong>Necati Bot</strong><small>Konuş & sor</small></div></button>
-        <button class="mobile-module" data-open="dateWheelDialog"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 8h.01M16 8h.01M12 12h.01M8 16h.01M16 16h.01"/></svg></span><div><strong>Date Çarkı</strong><small>Bugün ne yapalım?</small></div></button>
         <button class="mobile-module" data-open="statusDialog"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M9.5 20v-6h5v6"/></svg></span><div><strong>Hızlı Durum</strong><small>Eve geldim / yoldayım</small></div></button>
       </section>
     </main>
@@ -168,6 +173,11 @@
     </section>
 
     
+    <button id="floatingBotBtn" type="button" class="floating-bot-btn" aria-label="Necati Bot'u aç">
+      <span class="floating-bot-face">🤖</span>
+      <span class="floating-bot-text"><strong>Necati Bot</strong><small>Bir şey sor</small></span>
+    </button>
+
     <nav class="mobile-tabbar" aria-label="Ana menü">
       <button type="button" class="tab-item active" data-tab="home" aria-label="Ana Sayfa"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M9.5 20v-6h5v6"/></svg></span><small>Ana Sayfa</small></button>
       <button type="button" class="tab-item" data-tab="emergency" aria-label="Acil Necati"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.8 20h18.4Z"/><path d="M12 9v5M12 17.5h.01"/></svg></span><small>Acil Necati</small></button>
@@ -400,6 +410,23 @@
         </div>
       </section>
 
+      <section class="card-panel todo-wheel-panel">
+        <div class="todo-wheel-head">
+          <div><small>🎡 DATE ÇARKI</small><h3>Bugün ne yapalım?</h3><p>Çarkın seçtiği şey otomatik olarak yapılacaklara eklenir.</p></div>
+        </div>
+        <div class="todo-wheel-layout">
+          <div class="wheel-wrap todo-wheel-wrap">
+            <div class="wheel-pointer">▼</div>
+            <canvas id="dateWheelCanvas" width="720" height="720"></canvas>
+          </div>
+          <div class="todo-wheel-side">
+            <div id="dateWheelResult" class="wheel-result"><strong>Hazırsanız döndürün 🎲</strong><small>Sonuç görev olarak eklenecek.</small></div>
+            <button type="button" id="spinDateWheelBtn" aria-busy="false" class="primary-btn">Çarkı Döndür 🎲</button>
+            <small class="todo-wheel-note">Çıkan sonuç ortak göreve eklenir ve karşı tarafa bildirim gider ❤️</small>
+          </div>
+        </div>
+      </section>
+
       <div id="todoStats" class="mini-stats"></div>
       <div id="todoList" class="stack-list"></div>
     </div>
@@ -497,39 +524,33 @@
       </div>
     </div>
   </dialog>
-<dialog id="dateWheelDialog" class="app-dialog">
-    <div class="dialog-shell">
-      <button class="close-btn" type="button" data-close="dateWheelDialog">✕</button>
-      <div class="feature-hero">
-        <span class="feature-emoji">🎲</span>
-        <div><small>Karar veremediğiniz anlar için</small><h2>Date Çarkı</h2></div>
-      </div>
-      <p class="muted">Çarkı döndür, bugünkü date fikrini kader seçsin 😄❤️</p>
-      <div class="wheel-wrap">
-        <div class="wheel-pointer">▼</div>
-        <canvas id="dateWheelCanvas" width="720" height="720"></canvas>
-      </div>
-      <div id="dateWheelResult" class="wheel-result">Hazırsanız çarkı döndürün 🎡</div>
-      <button type="button" id="spinDateWheelBtn" aria-busy="false" class="primary-btn big-feature-btn">Çarkı Döndür 🎲</button>
-      <div id="dateWheelAutoInfo" class="wheel-auto-info">Çıkan sonuç kaydedilecek ve karşı tarafa bildirilecek ❤️</div>
-    </div>
-  </dialog>
 
   <dialog id="statusDialog" class="app-dialog">
-    <div class="dialog-shell">
+    <div class="dialog-shell status-shell">
       <button class="close-btn" type="button" data-close="statusDialog">✕</button>
-      <div class="feature-hero">
-        <span class="feature-emoji">🏠</span>
-        <div><small>Tek dokunuşla haber ver</small><h2>Hızlı Durum</h2></div>
+      <div class="feature-hero status-hero">
+        <span class="feature-emoji">⚡</span>
+        <div><small>2 saniyede haber ver</small><h2>Hızlı Durum</h2></div>
       </div>
-      <p class="muted">Seçtiğin durum karşı tarafa anında bildirim olarak gider.</p>
-      <div class="status-grid">
-        <button type="button" class="status-action" data-status="Eve geldim ❤️" data-status-icon="🏠"><span>🏠</span><strong>Eve geldim</strong><small>Merak etme, evdeyim</small></button>
+
+      <div id="lastStatusBox" class="last-status-box status-last-top">Henüz durum gönderilmedi.</div>
+
+      <div class="status-grid status-grid-pro">
+        <button type="button" class="status-action" data-status="Eve geldim ❤️" data-status-icon="🏠"><span>🏠</span><strong>Eve geldim</strong><small>Evdeyim</small></button>
         <button type="button" class="status-action" data-status="Yoldayım 🚗" data-status-icon="🚗"><span>🚗</span><strong>Yoldayım</strong><small>Geliyorum</small></button>
+        <button type="button" class="status-action" data-status="İşteyim 💼" data-status-icon="💼"><span>💼</span><strong>İşteyim</strong><small>Şu an işteyim</small></button>
         <button type="button" class="status-action" data-status="Çıktım 👋" data-status-icon="👋"><span>👋</span><strong>Çıktım</strong><small>Şimdi çıktım</small></button>
-        <button type="button" class="status-action" data-status="Müsait olunca seni arayacağım 📞" data-status-icon="📞"><span>📞</span><strong>Seni arayacağım</strong><small>Müsait olunca</small></button>
+        <button type="button" class="status-action" data-status="Müsait değilim, sonra yazacağım 🙏" data-status-icon="🙏"><span>🙏</span><strong>Müsait değilim</strong><small>Sonra yazacağım</small></button>
+        <button type="button" class="status-action" data-status="Seni arayacağım 📞" data-status-icon="📞"><span>📞</span><strong>Arayacağım</strong><small>Müsait olunca</small></button>
+        <button type="button" class="status-action" data-status="Uyuyorum 😴" data-status-icon="😴"><span>😴</span><strong>Uyuyorum</strong><small>İyi geceler</small></button>
+        <button type="button" class="status-action" data-status="Şarjım az 🔋" data-status-icon="🔋"><span>🔋</span><strong>Şarjım az</strong><small>Merak etme</small></button>
       </div>
-      <div id="lastStatusBox" class="last-status-box">Henüz durum gönderilmedi.</div>
+
+      <div class="custom-status-box">
+        <label><span>Kendi durumunu yaz</span><input id="customStatusInput" maxlength="80" placeholder="Örn. 20 dk sonra evdeyim"></label>
+        <button type="button" id="sendCustomStatusBtn" class="primary-btn">Gönder ⚡</button>
+      </div>
+
       <div class="status-history-panel">
         <div class="status-history-head"><div><small>GEÇMİŞ</small><strong>Son durumlar</strong></div><span>🕘</span></div>
         <div id="statusHistoryList" class="status-history-list"><div class="empty">Henüz geçmiş yok.</div></div>
@@ -598,7 +619,7 @@
         <button type="button" id="profileAccountBtn"><span class="menu-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 20c.5-4 3-6 6.5-6s6 2 6.5 6"/></svg></span><span><strong>Hesap & Bulut</strong><small id="profileAccountText">Firebase hesabı</small></span><b>›</b></button>
       </section>
 
-      <div class="profile-version">Necati Cepte • v10.9.6</div>
+      <div class="profile-version">Necati Cepte • v10.9.7</div>
     </div>
   </dialog>
 
@@ -612,6 +633,6 @@
       <script src="onesignal-config.js"></script>
       <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
       <script src="cloud-v7.js"></script>
-      <script src="app-v7.js?v=1096"></script>
+      <script src="app-v7.js?v=1097"></script>
 </body>
 </html>

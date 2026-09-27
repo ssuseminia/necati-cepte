@@ -234,6 +234,36 @@ function renderBot(){
 function renderModule(n){({mood:renderMood,surprise:renderDates,dates:renderDates,curiosity:renderCuriosity,todayus:renderTodayUs,night:renderNight,emergency:renderEmergency,instant:renderInstantPhoto,travel:renderTravelMap,poke:renderPoke}[n]||(()=>{}))()}
 function viewerMoodOwner(){const r=window.NecatiCloud?.role?.();return r==='nisa'?'necati':'nisa'}
 function phaseInfo(){const s=state.settings;if(!s.lastPeriod)return null;const start=new Date(s.lastPeriod+'T12:00:00'),now=new Date(),elapsed=Math.floor((now-start)/86400000),day=((elapsed%s.cycleLength)+s.cycleLength)%s.cycleLength+1;let phase='Foliküler dönem';if(day<=s.periodLength)phase='Regl dönemi';else if(day>=s.cycleLength-13&&day<=s.cycleLength-11)phase='Tahmini yumurtlama dönemi';else if(day>s.cycleLength-11)phase='Luteal dönem';const next=new Date(start);next.setDate(next.getDate()+Math.ceil(Math.max(0,elapsed+1)/s.cycleLength)*s.cycleLength);if(next<=now)next.setDate(next.getDate()+s.cycleLength);return{day,phase,next}}
+async function v1097PeriodStarted(){
+  const role=window.NecatiCloud?.role?.();
+  if(role!=='nisa')return toast('Bu hızlı uyarı Nisa hesabında kullanılır 🌸');
+  const d=today(),now=Date.now();
+  v108EnsureState();
+  state.settings.lastPeriod=d;
+  state.settings.periodStartDate=d;
+  state.settings.lastPeriodDate=d;
+  state.periodHistory=state.periodHistory||[];
+  if(!state.periodHistory.some(x=>x.date===d))state.periodHistory.push({id:uid(),date:d,by:'Nisa',at:now});
+  state.periodHistory=state.periodHistory.slice(-24);
+  save();
+  toast('Regl başlangıcı kaydedildi 🌸');
+  await notify('🚨 Acil durum: Regl başladı','Nisa regl başladığını bildirdi 🌸 Yanında ol ❤️','emergency','mood').catch(()=>{});
+  toast('Necati’ye acil regl bildirimi gönderildi 🚨🌸');
+}
+function v1097RefreshHomePeriod(){
+  const box=$('homePeriodQuick');
+  if(box)box.hidden=window.NecatiCloud?.role?.()!=='nisa';
+}
+window.addEventListener('necati:authchange',()=>setTimeout(v1097RefreshHomePeriod,50));
+document.addEventListener('DOMContentLoaded',()=>{
+  setTimeout(v1097RefreshHomePeriod,250);
+  $('homePeriodStartedBtn')?.addEventListener('click',async()=>{
+    const b=$('homePeriodStartedBtn');if(b){b.disabled=true;b.textContent='Gönderiliyor…'}
+    await v1097PeriodStarted();
+    if(b){b.disabled=false;b.textContent='Regl başladı'}
+  });
+});
+
 function renderMood(){
   v108EnsureState();
   const p=phaseInfo(),set=moodAssets[viewerMoodOwner()],role=window.NecatiCloud?.role?.();
@@ -271,22 +301,8 @@ function renderMood(){
 
   const periodBtn=$('periodStartedBtn');
   if(periodBtn)periodBtn.onclick=async()=>{
-    periodBtn.disabled=true;
-    periodBtn.textContent='Gönderiliyor…';
-    const d=today(), now=Date.now();
-    state.settings.lastPeriod=d;
-    state.settings.periodStartDate=d;
-    state.settings.lastPeriodDate=d;
-    state.periodHistory=state.periodHistory||[];
-    const already=state.periodHistory.some(x=>x.date===d);
-    if(!already)state.periodHistory.push({id:uid(),date:d,by:'Nisa',at:now});
-    state.periodHistory=state.periodHistory.slice(-24);
-    save();
-    toast('Regl başlangıcı kaydedildi 🌸');
-    try{
-      await notify('🚨 Acil durum: Regl başladı','Nisa regl başladığını bildirdi 🌸 Yanında ol ❤️','emergency','mood');
-      toast('Necati’ye acil regl bildirimi gönderildi 🚨🌸');
-    }catch(e){toast('Bildirim gönderilemedi')}
+    periodBtn.disabled=true;periodBtn.textContent='Gönderiliyor…';
+    await v1097PeriodStarted();
     renderMood();
   };
 }
@@ -480,6 +496,7 @@ document.addEventListener('click',e=>{
   if(id==='todoDialog'){
     renderTodos();
     openAppDialog(id);
+    setTimeout(()=>{v103DrawWheel();const r=$('dateWheelResult');if(r&&!v103WheelBusy)r.innerHTML='<strong>Hazırsanız döndürün 🎲</strong><small>Sonuç otomatik olarak yapılacaklara eklenecek.</small>';},80);
     return;
   }
 
@@ -524,6 +541,14 @@ $('legacyBotSendBtn')?.addEventListener('click',()=>{
   inp.value='';save();renderBot();
 });
 $('botInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('legacyBotSendBtn')?.click()}});
+
+document.addEventListener('click',e=>{
+  if(e.target.closest?.('#floatingBotBtn')){
+    e.preventDefault();
+    renderBot();
+    openAppDialog('necatiBotDialog');
+  }
+});
 
 document.addEventListener('DOMContentLoaded',()=>{
   hydrateV8Settings();
@@ -1100,19 +1125,23 @@ window.addEventListener('resize',()=>{try{v9RenderExpenses?.()}catch{}});
 
 // ===== v10.3 Daily couple features =====
 const v103DateIdeas=[
-  {emoji:'☕',title:'Kahve Date',text:'Telefonları biraz bırakıp birlikte kahve için.'},
-  {emoji:'🍰',title:'Tatlı Kaçamağı',text:'Yeni bir tatlıcı deneyin ya da favorinizi paylaşın.'},
-  {emoji:'🚗',title:'Gece Sürüşü',text:'Müzik açın ve amaçsızca kısa bir gece turuna çıkın.'},
-  {emoji:'🎬',title:'Film Gecesi',text:'Biriniz filmi seçsin, diğeriniz atıştırmalığı hazırlasın.'},
-  {emoji:'🍕',title:'Evde Date',text:'Sipariş verin, masayı güzelleştirin ve evde date yapın.'},
-  {emoji:'🌆',title:'Gün Batımı',text:'Güzel bir yere gidip gün batımını birlikte izleyin.'},
-  {emoji:'🎮',title:'Oyun Gecesi',text:'Birlikte oyun oynayın. Kaybeden içeceği hazırlasın 😄'},
-  {emoji:'📸',title:'Fotoğraf Date',text:'Birlikte 5 yeni fotoğraf çekin. En kötüsünü de saklayın 😄'},
-  {emoji:'🍳',title:'Birlikte Yemek',text:'Mutfağa birlikte girin ve bir şeyler hazırlayın.'},
-  {emoji:'🚶',title:'Akşam Yürüyüşü',text:'Kısa bir yürüyüş yapıp gününüzü birbirinize anlatın.'},
-  {emoji:'🎧',title:'Şarkı Değişimi',text:'Birbirinize 3 şarkı seçip neden seçtiğinizi anlatın.'},
-  {emoji:'🌙',title:'Gece Atıştırması',text:'Gece küçük bir atıştırmalık alıp birlikte kaçamak yapın.'}
-];
+  {emoji:'☕',title:'Yeni Kahveci',text:'Daha önce gitmediğiniz bir kahveci seçin ve telefonları 30 dakika kenara bırakın.'},
+  {emoji:'🌇',title:'Gün Batımı',text:'İçeceklerinizi alın, güzel bir noktada gün batımını birlikte izleyin.'},
+  {emoji:'🍜',title:'Yeni Lezzet',text:'Daha önce beraber denemediğiniz bir yemek veya mekan seçin.'},
+  {emoji:'🎬',title:'Film + Atıştırmalık',text:'Biriniz filmi, diğeriniz atıştırmalığı seçsin. Seçime itiraz yok 😄'},
+  {emoji:'🚗',title:'Müzikli Gece Turu',text:'Ortak playlist açın ve rotasız 30 dakikalık gece sürüşüne çıkın.'},
+  {emoji:'🎮',title:'Mini Turnuva',text:'Bir oyun seçin, 3 maç yapın. Kaybeden tatlı ısmarlasın.'},
+  {emoji:'📸',title:'5 Fotoğraf Görevi',text:'Bugünü anlatan 5 doğal fotoğraf çekin; en komiğini favori seçin.'},
+  {emoji:'🍳',title:'Birlikte Tarif',text:'Evde ikinizin de sevdiği bir şeyi sıfırdan birlikte hazırlayın.'},
+  {emoji:'🚶',title:'Soru Yürüyüşü',text:'20 dakika yürüyün ve sırayla birbirinize üç güzel soru sorun.'},
+  {emoji:'🎧',title:'3 Şarkı 3 Hikâye',text:'Birbirinize üç şarkı seçin ve neden sizi hatırlattığını anlatın.'},
+  {emoji:'🍦',title:'Tatlı Kaçamağı',text:'Sadece tatlı yemek için kısa bir dışarı çıkma planı yapın.'},
+  {emoji:'🛍️',title:'100 TL Meydan Okuma',text:'Küçük bir bütçeyle birbirinize komik veya tatlı bir şey seçin.'},
+  {emoji:'🌙',title:'Gece Pikniği',text:'Kısa süreliğine dışarı çıkın, içecek alın ve sakin bir yerde oturun.'},
+  {emoji:'📝',title:'Gelecek Listesi',text:'Birlikte yapmak istediğiniz 5 şeyi yazın ve bir tanesini tarihleyin.'},
+  {emoji:'🏠',title:'Evde Tema Gecesi',text:'Bir ülke veya tema seçin; yemek, müzik ve filmi o temaya göre yapın.'},
+  {emoji:'🎲',title:'Onun Seçimi',text:'Bugünkü aktiviteyi tamamen karşı taraf seçsin; diğer kişi plana uysun ❤️'}
+]
 let v103WheelRotation=0,v103WheelBusy=false,v103SelectedDate=null;
 
 function v103DrawWheel(){
@@ -1137,37 +1166,35 @@ function v103DrawWheel(){
 }
 async function v103AutoAddWheelResult(){
   if(!v103SelectedDate)return;
-  const date=new Date().toISOString().slice(0,10);
-  state.plans=state.plans||[];
+  state.todos=state.todos||[];
 
-  // Same wheel result spun repeatedly within a few seconds should not duplicate.
-  const recent=state.plans.find(p=>p.source==='date-wheel' && p.wheelKey===v103SelectedDate.title && Date.now()-Number(p.createdAt||0)<15000);
+  const recent=state.todos.find(t=>t.source==='date-wheel' && t.wheelKey===v103SelectedDate.title && Date.now()-Number(t.createdAt||0)<15000);
   if(recent)return;
 
-  const plan={
+  const task={
     id:uid(),
-    title:v103SelectedDate.emoji+' '+v103SelectedDate.title,
-    date,
-    time:'',
+    text:v103SelectedDate.emoji+' '+v103SelectedDate.title+' — '+v103SelectedDate.text,
     owner:'ortak',
-    category:'date',
+    date:today(),
+    priority:'normal',
+    calendar:'no',
     reminder:0,
-    note:v103SelectedDate.text,
+    done:false,
     source:'date-wheel',
     wheelKey:v103SelectedDate.title,
     createdAt:Date.now(),
     createdBy:actor()
   };
-  state.plans.push(plan);
+  state.todos.push(task);
   v106BackupState?.();save();
-  v9RenderCalendar?.();
+  v9RenderTodos?.();
   v10RefreshDashboard?.();
-  toast(`${v103SelectedDate.title} takvime eklendi ❤️`);
+  toast(`${v103SelectedDate.title} yapılacaklara eklendi ✅`);
   await v9Notify(
-    '🎲 Date çarkı döndü!',
-    `${actor()} çarkı çevirdi: ${v103SelectedDate.emoji} ${v103SelectedDate.title} çıktı ve ortak takvime eklendi ❤️`,
+    '🎡 Date çarkı görev seçti!',
+    `${actor()} çarkı çevirdi: ${v103SelectedDate.emoji} ${v103SelectedDate.title} • Yapılacaklara eklendi ❤️`,
     'date-wheel',
-    'planner'
+    'todo'
   ).catch(()=>{});
 }
 
@@ -1277,11 +1304,6 @@ async function v103AcceptSurprise(){
 // v10.3 dialog open initialization
 document.addEventListener('click',e=>{
   const opener=e.target.closest?.('[data-open]');
-  if(opener?.dataset.open==='dateWheelDialog')setTimeout(()=>{
-    v103DrawWheel();
-    const r=$('dateWheelResult');
-    if(r&&!v103WheelBusy)r.innerHTML='<strong>Hazırsanız çarkı döndürün 🎡</strong><small>Sonuç otomatik takvime eklenecek.</small>';
-  },80);
   if(opener?.dataset.open==='statusDialog')setTimeout(v103RenderLastStatus,60);
   if(opener?.dataset.open==='randomSurpriseDialog')setTimeout(()=>{
     v103RenderSurpriseStreak();
@@ -1305,6 +1327,14 @@ document.addEventListener('click',e=>{
   if(b.classList.contains('status-action')){
     e.preventDefault();
     v103SendStatus(b.dataset.status,b.dataset.statusIcon);
+    return;
+  }
+  if(b.id==='sendCustomStatusBtn'){
+    e.preventDefault();
+    const inp=$('customStatusInput'),text=(inp?.value||'').trim();
+    if(!text)return toast('Durumunu yaz ⚡');
+    v103SendStatus(text,'💬');
+    if(inp)inp.value='';
     return;
   }
   if(b.id==='drawSurpriseBtn'){
