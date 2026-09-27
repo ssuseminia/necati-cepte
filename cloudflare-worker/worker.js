@@ -45,49 +45,98 @@ async function sendScheduledPush(env,targetRole,title,body){
   if(!r.ok)throw new Error('OneSignal scheduled '+await r.text());
 }
 async function checkInactivity(env){
-  const token=await googleAccessToken(env);if(!token)return;
+  const result={ok:true,checkedAt:Date.now(),thresholdMinutes:20,repeatMinutes:20,roles:[]};
+  let token;
+  try{
+    token=await googleAccessToken(env);
+    if(!token){
+      result.ok=false;
+      result.error='Firebase service account secrets eksik';
+      return result;
+    }
+  }catch(e){
+    result.ok=false;
+    result.error='Google OAuth: '+String(e?.message||e);
+    return result;
+  }
+
   const coupleId=env.FIREBASE_COUPLE_ID||'nisa-necati';
   const now=Date.now();
   const threshold=20*60*1000;
   const repeatEvery=20*60*1000;
 
   for(const role of ['nisa','necati']){
-    const presence=await fsGet(env,token,`couples/${coupleId}/presence/${role}`);
-    if(!presence)continue;
+    const row={role,action:'none'};
+    try{
+      const presence=await fsGet(env,token,`couples/${coupleId}/presence/${role}`);
+      if(!presence){row.action='no-presence';result.roles.push(row);continue;}
 
-    const seen=Number(presence.lastSeenClient||0);
-    if(!seen||now-seen<threshold)continue;
+      const seen=Number(presence.lastSeenClient||presence.lastSeenAt||0);
+      row.lastSeen=seen||null;
+      row.awayMinutes=seen?Math.floor((now-seen)/60000):null;
+      if(!seen){row.action='invalid-presence';result.roles.push(row);continue;}
+      if(now-seen<threshold){row.action='recent';result.roles.push(row);continue;}
 
-    const markerPath=`couples/${coupleId}/system/inactivity-${role}`;
-    const marker=await fsGet(env,token,markerPath);
-    const lastSeenAlerted=Number(marker?.lastSeenAlerted||0);
-    const lastAlertAt=Number(marker?.lastAlertAt||marker?.alertedAt||0);
+      const markerPath=`couples/${coupleId}/system/inactivity-${role}`;
+      const marker=await fsGet(env,token,markerPath);
+      const lastSeenAlerted=Number(marker?.lastSeenAlerted||0);
+      const lastAlertAt=Number(marker?.lastAlertAt||marker?.alertedAt||0);
+      row.lastAlertAt=lastAlertAt||null;
 
-    // Yeni bir uygulama ziyareti olduysa ilk 20 dk sonunda tekrar bildirim gönder.
-    // Kullanıcı hâlâ girmediyse, son uyarıdan itibaren her 20 dakikada bir yeniden gönder.
-    const sameAwaySession=lastSeenAlerted===seen;
-    if(sameAwaySession && lastAlertAt && now-lastAlertAt<repeatEvery)continue;
+      const sameAwaySession=lastSeenAlerted===seen;
+      if(sameAwaySession && lastAlertAt && now-lastAlertAt<repeatEvery){
+        row.action='waiting-repeat';
+        result.roles.push(row);
+        continue;
+      }
 
-    const other=role==='nisa'?'Necati':'Nisa';
-    const messages=[
-      ['🥺 Özlemedin mi beni?',`${other} seni özledi ❤️ Uygulamaya bi uğrasana`],
-      ['💗 Hâlâ yoksun',`${other} burada seni bekliyor 😄❤️`],
-      ['👀 Nerdesin sen?',`20 dakikadır görünmüyorsun, ${other} seni merak etti ❤️`]
-    ];
-    const pick=messages[Math.floor((now/repeatEvery)%messages.length)];
-    await sendScheduledPush(env,role,pick[0],pick[1]);
-    await fsPatch(env,token,markerPath,{
-      lastSeenAlerted:seen,
-      lastAlertAt:now,
-      alertedAt:now
-    });
+      const other=role==='nisa'?'Necati':'Nisa';
+      const messages=[
+        ['🥺 Özlemedin mi beni?',`${other} seni özledi ❤️ Uygulamaya bi uğrasana`],
+        ['💗 Hâlâ yoksun',`${other} burada seni bekliyor 😄❤️`],
+        ['👀 Nerdesin sen?',`20 dakikadır görünmüyorsun, ${other} seni merak etti ❤️`]
+      ];
+      const pick=messages[Math.floor((now/repeatEvery)%messages.length)];
+      await sendScheduledPush(env,role,pick[0],pick[1]);
+      row.action='sent';
+      row.title=pick[0];
+
+      try{
+        await fsPatch(env,token,markerPath,{lastSeenAlerted:seen,lastAlertAt:now,alertedAt:now});
+      }catch(markerError){
+        // Bildirim gönderildiyse marker hatası yüzünden diğer kullanıcıyı atlama.
+        row.markerError=String(markerError?.message||markerError);
+      }
+    }catch(e){
+      row.action='error';
+      row.error=String(e?.message||e);
+      result.ok=false;
+    }
+    result.roles.push(row);
   }
+  return result;
 }
 
 export default {
   async fetch(request,env){
     const origin=request.headers.get('Origin')||'*';
+    const url=new URL(request.url);
     if(request.method==='OPTIONS')return new Response(null,{status:204,headers:cors(origin)});
+    if(request.method==='GET' && url.pathname==='/health'){
+      return new Response(JSON.stringify({
+        ok:true,
+        worker:'necati-cepte-push',
+        inactivityMinutes:20,
+        repeatMinutes:20,
+        secrets:{
+          firebaseProjectId:!!env.FIREBASE_PROJECT_ID,
+          firebaseClientEmail:!!env.FIREBASE_CLIENT_EMAIL,
+          firebasePrivateKey:!!env.FIREBASE_PRIVATE_KEY,
+          oneSignalAppId:!!env.ONESIGNAL_APP_ID,
+          oneSignalRestApiKey:!!env.ONESIGNAL_REST_API_KEY
+        }
+      }),{status:200,headers:cors(origin)});
+    }
     if(request.method!=='POST')return new Response(JSON.stringify({ok:false,error:'POST only'}),{status:405,headers:cors(origin)});
     try{
       const auth=request.headers.get('Authorization')||'';
@@ -104,6 +153,10 @@ export default {
       const targetRole=senderRole==='nisa'?'necati':'nisa';
 
       const body=await request.json();
+      if(body?.action==='run-inactivity'){
+        const check=await checkInactivity(env);
+        return new Response(JSON.stringify(check),{status:check.ok?200:500,headers:cors(origin)});
+      }
       const payload={
         app_id: env.ONESIGNAL_APP_ID,
         target_channel:'push',
@@ -132,5 +185,5 @@ export default {
       return new Response(JSON.stringify({ok:false,error:String(e?.message||e)}),{status:500,headers:cors(origin)});
     }
   },
-  async scheduled(event,env,ctx){ctx.waitUntil(checkInactivity(env).catch(e=>console.error('inactivity',e)))}
+  async scheduled(event,env,ctx){const job=checkInactivity(env).then(r=>{console.log('inactivity',JSON.stringify(r));return r}).catch(e=>{console.error('inactivity',e);throw e});ctx.waitUntil(job)}
 };;

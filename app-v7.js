@@ -15,7 +15,7 @@ const moodAssets={
  nisa:{mutlu:'assets/moods/nisa-mutlu.png',iyi:'assets/moods/nisa-iyi.png',yorgun:'assets/moods/nisa-yorgun.png',uzgun:'assets/moods/nisa-uzgun.png',gergin:'assets/moods/nisa-gergin.png'},
  necati:{mutlu:'assets/moods/necati-mutlu.png',iyi:'assets/moods/necati-iyi.png',yorgun:'assets/moods/necati-yorgun.png',uzgun:'assets/moods/necati-uzgun.png',gergin:'assets/moods/necati-gergin.png'}
 };
-const moduleNames={mood:'🌸 Nisa Modu',surprise:'🎁 Sürpriz Takvimi',dates:'💍 Özel Günler',night:'🌙 İyi Geceler',emergency:'🚨 Acil Necati',instant:'📸 Anlık Foto',travel:'🗺️ Gezi Haritası',poke:'👉 Dürtme'};
+const moduleNames={mood:'🌸 Nisa Modu',surprise:'💝 Özel Günler & Sürprizler',dates:'💝 Özel Günler & Sürprizler',curiosity:'👀 Birbirimizi Merak Ettik',night:'🌙 İyi Geceler',emergency:'🚨 Acil Necati',instant:'📸 Anlık Foto',travel:'🗺️ Gezi Haritası',poke:'👉 Dürtme'};
 function clone(x){return JSON.parse(JSON.stringify(x))}function merge(base,saved){if(!saved||typeof saved!=='object')return clone(base);const out=clone(base);for(const k of Object.keys(saved)){if(saved[k]&&typeof saved[k]==='object'&&!Array.isArray(saved[k])&&out[k]&&typeof out[k]==='object'&&!Array.isArray(out[k]))out[k]={...out[k],...saved[k]};else out[k]=saved[k]}return out}
 function loadState(){try{const s=merge(defaultState,JSON.parse(localStorage.getItem(STORAGE_KEY)||'null'));const legacy={'🥰':'mutlu','🙂':'iyi','😴':'yorgun','😔':'uzgun','😡':'gergin'};s.mood.today=legacy[s.mood.today]||s.mood.today||'mutlu';s.mood.history=(s.mood.history||[]).map(x=>({...x,mood:legacy[x.mood]||x.mood}));return s}catch{return clone(defaultState)}}
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));window.NecatiCloud?.scheduleSave(state)}
@@ -231,11 +231,14 @@ function renderBot(){
   c.scrollTop=c.scrollHeight;
 }
 
-function renderModule(n){({mood:renderMood,surprise:renderSurprise,dates:renderDates,night:renderNight,emergency:renderEmergency,instant:renderInstantPhoto,travel:renderTravelMap,poke:renderPoke}[n]||(()=>{}))()}
+function renderModule(n){({mood:renderMood,surprise:renderDates,dates:renderDates,curiosity:renderCuriosity,night:renderNight,emergency:renderEmergency,instant:renderInstantPhoto,travel:renderTravelMap,poke:renderPoke}[n]||(()=>{}))()}
 function viewerMoodOwner(){const r=window.NecatiCloud?.role?.();return r==='nisa'?'necati':'nisa'}
 function phaseInfo(){const s=state.settings;if(!s.lastPeriod)return null;const start=new Date(s.lastPeriod+'T12:00:00'),now=new Date(),elapsed=Math.floor((now-start)/86400000),day=((elapsed%s.cycleLength)+s.cycleLength)%s.cycleLength+1;let phase='Foliküler dönem';if(day<=s.periodLength)phase='Regl dönemi';else if(day>=s.cycleLength-13&&day<=s.cycleLength-11)phase='Tahmini yumurtlama dönemi';else if(day>s.cycleLength-11)phase='Luteal dönem';const next=new Date(start);next.setDate(next.getDate()+Math.ceil(Math.max(0,elapsed+1)/s.cycleLength)*s.cycleLength);if(next<=now)next.setDate(next.getDate()+s.cycleLength);return{day,phase,next}}
 function renderMood(){
+  v108EnsureState();
   const p=phaseInfo(),set=moodAssets[viewerMoodOwner()],role=window.NecatiCloud?.role?.();
+  const periodHistory=[...(state.periodHistory||[])].sort((a,b)=>(b.at||0)-(a.at||0)).slice(0,12);
+
   $('moduleContent').innerHTML=`
     <div class="panel">
       <h3>Bugün ruh hali nasıl? 🌸</h3>
@@ -243,11 +246,18 @@ function renderMood(){
       <div class="mood-grid mood-image-grid">${Object.entries(moodMap).map(([k,v])=>`<button class="mood-btn mood-image-btn ${state.mood.today===k?'active':''}" data-mood="${k}"><img src="${set[k]}" alt="${v.label}"><span>${v.label}</span></button>`).join('')}</div>
       <div class="hero-tip">${moodTips[state.mood.today]||''}</div>
     </div>
+
     <div class="panel">
       <h3>Döngü tahmini</h3>
       ${p?`<div class="stats-grid"><div class="stat-card"><strong>${p.day}. gün</strong><span>Döngü günü</span></div><div class="stat-card"><strong>${p.phase}</strong><span>Tahmini dönem</span></div><div class="stat-card"><strong>${p.next.toLocaleDateString('tr-TR')}</strong><span>Sonraki başlangıç</span></div></div>`:'<div class="empty">Ayarlar bölümünden son regl başlangıcını gir.</div>'}
       ${role==='nisa'?`<div class="period-emergency-box"><div><small>Hızlı uyarı</small><strong>Regl başladı mı?</strong><p>Tek dokunuşla Necati'ye acil bildirim gönder.</p></div><button id="periodStartedBtn" class="period-emergency-btn" type="button">🌸 Regl başladı</button></div>`:''}
     </div>
+
+    <div class="panel">
+      <div class="combo-section-head"><div><small>Geçmiş</small><h3>🌸 Regl Başlangıçları</h3></div><span>${periodHistory.length}</span></div>
+      <div class="period-history-list">${periodHistory.length?periodHistory.map(x=>`<div class="period-history-item"><span>🌸</span><div><strong>${fmtDate(x.date)}</strong><small>${escapeHtml(x.by||'Nisa')} tarafından kaydedildi</small></div></div>`).join(''):'<div class="empty">Henüz regl başlangıç kaydı yok.</div>'}</div>
+    </div>
+
     <div class="panel"><h3>Son ruh halleri</h3>${state.mood.history.length?state.mood.history.slice(-7).reverse().map(x=>`<div class="surprise-card">${moodMap[x.mood]?.emoji||''} ${moodMap[x.mood]?.label||x.mood} · ${fmtDate(x.date)}</div>`).join(''):'<div class="empty">Henüz kayıt yok.</div>'}</div>`;
 
   document.querySelectorAll('[data-mood]').forEach(b=>b.onclick=async()=>{
@@ -255,9 +265,7 @@ function renderMood(){
     if(prev===next)return toast('Ruh hali zaten buydu 🌸');
     state.mood.today=next;
     state.mood.history.push({date:today(),mood:next});
-    save();
-    renderMood();
-    toast('Ruh hali kaydedildi 🌸');
+    save();renderMood();toast('Ruh hali kaydedildi 🌸');
     await notify('🌸 Ruh hali değişti',`${actor()} ruh halini ${moodMap[next].label} yaptı ${moodMap[next].emoji}`,'mood','mood');
   });
 
@@ -265,18 +273,20 @@ function renderMood(){
   if(periodBtn)periodBtn.onclick=async()=>{
     periodBtn.disabled=true;
     periodBtn.textContent='Gönderiliyor…';
-    const d=today();
+    const d=today(), now=Date.now();
     state.settings.lastPeriod=d;
     state.settings.periodStartDate=d;
     state.settings.lastPeriodDate=d;
+    state.periodHistory=state.periodHistory||[];
+    const already=state.periodHistory.some(x=>x.date===d);
+    if(!already)state.periodHistory.push({id:uid(),date:d,by:'Nisa',at:now});
+    state.periodHistory=state.periodHistory.slice(-24);
     save();
     toast('Regl başlangıcı kaydedildi 🌸');
     try{
       await notify('🚨 Acil durum: Regl başladı','Nisa regl başladığını bildirdi 🌸 Yanında ol ❤️','emergency','mood');
       toast('Necati’ye acil regl bildirimi gönderildi 🚨🌸');
-    }catch(e){
-      toast('Bildirim gönderilemedi');
-    }
+    }catch(e){toast('Bildirim gönderilemedi')}
     renderMood();
   };
 }
@@ -307,7 +317,77 @@ function drawSky(){const c=$('skyCanvas');if(!c)return;const x=c.getContext('2d'
 
 function renderStory(){$('moduleContent').innerHTML=`<div class="panel"><h3>Yeni bölüm ekle 🎬</h3><div class="form-grid"><label>Sezon<input id="stSeason" type="number" min="1" value="1"></label><label>Bölüm<input id="stEpisode" type="number" min="1" value="1"></label><label>Tarih<input id="stDate" type="date" value="${today()}"></label><label>Başlık<input id="stTitle"></label></div><label>Hikâye<textarea id="stText"></textarea></label><label>Fotoğraf<input id="stPhoto" type="file" accept="image/*"></label><img id="stPreview" class="upload-preview" hidden><div class="upload-status" id="stStatus"></div><button id="addStory" class="primary-btn">Bölümü yayınla 🎬</button></div><div class="story-grid">${[...state.stories].sort((a,b)=>a.season-b.season||a.episode-b.episode).map(x=>`<div class="story-card">${imgHtml(x.image)}<span class="chip">Sezon ${x.season} · Bölüm ${x.episode}</span><h3>${escapeHtml(x.title)}</h3><div class="card-meta">${fmtDate(x.date)}</div><p>${escapeHtml(x.text)}</p><button class="delete-btn" data-delstory="${x.id}">Bölümü sil</button></div>`).join('')}</div>`;previewInput('stPhoto','stPreview');hydrateImages();$('addStory').onclick=async()=>{const title=$('stTitle').value.trim(),text=$('stText').value.trim();if(!title||!text)return toast('Başlık ve hikâye gerekli');const btn=$('addStory');btn.disabled=true;btn.textContent='Fotoğraf yükleniyor…';$('stStatus').textContent='Yayın hazırlanıyor…';try{const image=await storeImage($('stPhoto').files[0]);state.stories.push({id:uid(),season:+$('stSeason').value,episode:+$('stEpisode').value,date:$('stDate').value||today(),title,text,image});save();renderStory();toast('Bölüm yayınlandı 🎬');await notify('🎬 Yeni bölüm yayınlandı',`${actor()} “${title}” bölümünü yayınladı`,'story','story')}catch(e){btn.disabled=false;btn.textContent='Bölümü yayınla 🎬';$('stStatus').textContent='';toast('Yayınlanamadı: '+e.message)}};document.querySelectorAll('[data-delstory]').forEach(b=>b.onclick=async()=>{const x=state.stories.find(x=>x.id==b.dataset.delstory);state.stories=state.stories.filter(x=>x.id!=b.dataset.delstory);save();renderStory();await notify('🎬 Bölüm silindi',`${actor()} “${x?.title||'bir bölüm'}” kaydını sildi`,'story','story')})}
 function daysUntil(dateStr,repeat){const now=new Date();now.setHours(0,0,0,0);let d=new Date(dateStr+'T00:00:00');if(repeat==='yearly'){d.setFullYear(now.getFullYear());if(d<now)d.setFullYear(now.getFullYear()+1)}return Math.ceil((d-now)/86400000)}
-function renderDates(){$('moduleContent').innerHTML=`<div class="panel"><h3>Özel gün ekle</h3><div class="form-grid"><label>Adı<input id="dateTitle"></label><label>Tarih<input id="dateValue" type="date"></label><label>Tekrar<select id="dateRepeat"><option value="yearly">Her yıl</option><option value="none">Tek sefer</option></select></label></div><button id="addDate" class="primary-btn">Ekle 💍</button></div><div class="date-grid">${state.specialDates.map(x=>{const d=daysUntil(x.date,x.repeat);return`<div class="date-card"><div class="row-between"><span class="chip">${fmtDate(x.date)}</span><button class="delete-btn" data-deldate="${x.id}">Sil</button></div><h3>${escapeHtml(x.title)}</h3><strong>${d===0?'Bugün! ❤️':d>0?d+' gün kaldı':Math.abs(d)+' gün önce'}</strong></div>`}).join('')}</div>`;$('addDate').onclick=async()=>{const title=$('dateTitle').value.trim(),date=$('dateValue').value;if(!title||!date)return toast('Başlık ve tarih gerekli');state.specialDates.push({id:uid(),title,date,repeat:$('dateRepeat').value});save();renderDates();await notify('💍 Özel gün eklendi',`${actor()} “${title}” tarihini ekledi`,'date','dates')};document.querySelectorAll('[data-deldate]').forEach(b=>b.onclick=async()=>{state.specialDates=state.specialDates.filter(x=>x.id!=b.dataset.deldate);save();renderDates();await notify('💍 Özel günler güncellendi',`${actor()} bir özel günü sildi`,'date','dates')})}
+function renderDates(){
+  const dates=[...(state.specialDates||[])].sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  const surprises=[...(state.surprises||[])].sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  $('moduleContent').innerHTML=`
+    <div class="combined-love-head">
+      <div><small>Tek ekranda</small><h2>💝 Özel Günler & Sürprizler</h2><p>Tarihleri ve gizli sürprizleri artık ayrı ayrı aramak yok.</p></div>
+    </div>
+
+    <div class="love-combo-grid">
+      <section class="panel love-combo-panel">
+        <div class="combo-title"><span>💍</span><div><small>Önemli tarihler</small><h3>Özel Gün Ekle</h3></div></div>
+        <div class="form-grid">
+          <label>Adı<input id="dateTitle" placeholder="Yıldönümü"></label>
+          <label>Tarih<input id="dateValue" type="date"></label>
+          <label>Tekrar<select id="dateRepeat"><option value="yearly">Her yıl</option><option value="none">Tek sefer</option></select></label>
+        </div>
+        <button id="addDate" class="primary-btn">Özel günü ekle 💍</button>
+      </section>
+
+      <section class="panel love-combo-panel">
+        <div class="combo-title"><span>🎁</span><div><small>Gizli planlar</small><h3>Sürpriz Ekle</h3></div></div>
+        <div class="form-grid">
+          <label>Tarih<input id="spDate" type="date" value="${today()}"></label>
+          <label>Tür<select id="spType"><option>Mesaj</option><option>Görev</option><option>Sürpriz</option><option>Buluşma</option></select></label>
+        </div>
+        <label>Başlık<input id="spTitle" placeholder="Küçük sürpriz"></label>
+        <label>İçerik<textarea id="spMessage" placeholder="Zamanı gelince görünecek…"></textarea></label>
+        <button id="addSurprise" class="primary-btn">Sürprizi ekle 🎁</button>
+      </section>
+    </div>
+
+    <section class="combo-archive">
+      <div class="combo-section-head"><div><small>Yaklaşanlar</small><h3>💍 Özel Günler</h3></div><span>${dates.length}</span></div>
+      <div class="date-grid">${dates.length?dates.map(x=>{const d=daysUntil(x.date,x.repeat);return`<div class="date-card"><div class="row-between"><span class="chip">${fmtDate(x.date)}</span><button class="delete-btn" data-deldate="${x.id}">Sil</button></div><h3>${escapeHtml(x.title)}</h3><strong>${d===0?'Bugün! ❤️':d>0?d+' gün kaldı':Math.abs(d)+' gün önce'}</strong></div>`}).join(''):'<div class="empty">Henüz özel gün yok.</div>'}</div>
+    </section>
+
+    <section class="combo-archive">
+      <div class="combo-section-head"><div><small>Gizli & tatlı</small><h3>🎁 Sürprizler</h3></div><span>${surprises.length}</span></div>
+      <div class="cards-list">${surprises.length?surprises.map(x=>`<div class="surprise-card ${x.date>today()?'locked':''}"><div class="row-between"><div><span class="chip">${fmtDate(x.date)} · ${escapeHtml(x.type)}</span><h3>${escapeHtml(x.title)}</h3></div><button class="delete-btn" data-delsp="${x.id}">Sil</button></div><p>${x.date>today()?'🔒 Zamanı gelince açılacak':escapeHtml(x.message)}</p></div>`).join(''):'<div class="empty">Henüz sürpriz yok.</div>'}</div>
+    </section>`;
+
+  $('addDate').onclick=async()=>{
+    const title=$('dateTitle').value.trim(),date=$('dateValue').value;
+    if(!title||!date)return toast('Başlık ve tarih gerekli');
+    state.specialDates.push({id:uid(),title,date,repeat:$('dateRepeat').value});
+    save();renderDates();
+    await notify('💍 Özel gün eklendi',`${actor()} “${title}” tarihini ekledi`,'date','dates');
+  };
+
+  $('addSurprise').onclick=async()=>{
+    const date=$('spDate').value,title=$('spTitle').value.trim(),message=$('spMessage').value.trim();
+    if(!date||!title||!message)return toast('Tarih, başlık ve içerik gerekli');
+    state.surprises.push({id:uid(),date,title,message,type:$('spType').value});
+    save();renderDates();toast('Sürpriz eklendi 🎁');
+    await notify('🎁 Yeni sürpriz',`${actor()} “${title}” sürprizini ekledi`,'surprise','dates');
+  };
+
+  document.querySelectorAll('[data-deldate]').forEach(b=>b.onclick=async()=>{
+    state.specialDates=state.specialDates.filter(x=>String(x.id)!==String(b.dataset.deldate));
+    save();renderDates();
+    await notify('💍 Özel günler güncellendi',`${actor()} bir özel günü sildi`,'date','dates');
+  });
+
+  document.querySelectorAll('[data-delsp]').forEach(b=>b.onclick=async()=>{
+    const x=state.surprises.find(x=>String(x.id)===String(b.dataset.delsp));
+    state.surprises=state.surprises.filter(x=>String(x.id)!==String(b.dataset.delsp));
+    save();renderDates();
+    await notify('🗑️ Sürpriz silindi',`${actor()} “${x?.title||'bir sürpriz'}” kaydını sildi`,'surprise','dates');
+  });
+}
+
 function renderNight(){$('moduleContent').innerHTML=`<div class="panel"><h3>İyi geceler mesajı 🌙</h3><label>Tarih<input id="nightDate" type="date" value="${today()}"></label><label>Mesaj<textarea id="nightText" placeholder="iyi geceler aşkım..."></textarea></label><label>Fotoğraf <b>zorunlu</b><input id="nightPhoto" type="file" accept="image/*" required></label><img id="nightPreview" class="upload-preview" hidden><p class="tiny">Fotoğraf seçilmeden mesaj gönderilemez.</p><button id="addNight" class="primary-btn">Fotoğraflı mesajı gönder 🌙</button></div><div class="cards-list">${[...state.nights].sort((a,b)=>b.date.localeCompare(a.date)).map(x=>`<div class="surprise-card">${imgHtml(x.image,'night-photo')}<div class="row-between"><span class="chip">${fmtDate(x.date)}</span><button class="delete-btn" data-delnight="${x.id}">Sil</button></div><p>${escapeHtml(x.text)}</p></div>`).join('')||'<div class="empty">İlk fotoğraflı iyi geceler mesajını ekle 🌙</div>'}</div>`;previewInput('nightPhoto','nightPreview');hydrateImages();$('addNight').onclick=async()=>{const text=$('nightText').value.trim(),file=$('nightPhoto').files[0];if(!text)return toast('Mesajını yaz ❤️');if(!file)return toast('Önce bir fotoğraf eklemelisin ❤️');const b=$('addNight');b.disabled=true;b.textContent='Fotoğraf yükleniyor…';try{const image=await storeImage(file);b.textContent='Mesaj gönderiliyor…';state.nights.push({id:uid(),date:$('nightDate').value||today(),text,image});save();renderNight();toast('İyi geceler mesajı gönderildi 🌙');notify('🌙 Fotoğraflı iyi geceler',`${actor()} sana yeni bir iyi geceler mesajı bıraktı ❤️`,'night','night').catch(e=>console.warn('İyi geceler push hatası',e))}catch(e){b.disabled=false;b.textContent='Fotoğraflı mesajı gönder 🌙';toast('Mesaj gönderilemedi: '+(e?.message||e))}};document.querySelectorAll('[data-delnight]').forEach(b=>b.onclick=async()=>{state.nights=state.nights.filter(x=>x.id!=b.dataset.delnight);save();renderNight();await notify('🌙 İyi geceler arşivi',`${actor()} bir mesajı sildi`,'night','night')})}
 function renderEmergency(){$('moduleContent').innerHTML=`<div class="panel"><h3>Acil Necati hattı 🚨</h3><div class="emergency-grid">${[['🤗','Sarılma lazım'],['🍫','Tatlı lazım'],['📞','Beni ara'],['❤️','İlgi lazım'],['☕','Kahve/çay'],['🚗','Gel beni al']].map(([e,t])=>`<button class="emergency-btn" data-emergency="${t}"><span>${e}</span>${t}</button>`).join('')}</div></div>`;document.querySelectorAll('[data-emergency]').forEach(b=>b.onclick=async()=>{const type=b.dataset.emergency;state.emergencyLog.push({at:new Date().toISOString(),type});save();if(!window.NecatiCloud?.isReady?.())return toast('Önce hesaba giriş yap ❤️');try{await window.NecatiCloud.sendEmergency(type);toast('Çağrı gönderildi 🚨❤️')}catch(e){toast('Gönderilemedi: '+e.message)}})}
 function renderBirthday(){const b=state.settings.birthDate;if(!b){$('moduleContent').innerHTML='<div class="panel"><div class="empty">Doğum tarihini Ayarlar bölümünden gir 🎂</div></div>';return}const birth=new Date(b+'T12:00:00'),now=new Date(),days=Math.floor((now-birth)/86400000),weeks=Math.floor(days/7),months=(now.getFullYear()-birth.getFullYear())*12+now.getMonth()-birth.getMonth(),years=now.getFullYear()-birth.getFullYear()-(new Date(now.getFullYear(),birth.getMonth(),birth.getDate())>now?1:0),weekday=birth.toLocaleDateString('tr-TR',{weekday:'long'});let next=new Date(now.getFullYear(),birth.getMonth(),birth.getDate());if(next<now)next.setFullYear(now.getFullYear()+1);$('moduleContent').innerHTML=`<div class="panel"><h3>${state.settings.partnerName}'nın dünyaya geldiği gün 🎂</h3><div class="stats-grid"><div class="stat-card"><strong>${weekday}</strong><span>Doğduğu gün</span></div><div class="stat-card"><strong>${years}</strong><span>Yaş</span></div><div class="stat-card"><strong>${days.toLocaleString('tr-TR')}</strong><span>Yaşadığı gün</span></div><div class="stat-card"><strong>${weeks.toLocaleString('tr-TR')}</strong><span>Hafta</span></div><div class="stat-card"><strong>${months.toLocaleString('tr-TR')}</strong><span>Ay</span></div><div class="stat-card"><strong>${Math.ceil((next-now)/86400000)}</strong><span>Doğum gününe kalan</span></div></div></div>`}
@@ -1709,6 +1789,7 @@ function v108EnsureState(){
   state.instantPhotos=state.instantPhotos||[];
   state.trips=state.trips||[];
   state.pokeLog=state.pokeLog||[];
+  state.periodHistory=state.periodHistory||[];
 }
 
 function v108TimeLabel(ts){
@@ -1841,20 +1922,109 @@ function renderTravelMap(){
 
 function renderPoke(){
   v108EnsureState();
-  const last=state.pokeLog[state.pokeLog.length-1];
-  $('moduleContent').innerHTML=`<div class="panel poke-panel"><div class="poke-hand">👉</div><h2>Dürtme Modu</h2><p>Bir kere bas, karşı tarafın telefonuna dürtme bildirimi gitsin 😄❤️</p><button id="pokeNow" class="primary-btn poke-big-btn">DÜRT 👉</button><small>${last?`Son dürtme: ${escapeHtml(last.by)} • ${v108TimeLabel(last.at)}`:'Henüz kimse kimseyi dürtmedi 😄'}</small></div>`;
+  const history=[...(state.pokeLog||[])].sort((a,b)=>(b.at||0)-(a.at||0));
+  const last=history[0];
+  $('moduleContent').innerHTML=`
+    <div class="panel poke-panel">
+      <div class="poke-hand">👉</div>
+      <h2>Dürtme Modu</h2>
+      <p>Bir kere bas, karşı tarafın telefonuna dürtme bildirimi gitsin 😄❤️</p>
+      <button id="pokeNow" class="primary-btn poke-big-btn">DÜRT 👉</button>
+      <small>${last?`Son dürtme: ${escapeHtml(last.by)} • ${v108TimeLabel(last.at)}`:'Henüz kimse kimseyi dürtmedi 😄'}</small>
+    </div>
+    <div class="panel">
+      <div class="combo-section-head"><div><small>Geçmiş</small><h3>👉 Dürtmeler</h3></div><span>${history.length}</span></div>
+      <div class="poke-history-list">${history.length?history.slice(0,30).map(x=>`<div class="poke-history-item"><span>👉</span><div><strong>${escapeHtml(x.by||'Biri')} dürttü</strong><small>${v108TimeLabel(x.at)}</small></div></div>`).join(''):'<div class="empty">Dürtme geçmişi henüz boş 😄</div>'}</div>
+    </div>`;
+
   $('pokeNow').onclick=async()=>{
     const now=Date.now(),lastAt=Number(localStorage.getItem('necati-poke-last')||0);
     if(now-lastAt<12000)return toast('Biraz bekle, dürtme spam olmasın 😄');
     localStorage.setItem('necati-poke-last',String(now));
     const btn=$('pokeNow');btn.disabled=true;btn.textContent='DÜRTÜLÜYOR… 👉';
     try{
-      state.pokeLog.push({id:uid(),by:actor(),at:now});if(state.pokeLog.length>60)state.pokeLog=state.pokeLog.slice(-60);save();
+      state.pokeLog.push({id:uid(),by:actor(),at:now});
+      if(state.pokeLog.length>60)state.pokeLog=state.pokeLog.slice(-60);
+      save();
       await notify('👉 DÜRTÜLDÜN!',`${actor()} seni dürttü 😄❤️`,'poke','poke');
       v104Haptic?.('success');toast('Dürttün 😄👉');renderPoke();
     }catch(e){btn.disabled=false;btn.textContent='DÜRT 👉';toast('Dürtme gönderilemedi')}
   };
 }
+
+function v1095RelativeTime(ts){
+  const n=Number(ts||0);if(!n)return'Bilgi yok';
+  const diff=Math.max(0,Date.now()-n),m=Math.floor(diff/60000);
+  if(m<1)return'şimdi';
+  if(m<60)return`${m} dk önce`;
+  const h=Math.floor(m/60);if(h<24)return`${h} sa önce`;
+  const d=Math.floor(h/24);return`${d} gün önce`;
+}
+
+async function v1095LoadPresence(){
+  const box=$('curiosityPresence');
+  if(!box)return;
+  try{
+    if(!window.firebase?.firestore||!window.NECATI_FIREBASE?.coupleId){
+      box.innerHTML='<div class="empty">Son görülme bilgisi şu an alınamadı.</div>';return;
+    }
+    const db=firebase.firestore(),cid=window.NECATI_FIREBASE.coupleId;
+    const roles=['nisa','necati'];
+    const rows=[];
+    for(const role of roles){
+      const s=await db.collection('couples').doc(cid).collection('presence').doc(role).get();
+      const d=s.exists?s.data():null;
+      const ts=Number(d?.lastSeenClient||0);
+      rows.push({role,ts});
+    }
+    box.innerHTML=rows.map(x=>`<div class="curiosity-presence-row"><span class="presence-avatar">${x.role==='nisa'?'👩🏻':'👨🏻'}</span><div><strong>${x.role==='nisa'?'Nisa':'Necati'}</strong><small>${v1095RelativeTime(x.ts)}</small></div><em>${x.ts?new Date(x.ts).toLocaleString('tr-TR'):'—'}</em></div>`).join('');
+  }catch(e){
+    box.innerHTML='<div class="empty">Son görülme bilgisi alınamadı.</div>';
+  }
+}
+
+function renderCuriosity(){
+  v108EnsureState();
+  const lastPoke=[...(state.pokeLog||[])].sort((a,b)=>(b.at||0)-(a.at||0))[0];
+  const lastStatus=[...(state.quickStatus||[])].sort((a,b)=>(b.at||0)-(a.at||0))[0];
+  const lastPhoto=[...(state.instantPhotos||[])].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0))[0];
+
+  $('moduleContent').innerHTML=`
+    <div class="curiosity-hero panel">
+      <div class="curiosity-eye">👀</div>
+      <div><small>BİRBAK BAKALIM</small><h2>Birbirimizi Merak Ettik</h2><p>Son hareketleriniz tek ekranda ❤️</p></div>
+      <button id="curiosityRefresh" class="mini-action" type="button" aria-label="Yenile">↻</button>
+    </div>
+
+    <div class="panel">
+      <div class="combo-section-head"><div><small>Canlı bilgi</small><h3>🕒 Son Görülme</h3></div></div>
+      <div id="curiosityPresence" class="curiosity-presence"><div class="empty">Yükleniyor…</div></div>
+    </div>
+
+    <div class="curiosity-grid">
+      <article class="curiosity-card">
+        <span>👉</span><small>SON DÜRTME</small>
+        <strong>${lastPoke?escapeHtml(lastPoke.by||'Biri')+' dürttü':'Henüz dürtme yok'}</strong>
+        <p>${lastPoke?v108TimeLabel(lastPoke.at):'—'}</p>
+      </article>
+
+      <article class="curiosity-card">
+        <span>${lastStatus?.icon||'🏠'}</span><small>SON HIZLI DURUM</small>
+        <strong>${lastStatus?escapeHtml(lastStatus.text||''):'Henüz durum yok'}</strong>
+        <p>${lastStatus?`${escapeHtml(lastStatus.by||'')} · ${v108TimeLabel(lastStatus.at)}`:'—'}</p>
+      </article>
+    </div>
+
+    <div class="panel curiosity-photo-panel">
+      <div class="combo-section-head"><div><small>En yeni</small><h3>📸 Son Fotoğraf</h3></div><span>${lastPhoto?escapeHtml(lastPhoto.sender||''):''}</span></div>
+      ${lastPhoto?`${imgHtml(lastPhoto.image,'curiosity-last-photo')}<div class="curiosity-photo-meta"><strong>${escapeHtml(lastPhoto.note||'Anlık fotoğraf')}</strong><small>${v108TimeLabel(lastPhoto.createdAt)}</small></div>`:'<div class="empty">Henüz anlık fotoğraf yok 📸</div>'}
+    </div>`;
+
+  hydrateImages();
+  v1095LoadPresence();
+  $('curiosityRefresh')?.addEventListener('click',()=>{v1095LoadPresence();toast('Son hareketler yenilendi 👀')});
+}
+
 
 const v108OldShowHome=showHome;
 showHome=function(){v108DestroyTravelMap();return v108OldShowHome()};
