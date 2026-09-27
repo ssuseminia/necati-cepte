@@ -1378,3 +1378,19 @@ dialog::backdrop{background:rgba(35,29,33,.35)!important;backdrop-filter:blur(3p
 .global-loader{background:var(--app-bg)!important}
 .global-loader-card small{color:var(--app-text)!important;font-size:15px;font-weight:600;line-height:1.5}
 @media(max-height:600px){.startup-card{gap:10px;padding:14px}.startup-head{width:auto;height:42dvh}}
+
+/* Decorative names float behind the opening portrait and copy. */
+.startup-names{position:absolute;inset:0;overflow:hidden;pointer-events:none;user-select:none}
+.startup-names span{position:absolute;left:var(--x);top:0;color:var(--app-accent);font-size:clamp(20px,5vw,38px);font-weight:700;letter-spacing:.04em;opacity:0;animation:startupNameFloat 9s linear infinite;animation-delay:var(--delay)}
+.startup-names span:nth-child(1){--x:6%;--delay:-1s}
+.startup-names span:nth-child(2){--x:23%;--delay:-6s}
+.startup-names span:nth-child(3){--x:46%;--delay:-3s}
+.startup-names span:nth-child(4){--x:72%;--delay:-8s}
+.startup-names span:nth-child(5){--x:83%;--delay:-4s}
+.startup-names span:nth-child(6){--x:12%;--delay:-7s}
+.startup-names span:nth-child(7){--x:61%;--delay:-.5s}
+.startup-names span:nth-child(8){--x:39%;--delay:-5s}
+.startup-card{z-index:1}
+@keyframes startupNameFloat{0%{transform:translate(-12px,105dvh) rotate(-12deg);opacity:0}12%,85%{opacity:.24}50%{transform:translate(12px,48dvh) rotate(8deg)}100%{transform:translate(-8px,-60px) rotate(-8deg);opacity:0}}
+@media(prefers-reduced-motion:reduce){.startup-names{display:none}}
+html.reduce-app-motion .startup-names{display:none}
