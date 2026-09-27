@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
   <link rel="icon" type="image/png" href="icons/icon-192.png" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <link rel="stylesheet" href="style-v7.css?v=1097-ux6" />
+  <link rel="stylesheet" href="style-v7.css?v=1097-ux7" />
   <title>Necati Cepte</title>
 </head>
 <body>
@@ -141,22 +141,19 @@
           <button class="quick-card" data-open="todoDialog"><span class="quick-line-icon">✓</span><strong>Görevler</strong></button>
           <button class="quick-card" data-module="todayus"><span class="quick-line-icon">❤️</span><strong>Bugün Biz</strong></button>
           <button class="quick-card" data-module="wishlist"><span class="quick-line-icon">✨</span><strong>Dilek Listemiz</strong></button>
+        <button class="quick-card" data-open="plannerDialog"><span class="quick-line-icon">📅</span><strong>Ortak Takvim</strong></button>
+          <button class="quick-card" data-module="mood"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 10h.01M15.5 10h.01M8.8 14.2c1.8 2 4.6 2 6.4 0"/></svg></span><strong>Ruh Halleri</strong></button>
+          <button class="quick-card" data-module="travel"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/></svg></span><strong>Gezi Haritası</strong></button>
+          <button class="quick-card" data-module="dates"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21 4.5 13.8A5.3 5.3 0 0 1 12 6.3a5.3 5.3 0 0 1 7.5 7.5Z"/><path d="M12 6.3V21"/></svg></span><strong>Özel Günler & Sürprizler</strong></button>
+          <button class="quick-card" data-module="curiosity"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></svg></span><strong>Birbirimizi Merak Ettik</strong></button>
+          <button class="quick-card" data-module="night"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 15.5A8 8 0 0 1 8.5 5 8 8 0 1 0 19 15.5Z"/></svg></span><strong>İyi Geceler</strong></button>
+          <button class="quick-card danger-quick" data-module="emergency"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.8 20h18.4Z"/><path d="M12 9v5M12 17.5h.01"/></svg></span><strong>Acil Necati</strong></button>
+          <button class="quick-card" data-open="expenseDialog"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M7 9H5.5v1.5M17 15h1.5v-1.5"/></svg></span><strong>Harcamalar</strong></button>
+          <button class="quick-card" data-open="statusDialog"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M9.5 20v-6h5v6"/></svg></span><strong>Hızlı Durum</strong></button>
         </div>
       </section>
 
-      <details class="all-modules-disclosure"><summary>Diğer özellikler</summary>
-      <section class="mobile-module-grid" id="allModulesGrid">
-        <button class="mobile-module" data-open="plannerDialog"><span class="module-bubble">📅</span><div><strong>Ortak Takvim</strong><small>Planlarımız</small></div></button>
-        <button class="mobile-module" data-module="mood"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 10h.01M15.5 10h.01M8.8 14.2c1.8 2 4.6 2 6.4 0"/></svg></span><div><strong>Ruh Halleri</strong><small>Bugün nasıl hissediyoruz?</small></div></button>
-        <button class="mobile-module" data-module="travel"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/></svg></span><div><strong>Gezi Haritası</strong><small>Gezilecek şehirler</small></div></button>
-        <button class="mobile-module" data-module="dates"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21 4.5 13.8A5.3 5.3 0 0 1 12 6.3a5.3 5.3 0 0 1 7.5 7.5Z"/><path d="M12 6.3V21"/></svg></span><div><strong>Özel Günler & Sürprizler</strong><small>Tek ekranda</small></div></button>
-        <button class="mobile-module" data-module="curiosity"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></svg></span><div><strong>Birbirimizi Merak Ettik</strong><small>Son hareketler</small></div></button>
-        <button class="mobile-module" data-module="night"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 15.5A8 8 0 0 1 8.5 5 8 8 0 1 0 19 15.5Z"/></svg></span><div><strong>İyi Geceler</strong><small>Fotoğraflı mesaj</small></div></button>
-        <button class="mobile-module danger-mobile" data-module="emergency"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.8 20h18.4Z"/><path d="M12 9v5M12 17.5h.01"/></svg></span><div><strong>Acil Necati</strong><small>Hemen haber ver</small></div></button>
-        <button class="mobile-module" data-open="expenseDialog"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M7 9H5.5v1.5M17 15h1.5v-1.5"/></svg></span><div><strong>Harcamalar</strong><small>Ortak bütçe</small></div></button>
-        <button class="mobile-module" data-open="statusDialog"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M9.5 20v-6h5v6"/></svg></span><div><strong>Hızlı Durum</strong><small>Eve geldim / yoldayım</small></div></button>
-      </section>
-      </details>
+
     </main>
 
 
@@ -635,6 +632,6 @@
       <script src="onesignal-config.js"></script>
       <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
       <script src="cloud-v7.js"></script>
-      <script src="app-v7.js?v=1097-ux6"></script>
+      <script src="app-v7.js?v=1097-ux7"></script>
 </body>
 </html>
