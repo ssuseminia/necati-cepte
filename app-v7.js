@@ -15,7 +15,7 @@ const moodAssets={
  nisa:{mutlu:'assets/moods/nisa-mutlu.png',iyi:'assets/moods/nisa-iyi.png',yorgun:'assets/moods/nisa-yorgun.png',uzgun:'assets/moods/nisa-uzgun.png',gergin:'assets/moods/nisa-gergin.png'},
  necati:{mutlu:'assets/moods/necati-mutlu.png',iyi:'assets/moods/necati-iyi.png',yorgun:'assets/moods/necati-yorgun.png',uzgun:'assets/moods/necati-uzgun.png',gergin:'assets/moods/necati-gergin.png'}
 };
-const moduleNames={mood:'🌸 Ruh Halleri',surprise:'💝 Özel Günler & Sürprizler',dates:'💝 Özel Günler & Sürprizler',curiosity:'👀 Birbirimizi Merak Ettik',todayus:'❤️ Bugün Biz',night:'🌙 İyi Geceler',emergency:'🚨 Acil Necati',instant:'📸 Anlık Foto',travel:'🗺️ Gezi Haritası',poke:'👉 Dürtme'};
+const moduleNames={wishlist:'✨ Ortak Dilek Listesi',mood:'🌸 Ruh Halleri',surprise:'💝 Özel Günler & Sürprizler',dates:'💝 Özel Günler & Sürprizler',curiosity:'👀 Birbirimizi Merak Ettik',todayus:'❤️ Bugün Biz',night:'🌙 İyi Geceler',emergency:'🚨 Acil Necati',instant:'📸 Anlık Foto',travel:'🗺️ Gezi Haritası',poke:'👉 Dürtme'};
 function clone(x){return JSON.parse(JSON.stringify(x))}function merge(base,saved){if(!saved||typeof saved!=='object')return clone(base);const out=clone(base);for(const k of Object.keys(saved)){if(saved[k]&&typeof saved[k]==='object'&&!Array.isArray(saved[k])&&out[k]&&typeof out[k]==='object'&&!Array.isArray(out[k]))out[k]={...out[k],...saved[k]};else out[k]=saved[k]}return out}
 function loadState(){try{const s=merge(defaultState,JSON.parse(localStorage.getItem(STORAGE_KEY)||'null'));const legacy={'🥰':'mutlu','🙂':'iyi','😴':'yorgun','😔':'uzgun','😡':'gergin'};s.mood.today=legacy[s.mood.today]||s.mood.today||'mutlu';s.mood.history=(s.mood.history||[]).map(x=>({...x,mood:legacy[x.mood]||x.mood}));return s}catch{return clone(defaultState)}}
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));window.NecatiCloud?.scheduleSave(state)}
@@ -185,7 +185,7 @@ function renderPlanner(){
     const row=document.createElement('div');row.className='list-card';
     row.innerHTML=`<div><strong>${escapeHtml(p.title)}</strong><small>${fmtDateTimeTR(p.date,p.time)}</small>${p.note?`<p>${escapeHtml(p.note)}</p>`:''}</div>
     <button type="button" class="danger-btn" data-id="${p.id}">Sil</button>`;
-    row.querySelector('button').onclick=async()=>{state.plans=state.plans.filter(x=>x.id!==p.id);save();renderPlanner();notify?.('📅 Plan silindi',`${actor()} ortak takvimden bir plan sildi`,'plan','planner').catch(()=>{})};
+    row.querySelector('button').onclick=async()=>{deleteWithUndo('plans',p.id);save();renderPlanner();notify?.('📅 Plan silindi',`${actor()} ortak takvimden bir plan sildi`,'plan','planner').catch(()=>{})};
     list.appendChild(row);
   });
 }
@@ -205,7 +205,7 @@ function renderTodos(){
       t.done=e.target.checked;save();renderTodos();
       notify?.('✅ Görev güncellendi',`${actor()} “${t.text}” görevini ${t.done?'tamamladı':'yeniden açtı'}`,'todo','todo').catch(()=>{});
     };
-    row.querySelector('button').onclick=async()=>{state.todos=state.todos.filter(x=>x.id!==t.id);save();renderTodos();notify?.('🗑️ Görev silindi',`${actor()} bir görevi sildi`,'todo','todo').catch(()=>{})};
+    row.querySelector('button').onclick=async()=>{deleteWithUndo('todos',t.id);save();renderTodos();notify?.('🗑️ Görev silindi',`${actor()} bir görevi sildi`,'todo','todo').catch(()=>{})};
     list.appendChild(row);
   });
 }
@@ -231,7 +231,7 @@ function renderBot(){
   c.scrollTop=c.scrollHeight;
 }
 
-function renderModule(n){({mood:renderMood,surprise:renderDates,dates:renderDates,curiosity:renderCuriosity,todayus:renderTodayUs,night:renderNight,emergency:renderEmergency,instant:renderInstantPhoto,travel:renderTravelMap,poke:renderPoke}[n]||(()=>{}))()}
+function renderModule(n){({wishlist:renderWishlist,mood:renderMood,surprise:renderDates,dates:renderDates,curiosity:renderCuriosity,todayus:renderTodayUs,night:renderNight,emergency:renderEmergency,instant:renderInstantPhoto,travel:renderTravelMap,poke:renderPoke}[n]||(()=>{}))()}
 function viewerMoodOwner(){const r=window.NecatiCloud?.role?.();return r==='nisa'?'necati':'nisa'}
 function phaseInfo(){const s=state.settings;if(!s.lastPeriod)return null;const start=new Date(s.lastPeriod+'T12:00:00'),now=new Date(),elapsed=Math.floor((now-start)/86400000),day=((elapsed%s.cycleLength)+s.cycleLength)%s.cycleLength+1;let phase='Foliküler dönem';if(day<=s.periodLength)phase='Regl dönemi';else if(day>=s.cycleLength-13&&day<=s.cycleLength-11)phase='Tahmini yumurtlama dönemi';else if(day>s.cycleLength-11)phase='Luteal dönem';const next=new Date(start);next.setDate(next.getDate()+Math.ceil(Math.max(0,elapsed+1)/s.cycleLength)*s.cycleLength);if(next<=now)next.setDate(next.getDate()+s.cycleLength);return{day,phase,next}}
 async function v1097PeriodStarted(){
@@ -279,7 +279,7 @@ function refreshPersonMoods(){
     for(const prefix of ['home','profile']){
       const avatar=$(prefix==='home'?'homeAvatar'+suffix:'profile'+suffix+'Avatar');
       if(avatar){avatar.src=moodAssets[role][mood||'iyi'];avatar.alt=name+' — '+label;}
-      const status=$(prefix+suffix+'Mood');if(status)status.textContent=label;
+      const status=$(prefix+suffix+'Mood');if(status){status.textContent=label+(mood?' · '+moodSharedTime(state.personMoods?.[role]?.at):'');status.title=state.personMoods?.[role]?.at?new Date(state.personMoods[role].at).toLocaleString('tr-TR'):'';}
     }
     const title=$('home'+suffix+'Name');if(title)title.textContent=name;
   }
@@ -695,7 +695,7 @@ async function v9SavePlan(){
   v9Notify(id?'📅 Plan güncellendi':'📅 Yeni ortak plan',`${actor?.()||'Biri'} “${title}” planını ${id?'güncelledi':'ekledi'}`,'plan','planner').catch(()=>{});
 }
 async function v9DeletePlan(id,title){
-  state.plans=(state.plans||[]).filter(x=>x.id!==id);save();v9RenderCalendar();
+  deleteWithUndo('plans',id);save();v9RenderCalendar();
   v9Notify('🗑️ Plan silindi',`${actor?.()||'Biri'} “${title}” planını sildi`,'plan','planner').catch(()=>{});
 }
 
@@ -733,7 +733,7 @@ function v9RenderTodos(){
     <div class="row-actions"><button type="button" class="ghost-btn edit">Düzenle</button><button type="button" class="danger-btn del">Sil</button></div>`;
     row.querySelector('input').onchange=()=>{t.done=!t.done;save();v9RenderTodos();v9RenderCalendar();v9Notify('✅ Görev durumu değişti',`${actor?.()||'Biri'} “${t.text}” görevini ${t.done?'tamamladı':'yeniden açtı'}`,'todo','todo').catch(()=>{})};
     row.querySelector('.edit').onclick=()=>v9StartTodoEdit(t);
-    row.querySelector('.del').onclick=()=>{state.todos=all.filter(x=>x.id!==t.id);save();v9RenderTodos();v9RenderCalendar();v9Notify('🗑️ Görev silindi',`${actor?.()||'Biri'} “${t.text}” görevini sildi`,'todo','todo').catch(()=>{})};
+    row.querySelector('.del').onclick=()=>{deleteWithUndo('todos',t.id);save();v9RenderTodos();v9RenderCalendar();v9Notify('🗑️ Görev silindi',`${actor?.()||'Biri'} “${t.text}” görevini sildi`,'todo','todo').catch(()=>{})};
     list.appendChild(row);
   });
 }
@@ -802,7 +802,7 @@ function v9RenderExpenses(){
   items.forEach(x=>{
     const row=document.createElement('div');row.className='list-card';
     row.innerHTML=`<div><strong>${v9Esc(x.title)} • ${v9Money(x.amount)}</strong><small>${v9Date(x.date)} • ${v9OwnerLabel(x.payer)} • ${v9Esc(x.category)}</small>${x.note?`<p>${v9Esc(x.note)}</p>`:''}</div><button type="button" class="danger-btn">Sil</button>`;
-    row.querySelector('button').onclick=()=>{state.expenses=(state.expenses||[]).filter(e=>e.id!==x.id);save();v9RenderExpenses();v9RenderCalendar();v9Notify('💸 Harcama silindi',`${actor?.()||'Biri'} ${x.title} harcamasını sildi`,'expense','expense').catch(()=>{})};
+    row.querySelector('button').onclick=()=>{deleteWithUndo('expenses',x.id);save();v9RenderExpenses();v9RenderCalendar();v9Notify('💸 Harcama silindi',`${actor?.()||'Biri'} ${x.title} harcamasını sildi`,'expense','expense').catch(()=>{})};
     list.appendChild(row);
   });
 }
@@ -997,7 +997,7 @@ document.querySelectorAll('.tab-item').forEach(btn=>{
       if(!$('moduleView').hidden) $('backBtn')?.click();
       document.querySelector('.modules-title')?.scrollIntoView({behavior:'smooth',block:'start'});
     }
-    if(tab==='poke') document.querySelector('[data-module="poke"]')?.click();
+    if(tab==='poke'){showHome();$('thinkingOfYouBtn')?.focus();$('thinkingOfYouBtn')?.scrollIntoView({block:'center',behavior:'smooth'});}
     if(tab==='profile') $('settingsBtn')?.click();
   });
 });
@@ -1991,19 +1991,7 @@ function renderPoke(){
       <div class="poke-history-list">${history.length?history.slice(0,30).map(x=>`<div class="poke-history-item"><span>👉</span><div><strong>${escapeHtml(x.by||'Biri')} dürttü</strong><small>${v108TimeLabel(x.at)}</small></div></div>`).join(''):'<div class="empty">Dürtme geçmişi henüz boş 😄</div>'}</div>
     </div>`;
 
-  $('pokeNow').onclick=async()=>{
-    const now=Date.now(),lastAt=Number(localStorage.getItem('necati-poke-last')||0);
-    if(now-lastAt<12000)return toast('Biraz bekle, dürtme spam olmasın 😄');
-    localStorage.setItem('necati-poke-last',String(now));
-    const btn=$('pokeNow');btn.disabled=true;btn.textContent='DÜRTÜLÜYOR… 👉';
-    try{
-      state.pokeLog.push({id:uid(),by:actor(),at:now});
-      if(state.pokeLog.length>60)state.pokeLog=state.pokeLog.slice(-60);
-      save();
-      await notify('👉 DÜRTÜLDÜN!',`${actor()} seni dürttü 😄❤️`,'poke','poke');
-      v104Haptic?.('success');toast('Dürttün 😄👉');renderPoke();
-    }catch(e){btn.disabled=false;btn.textContent='DÜRT 👉';toast('Dürtme gönderilemedi')}
-  };
+  $('pokeNow').onclick=()=>sendPoke($('pokeNow'));
 }
 
 function v1095RelativeTime(ts){
@@ -2325,3 +2313,99 @@ $('thinkingOfYouBtn')?.addEventListener('click',async()=>{
 window.addEventListener('necati:incoming',event=>{
   if(event.detail?.type==='thinking-heart')showThinkingHeart(event.detail.body||'Sana bir kalp geldi');
 });
+
+// Daily-use improvements: timestamps, wish list and reversible deletion.
+function moodSharedTime(at,now=Date.now()){
+  const value=Number(at);
+  if(!Number.isFinite(value)||value<=0)return 'Paylaşım zamanı bilinmiyor';
+  const minutes=Math.floor(Math.max(0,now-value)/60000);
+  if(minutes<1)return 'Az önce paylaştı';
+  if(minutes<60)return minutes+' dakika önce paylaştı';
+  if(minutes<1440)return Math.floor(minutes/60)+' saat önce paylaştı';
+  return Math.floor(minutes/1440)+' gün önce paylaştı';
+}
+setInterval(()=>{if(!document.hidden)refreshPersonMoods();},60000);
+
+let pokeSending=false;
+async function sendPoke(button){
+  const cloud=window.NecatiCloud;
+  if(!cloud?.isReady?.())return toast('Dürtmek için hesabına giriş yap ❤️');
+  if(navigator.onLine===false)return toast('İnternet bağlantısı gerekli.');
+  const last=Number(localStorage.getItem('necati-poke-last')||0);
+  if(pokeSending||Date.now()-last<12000)return toast('Yeni bir dürtme için biraz bekle 👉');
+  pokeSending=true;if(button){button.disabled=true;button.setAttribute('aria-busy','true');}
+  try{
+    await cloud.sendActivity('👉 DÜRTÜLDÜN!',actor()+' seni dürttü 😄❤️','poke','poke');
+    localStorage.setItem('necati-poke-last',String(Date.now()));
+    state.pokeLog=[...(state.pokeLog||[]),{id:uid(),by:actor(),at:Date.now()}].slice(-60);
+    save();toast('Dürttün 😄👉');if(currentModule==='poke')renderPoke();
+  }catch(error){toast('Gönderim doğrulanamadı. Bildirim geçmişini kontrol et.');}
+  finally{pokeSending=false;if(button){button.disabled=false;button.setAttribute('aria-busy','false');}}
+}
+$('homePokeBtn')?.addEventListener('click',()=>sendPoke($('homePokeBtn')));
+
+const deletedItems=[];
+function refreshAfterRecovery(){
+  v9RenderCalendar();v9RenderTodos();v9RenderExpenses();v10RefreshDashboard();v105RefreshPersonalUI();
+  if(currentModule==='wishlist')renderWishlist();
+}
+function deleteWithUndo(collection,id){
+  const items=state[collection]||[],index=items.findIndex(item=>String(item.id)===String(id));
+  if(index<0)return false;
+  deletedItems.push({collection,item:clone(items[index]),index,expires:Date.now()+30000});
+  state[collection]=items.filter((_,i)=>i!==index);
+  renderUndoAction();setTimeout(renderUndoAction,30100);return true;
+}
+function undoLastDeletion(){
+  while(deletedItems.length&&deletedItems.at(-1).expires<Date.now())deletedItems.pop();
+  const entry=deletedItems.pop();if(!entry){renderUndoAction();return;}
+  const items=state[entry.collection]||[];
+  if(!items.some(item=>String(item.id)===String(entry.item.id))){
+    items.splice(Math.min(entry.index,items.length),0,entry.item);state[entry.collection]=items;save();refreshAfterRecovery();
+    toast('Silinen kayıt geri getirildi ↩');
+  }else toast('Kayıt zaten mevcut; üzerine yazılmadı.');
+  renderUndoAction();
+}
+function renderUndoAction(){
+  document.querySelectorAll('.undo-action').forEach(el=>el.remove());
+  const entry=[...deletedItems].reverse().find(item=>item.expires>=Date.now());if(!entry)return;
+  const bar=document.createElement('div');bar.className='undo-action';bar.setAttribute('role','status');
+  const text=document.createElement('span');text.textContent=(entry.item.title||entry.item.text||'Kayıt')+' silindi. 30 saniye içinde geri alabilirsin.';
+  const button=document.createElement('button');button.type='button';button.textContent='Geri al';button.onclick=undoLastDeletion;
+  bar.append(text,button);(Array.from(document.querySelectorAll('dialog[open]')).at(-1)||document.body).appendChild(bar);
+}
+document.addEventListener('toggle',()=>{if(deletedItems.length)renderUndoAction();},true);
+document.addEventListener('close',()=>{if(deletedItems.length)renderUndoAction();},true);
+window.addEventListener('necati:authchange',()=>{deletedItems.length=0;renderUndoAction();});
+
+function addWish(title,category){
+  title=String(title||'').trim().slice(0,120);
+  if(!title)return false;
+  if(!['place','film','other'].includes(category))category='other';
+  state.wishes=state.wishes||[];
+  state.wishes.push({id:'wish-'+uid(),title,category,createdAt:Date.now(),createdBy:actor()});
+  save();return true;
+}
+function wishToPlan(id,date){
+  const wish=(state.wishes||[]).find(item=>String(item.id)===String(id));
+  if(!wish||!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(new Date(date+'T12:00:00').getTime()))return false;
+  if(new Date(date+'T12:00:00Z').toISOString().slice(0,10)!==date)return false;
+  state.plans=state.plans||[];
+  if(state.plans.some(plan=>plan.sourceWishId===wish.id||String(plan.id)==='wish-plan-'+wish.id))return false;
+  state.plans.push({id:'wish-plan-'+wish.id,sourceWishId:wish.id,title:wish.title,date,time:'',owner:'ortak',category:'date',reminder:0,note:'Ortak dilek listesinden',createdAt:Date.now(),createdBy:actor()});
+  save();v9RenderCalendar();v10RefreshDashboard();return true;
+}
+function renderWishlist(){
+  const wishes=state.wishes||[],categories={place:'📍 Gidelim',film:'🎬 İzleyelim',other:'✨ Yapalım'};
+  $('moduleContent').innerHTML=`<section class="panel"><h3>Birlikte yapmak istediklerimiz</h3><button type="button" class="ghost-btn" data-open="plannerDialog">Ortak takvimi aç</button><p class="muted">Bir fikir bırak, hazır olduğunuzda tarih seçip ortak takvime ekleyin.</p><form id="wishForm"><label>Dileğimiz<input id="wishTitle" maxlength="120" required placeholder="Bir sahil kasabasına gidelim..."></label><label>Kategori<select id="wishCategory"><option value="place">Buraya gidelim</option><option value="film">Bunu izleyelim</option><option value="other">Bunu yapalım</option></select></label><button class="primary-btn" type="submit">Listeye ekle</button></form></section><section class="wish-list">${wishes.map(w=>{
+    const plan=(state.plans||[]).find(p=>p.sourceWishId===w.id||String(p.id)==='wish-plan-'+w.id);
+    return `<article class="panel wish-card" data-wish-id="${escapeHtml(w.id)}"><small>${categories[w.category]||categories.other}</small><h3>${escapeHtml(w.title)}</h3><small>${escapeHtml(w.createdBy||'Birlikte')}</small>${plan?`<p class="wish-planned">📅 ${fmtDate(plan.date)} için planlandı</p>`:`<label>Plan tarihi<input class="wish-date" type="date" aria-label="${escapeHtml(w.title)} için plan tarihi" value="${today()}"></label><button type="button" class="primary-btn" data-plan-wish="${escapeHtml(w.id)}">Plana dönüştür</button>`}<button type="button" class="ghost-btn" data-delete-wish="${escapeHtml(w.id)}">Listeden kaldır</button></article>`;
+  }).join('')||'<div class="empty">İlk ortak dileğinizi ekleyin ✨</div>'}</section>`;
+  $('wishForm').onsubmit=e=>{e.preventDefault();if(addWish($('wishTitle').value,$('wishCategory').value)){renderWishlist();toast('Ortak dilek eklendi ✨');}};
+  $('moduleContent').querySelectorAll('[data-plan-wish]').forEach(button=>button.onclick=()=>{
+    const date=button.closest('.wish-card').querySelector('.wish-date').value;
+    if(!wishToPlan(button.dataset.planWish,date))return toast('Geçerli bir tarih seç veya mevcut planı kontrol et.');
+    renderWishlist();toast('Ortak takvime eklendi 📅');
+  });
+  $('moduleContent').querySelectorAll('[data-delete-wish]').forEach(button=>button.onclick=()=>{deleteWithUndo('wishes',button.dataset.deleteWish);save();renderWishlist();});
+}

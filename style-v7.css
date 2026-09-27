@@ -1246,3 +1246,19 @@ html.dialog-open .chat-bot-launcher{visibility:hidden}
 .home-live-moods .home-mood-pair{width:100%}
 .chat-bot-launcher{width:54px;height:54px;min-height:54px;border-radius:50%;padding:0;justify-content:center}
 .profile-stats-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+
+/* Four shortcuts, shared communication, advanced tools and wish list. */
+#homeView>.home-connection-actions{grid-template-columns:repeat(2,minmax(0,1fr));padding:12px;border:1px solid var(--app-border);border-radius:20px;background:var(--app-card)}
+.home-connection-actions h2{grid-column:1/-1;font-size:14px;margin:0 0 2px}
+.quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.all-modules-disclosure,.profile-advanced{padding:12px;border:1px solid var(--app-border);border-radius:18px;background:var(--app-card);margin:12px 0}
+.all-modules-disclosure>summary,.profile-advanced>summary{min-height:44px;cursor:pointer;font-weight:800;display:flex;align-items:center;justify-content:space-between}
+.all-modules-disclosure>summary::after,.profile-advanced>summary::after{content:'＋'}
+.all-modules-disclosure[open]>summary::after,.profile-advanced[open]>summary::after{content:'−'}
+.wish-card h3{overflow-wrap:anywhere;margin:8px 0}.wish-card label{margin:12px 0}.wish-card button{margin:5px 5px 0 0}.wish-planned{color:var(--app-accent)}
+#wishForm{display:grid;gap:12px}.wish-list{padding-bottom:70px}
+.undo-action{position:fixed;z-index:1100;bottom:calc(152px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(398px,calc(100% - 28px));display:flex;gap:12px;align-items:center;padding:14px;border-radius:18px;background:#26162f;color:#fff;border:1px solid #b78ac9;box-shadow:0 8px 30px #0005}
+.undo-action span{flex:1;font-size:12px;overflow-wrap:anywhere}.undo-action button{flex-shrink:0;min-height:44px;padding:8px 12px;border:0;border-radius:12px;font-weight:800;background:#f5d1e9;color:#32152d}
+
+#homeView[hidden],#moduleView[hidden]{display:none!important}
+#plannerDialog .dialog-shell,#expenseDialog .dialog-shell{width:100%;max-width:100%;box-sizing:border-box}

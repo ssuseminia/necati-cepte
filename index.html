@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
   <link rel="icon" type="image/png" href="icons/icon-192.png" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <link rel="stylesheet" href="style-v7.css?v=1097-ux5" />
+  <link rel="stylesheet" href="style-v7.css?v=1097-ux6" />
   <title>Necati Cepte</title>
 </head>
 <body>
@@ -74,8 +74,10 @@
 
 
     <main id="homeView" class="mobile-home" aria-label="Ana sayfa">
-      <section class="home-connection-actions" aria-label="Birbirimize zaman ayıralım">
+      <section class="home-connection-actions" aria-label="Birbirimize haber verelim">
+        <h2>Birbirimize haber verelim</h2>
         <button id="thinkingOfYouBtn" type="button" class="connection-action"><span aria-hidden="true">💌</span><span><strong>Seni düşünüyorum</strong><small>Bir kalp gönder</small></span></button>
+        <button id="homePokeBtn" type="button" class="connection-action"><span aria-hidden="true">👉</span><span><strong>Dürt</strong><small>Dikkatini çek</small></span></button>
       </section>
       <section class="home-live-moods" aria-labelledby="homeMoodHeading">
         <h2 id="homeMoodHeading">Şu an nasıl hissediyoruz?</h2>
@@ -135,36 +137,26 @@
           <div><small>Hızlı erişim</small><h2>Tek dokunuşla aç</h2></div>
         </div>
         <div class="quick-grid">
-          <button class="quick-card danger-quick" data-module="emergency"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.8 20h18.4Z"/><path d="M12 9v5M12 17.5h.01"/></svg></span><strong>Acil Necati</strong></button>
           <button class="quick-card" data-module="instant"><span class="quick-line-icon">📸</span><strong>Anlık Foto</strong></button>
-          <button class="quick-card" data-module="poke"><span class="quick-line-icon">👉</span><strong>Dürt</strong></button>
-          <button class="quick-card" data-module="night"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 15.5A8 8 0 0 1 8.5 5 8 8 0 1 0 19 15.5Z"/></svg></span><strong>İyi Geceler</strong></button>
-          <button class="quick-card" data-module="dates"><span class="quick-line-icon">💝</span><strong>Özel & Sürpriz</strong></button>
-          <button class="quick-card" data-module="curiosity"><span class="quick-line-icon">👀</span><strong>Merak Ettik</strong></button>
+          <button class="quick-card" data-open="todoDialog"><span class="quick-line-icon">✓</span><strong>Görevler</strong></button>
           <button class="quick-card" data-module="todayus"><span class="quick-line-icon">❤️</span><strong>Bugün Biz</strong></button>
-          <button class="quick-card" data-open="todoDialog"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.2 4.2L19 7"/></svg></span><strong>Görevler</strong></button>
-          <button class="quick-card" data-open="statusDialog"><span class="quick-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M9.5 20v-6h5v6"/></svg></span><strong>Eve Geldim</strong></button>
+          <button class="quick-card" data-module="wishlist"><span class="quick-line-icon">✨</span><strong>Dilek Listemiz</strong></button>
         </div>
       </section>
 
-      <section class="section-mobile-head modules-title">
-        <div><small>Bizim dünyamız</small><h2>Tüm modüller</h2></div>
-      </section>
+      <details class="all-modules-disclosure"><summary>Diğer özellikler</summary>
       <section class="mobile-module-grid" id="allModulesGrid">
+        <button class="mobile-module" data-open="plannerDialog"><span class="module-bubble">📅</span><div><strong>Ortak Takvim</strong><small>Planlarımız</small></div></button>
         <button class="mobile-module" data-module="mood"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 10h.01M15.5 10h.01M8.8 14.2c1.8 2 4.6 2 6.4 0"/></svg></span><div><strong>Ruh Halleri</strong><small>Bugün nasıl hissediyoruz?</small></div></button>
-
-        <button class="mobile-module" data-module="instant"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6.5" width="17" height="12" rx="2.5"/><path d="M8 6.5 9.5 4h5L16 6.5"/><circle cx="12" cy="12.5" r="3.2"/></svg></span><div><strong>Anlık Foto</strong><small>Şimdi ne yapıyorsun?</small></div></button>
         <button class="mobile-module" data-module="travel"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/></svg></span><div><strong>Gezi Haritası</strong><small>Gezilecek şehirler</small></div></button>
-        <button class="mobile-module" data-module="poke"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12V5.5a1.5 1.5 0 0 1 3 0V11"/><path d="M11 10V4.5a1.5 1.5 0 0 1 3 0V11"/><path d="M14 10V6a1.5 1.5 0 0 1 3 0v6"/><path d="M17 10.5a1.5 1.5 0 0 1 3 0V15c0 4-2.8 6-6.5 6H12c-2.5 0-4-1.3-5.3-3.4L4.5 14a1.5 1.5 0 0 1 2.4-1.8L8 13.5Z"/></svg></span><div><strong>Dürtme</strong><small>Tek dokunuş bildirim</small></div></button>
         <button class="mobile-module" data-module="dates"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21 4.5 13.8A5.3 5.3 0 0 1 12 6.3a5.3 5.3 0 0 1 7.5 7.5Z"/><path d="M12 6.3V21"/></svg></span><div><strong>Özel Günler & Sürprizler</strong><small>Tek ekranda</small></div></button>
         <button class="mobile-module" data-module="curiosity"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></svg></span><div><strong>Birbirimizi Merak Ettik</strong><small>Son hareketler</small></div></button>
-        <button class="mobile-module" data-module="todayus"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.8c-2.2-2.2-5.7-2.2-7.9 0L12 5.7l-.9-.9a5.6 5.6 0 0 0-7.9 7.9L12 21l8.8-8.3a5.6 5.6 0 0 0 0-7.9Z"/></svg></span><div><strong>Bugün Biz</strong><small>Buluşma • duygu • sürpriz</small></div></button>
         <button class="mobile-module" data-module="night"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 15.5A8 8 0 0 1 8.5 5 8 8 0 1 0 19 15.5Z"/></svg></span><div><strong>İyi Geceler</strong><small>Fotoğraflı mesaj</small></div></button>
         <button class="mobile-module danger-mobile" data-module="emergency"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.8 20h18.4Z"/><path d="M12 9v5M12 17.5h.01"/></svg></span><div><strong>Acil Necati</strong><small>Hemen haber ver</small></div></button>
-        <button class="mobile-module" data-open="todoDialog"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.2 4.2L19 7"/></svg></span><div><strong>Yapılacaklar</strong><small>Görevler</small></div></button>
         <button class="mobile-module" data-open="expenseDialog"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M7 9H5.5v1.5M17 15h1.5v-1.5"/></svg></span><div><strong>Harcamalar</strong><small>Ortak bütçe</small></div></button>
         <button class="mobile-module" data-open="statusDialog"><span class="module-bubble"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M9.5 20v-6h5v6"/></svg></span><div><strong>Hızlı Durum</strong><small>Eve geldim / yoldayım</small></div></button>
       </section>
+      </details>
     </main>
 
 
@@ -181,7 +173,7 @@
       <button type="button" class="tab-item active" data-tab="home" aria-label="Ana Sayfa"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/><path d="M9.5 20v-6h5v6"/></svg></span><small>Ana Sayfa</small></button>
       <button type="button" class="tab-item" data-tab="emergency" aria-label="Acil Necati"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.8 20h18.4Z"/><path d="M12 9v5M12 17.5h.01"/></svg></span><small>Acil Necati</small></button>
       <button type="button" class="tab-item tab-heart" data-tab="love" aria-label="Biz"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.8c-2.2-2.2-5.7-2.2-7.9 0L12 5.7l-.9-.9a5.6 5.6 0 0 0-7.9 7.9L12 21l8.8-8.3a5.6 5.6 0 0 0 0-7.9Z"/></svg></span><small>Biz</small></button>
-      <button type="button" class="tab-item" data-tab="poke" aria-label="Dürt"><span class="tab-icon tab-poke-icon">👉</span><small>Dürt</small></button>
+      <button type="button" class="tab-item" data-tab="poke" aria-label="İletişim"><span class="tab-icon tab-poke-icon">👉</span><small>İletişim</small></button>
       <button type="button" class="tab-item" data-tab="profile" aria-label="Profil"><span class="tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 20c.5-4 3-6 6.5-6s6 2 6.5 6"/></svg></span><small>Profil</small></button>
       <button id="installBtn" hidden></button>
       <button id="homeBtn" hidden></button>
@@ -268,7 +260,7 @@
       </div>
       <div id="loggedInBox" hidden>
         <div class="account-card"><strong id="accountEmail">—</strong><span id="syncInfo">Bulut senkronizasyonu açık</span></div>
-        <div class="actions"><button id="enablePushBtn" class="primary-btn">🔔 Bildirimleri aç</button><button id="testPushBtn" class="ghost-btn">🧪 Test bildirimi</button><button id="logoutBtn" class="ghost-btn">Çıkış yap</button></div><div class="actions"><button type="button" onclick="location.href='reset.html'" class="ghost-btn">♻️ Önbelleği sıfırla</button><button type="button" id="diagBtn" class="ghost-btn" onclick="const d=window.NecatiCloud?.diagnostics?.(); alert(d?JSON.stringify(d,null,2):'Bulut kodu yüklenmedi')">🩺 Sistem testi</button></div>
+        <div class="actions"><button id="enablePushBtn" class="primary-btn">🔔 Bildirimleri aç</button><button id="testPushBtn" class="ghost-btn">🧪 Test bildirimi</button><button id="logoutBtn" class="ghost-btn">Çıkış yap</button></div>
         <p class="tiny">Aynı Firebase projesindeki Nisa ve Necati hesapları aynı çift verisini görür. Bu ücretsiz sürümde Acil Necati bildirimi uygulama/PWA açık veya arka planda çalışırken anlık gelir.</p>
       </div>
     </div>
@@ -628,6 +620,7 @@
         <button type="button" id="profileAccountBtn"><span class="menu-line-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 20c.5-4 3-6 6.5-6s6 2 6.5 6"/></svg></span><span><strong>Hesap & Bulut</strong><small id="profileAccountText">Firebase hesabı</small></span><b>›</b></button>
       </section>
 
+      <details class="profile-advanced"><summary>Gelişmiş</summary><p class="muted">Bağlantı sorunları için sistem bilgileri ve önbellek araçları.</p><div class="actions"><button type="button" onclick="location.href='reset.html'" class="ghost-btn">♻️ Önbelleği sıfırla</button><button type="button" id="diagBtn" class="ghost-btn" onclick="const d=window.NecatiCloud?.diagnostics?.(); alert(d?JSON.stringify(d,null,2):'Bulut kodu yüklenmedi')">🩺 Sistem testi</button></div></details>
       <div class="profile-version">Necati Cepte • v10.9.7</div>
     </div>
   </dialog>
@@ -642,6 +635,6 @@
       <script src="onesignal-config.js"></script>
       <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
       <script src="cloud-v7.js"></script>
-      <script src="app-v7.js?v=1097-ux5"></script>
+      <script src="app-v7.js?v=1097-ux6"></script>
 </body>
 </html>
