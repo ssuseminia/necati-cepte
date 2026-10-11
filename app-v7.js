@@ -2307,9 +2307,9 @@ $('thinkingOfYouBtn')?.addEventListener('click',async()=>{
   const button=$('thinkingOfYouBtn');
   thinkingHeartBusy=true;button.disabled=true;button.setAttribute('aria-busy','true');
   try{
-    await cloud.sendActivity('❤️ Seni düşünüyorum',actor()+' sana bir kalp gönderdi.','thinking-heart','home');
-    thinkingHeartLastSent=Date.now();showThinkingHeart('Kalbin gönderildi');
-  }catch(error){toast('Gönderim doğrulanamadı. Bildirim geçmişini kontrol et.');}
+    await checkedPushActivity('❤️ Seni düşünüyorum',actor()+' sana bir kalp gönderdi.','thinking-heart','home');
+    thinkingHeartLastSent=Date.now();showThinkingHeart('Kalbin kaydedildi');toast('Telefon bildirimi gönderim için kabul edildi; teslim henüz doğrulanmadı.');
+  }catch(error){toast(error?.message||'Bildirim sunucusuna ulaşılamadı.');}
   finally{thinkingHeartBusy=false;button.disabled=false;button.setAttribute('aria-busy','false');}
 });
 window.addEventListener('necati:incoming',event=>{
@@ -2337,11 +2337,11 @@ async function sendPoke(button){
   if(pokeSending||Date.now()-last<12000)return toast('Yeni bir dürtme için biraz bekle 👉');
   pokeSending=true;if(button){button.disabled=true;button.setAttribute('aria-busy','true');}
   try{
-    await cloud.sendActivity('👉 DÜRTÜLDÜN!',actor()+' seni dürttü 😄❤️','poke','poke');
+    await checkedPushActivity('👉 DÜRTÜLDÜN!',actor()+' seni dürttü 😄❤️','poke','poke');
     localStorage.setItem('necati-poke-last',String(Date.now()));
     state.pokeLog=[...(state.pokeLog||[]),{id:uid(),by:actor(),at:Date.now()}].slice(-60);
     save();toast('Dürttün 😄👉');if(currentModule==='poke')renderPoke();
-  }catch(error){toast('Gönderim doğrulanamadı. Bildirim geçmişini kontrol et.');}
+  }catch(error){toast(error?.message||'Bildirim sunucusuna ulaşılamadı.');}
   finally{pokeSending=false;if(button){button.disabled=false;button.setAttribute('aria-busy','false');}}
 }
 $('homePokeBtn')?.addEventListener('click',()=>sendPoke($('homePokeBtn')));
@@ -2470,4 +2470,21 @@ document.addEventListener('click',e=>{
 },true);
 for(const id of ['todoDialog','plannerDialog','expenseDialog','statusDialog']){
   $(id)?.addEventListener('close',()=>{if($(id).classList.contains('category-page')){ $(id).classList.remove('category-page');showHome(); }});
+}
+function pushSubmissionStatus(result){
+  if(result?.localOnly)return 'Kayıt kaydedildi fakat telefon bildirimi servisi kullanılmadı.';
+  if(result?.ok===false)return 'Bildirim sunucusu gönderimi reddetti.';
+  const push=result?.oneSignal;
+  if(!push?.id){
+    if(push?.errors)return 'OneSignal gönderimi kabul etmedi. Alıcı aboneliği veya hesap eşleşmesi kontrol edilmeli.';
+    return 'Telefon bildiriminin gönderimi sunucu tarafından doğrulanmadı.';
+  }
+  if(push.recipients===0)return 'OneSignal bu bildirim için aktif alıcı bulamadı.';
+  return '';
+}
+async function checkedPushActivity(...args){
+  const result=await window.NecatiCloud.sendActivity(...args);
+  const problem=pushSubmissionStatus(result);
+  if(problem)throw new Error(problem);
+  return result;
 }
